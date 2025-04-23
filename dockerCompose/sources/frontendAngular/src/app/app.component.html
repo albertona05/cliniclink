@@ -1,0 +1,26 @@
+<div class="container">
+  <div class="card">
+    <div class="card-body">
+      <h1 class="card-title">ClinicLink</h1>
+      <form class="mt-4">
+        <h2 class="titulo-iniciar-sesion">Iniciar Sesión</h2>
+        <div class="form-group">
+          <label for="usuario">Usuario</label>
+          <input type="text" class="form-control" id="usuario" placeholder="Usuario">
+        </div>
+        <div class="form-group">
+          <label for="contraseña">Contraseña</label>
+          <div class="input-group">
+            <input [type]="showPassword ? 'text' : 'password'" class="form-control" id="contraseña" placeholder="Contraseña">
+            <div class="input-group-append">
+              <button class="btn btn-outline-secondary" type="button" (click)="togglePasswordVisibility()">
+                <i class="bi" [ngClass]="{'bi-eye': !showPassword, 'bi-eye-slash': showPassword}"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Acceder</button>
+      </form>
+    </div>
+  </div>
+</div>
