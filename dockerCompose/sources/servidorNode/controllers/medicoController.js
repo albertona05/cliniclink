@@ -1,0 +1,273 @@
+const Cita = require('../models/citaModel');
+const Paciente = require('../models/pacienteModel');
+const Medico = require('../models/medicoModel');
+const RecetaMedica = require('../models/recetaMedicaModel');
+const Factura = require('../models/facturaModel');
+const PDFDocument = require('pdfkit');
+const fs = require('fs');
+const xss = require('xss');
+
+// Función para sanitizar input
+const sanitizarInput = (input) => {
+    if (typeof input !== 'string') return input;
+    return xss(input.trim());
+};
+
+// Validación de fecha
+const validarFecha = (fecha) => {
+    const fechaObj = new Date(fecha);
+    const hoy = new Date();
+    return fechaObj >= hoy;
+};
+
+// Obtener todas las citas de un médico para una fecha específica
+async function obtenerCitasDia(req, res) {
+    try {
+        const fecha = sanitizarInput(req.body.fecha);
+        const id_medico = parseInt(req.body.id_medico);
+
+        // Validar datos requeridos
+        if (!fecha || !id_medico) {
+            return res.status(400).json({
+                success: false,
+                mensaje: 'Fecha y ID del médico son requeridos'
+            });
+        }
+
+        // Validar ID del médico
+        if (isNaN(id_medico)) {
+            return res.status(400).json({
+                success: false,
+                mensaje: 'ID del médico inválido'
+            });
+        }
+        
+        if (!fecha || !id_medico) {
+            return res.status(400).json({ error: 'Fecha y ID del médico son requeridos' });
+        }
+
+        const citas = await Cita.findAll({
+            where: {
+                fecha: fecha,
+                id_medico: id_medico,
+                estado: 'espera'
+            },
+            include: [{
+                model: Paciente,
+                attributes: ['nombre', 'apellidos']
+            }],
+            attributes: ['id', 'hora']
+        });
+
+        const citasFormateadas = citas.map(cita => ({
+            id: cita.id,
+            hora: cita.hora,
+            nombre_paciente: `${cita.Paciente.nombre} ${cita.Paciente.apellidos}`
+        }));
+
+        res.json(citasFormateadas);
+    } catch (error) {
+        console.error('Error al obtener citas:', error);
+        res.status(500).json({
+            success: false,
+            mensaje: 'Error al obtener las citas'
+        });
+    }
+}
+
+// Anular una cita
+async function anularCita(req, res) {
+    try {
+        const id_cita = parseInt(req.body.id_cita);
+
+        // Validar ID de la cita
+        if (!id_cita || isNaN(id_cita)) {
+            return res.status(400).json({
+                success: false,
+                mensaje: 'ID de cita inválido'
+            });
+        }
+
+        if (!id_cita) {
+            return res.status(400).json({ error: 'ID de la cita es requerido' });
+        }
+
+        const cita = await Cita.findByPk(id_cita);
+        if (!cita) {
+            return res.status(404).json({ error: 'Cita no encontrada' });
+        }
+
+        await cita.update({ estado: 'cancelado' });
+        res.json({ mensaje: 'Cita anulada exitosamente' });
+    } catch (error) {
+        console.error('Error al anular cita:', error);
+        res.status(500).json({
+            success: false,
+            mensaje: 'Error al anular la cita'
+        });
+    }
+}
+
+// Generar PDF de receta médica
+async function generarRecetaPDF(datos) {
+    return new Promise((resolve, reject) => {
+        const doc = new PDFDocument();
+        const filePath = `./recetas/receta_${datos.id_cita}.pdf`;
+        const writeStream = fs.createWriteStream(filePath);
+
+        doc.pipe(writeStream);
+        doc.fontSize(16).text('RECETA MÉDICA', { align: 'center' });
+        doc.moveDown();
+        doc.fontSize(12).text(`Fecha: ${new Date().toLocaleDateString()}`);
+        doc.moveDown();
+        doc.text(`Doctor: ${datos.nombre_medico}`);
+        doc.moveDown();
+        doc.text('Medicamentos:');
+        doc.moveDown();
+        doc.text(datos.medicamentos);
+        doc.moveDown();
+        doc.text(`Información adicional: ${datos.info}`);
+        doc.end();
+
+        writeStream.on('finish', () => resolve(filePath));
+        writeStream.on('error', reject);
+    });
+}
+
+// Generar PDF de factura
+async function generarFacturaPDF(datos) {
+    return new Promise((resolve, reject) => {
+        const doc = new PDFDocument();
+        const filePath = `./facturas/factura_${datos.id_cita}.pdf`;
+        const writeStream = fs.createWriteStream(filePath);
+
+        doc.pipe(writeStream);
+        doc.fontSize(16).text('FACTURA', { align: 'center' });
+        doc.moveDown();
+        doc.fontSize(12).text(`Fecha: ${new Date().toLocaleDateString()}`);
+        doc.moveDown();
+        doc.text(`Paciente: ${datos.nombre_paciente}`);
+        doc.text(`Doctor: ${datos.nombre_medico}`);
+        doc.moveDown();
+        doc.text(`Precio de consulta: $${datos.precio_consulta}`);
+        doc.end();
+
+        writeStream.on('finish', () => resolve(filePath));
+        writeStream.on('error', reject);
+    });
+}
+
+// Finalizar cita y generar documentos
+async function finalizarCita(req, res) {
+    try {
+        const { info, medicamentos, precio_consulta, id_medico, id_cita, nueva_fecha, nueva_hora } = req.body;
+
+        if (!id_cita) {
+            return res.status(400).json({ error: 'ID de la cita es requerido' });
+        }
+
+        const cita = await Cita.findByPk(id_cita, {
+            include: [{
+                model: Paciente,
+                attributes: ['nombre', 'apellidos']
+            }, {
+                model: Medico,
+                attributes: ['nombre', 'apellidos']
+            }]
+        });
+
+        if (!cita) {
+            return res.status(404).json({ error: 'Cita no encontrada' });
+        }
+
+        // Actualizar información de la cita
+        await cita.update({
+            info: info,
+            estado: 'finalizado'
+        });
+
+        const resultados = {
+            mensaje: 'Cita finalizada exitosamente',
+            receta_path: null,
+            factura_path: null
+        };
+
+        // Generar receta médica si hay medicamentos
+        if (medicamentos) {
+            const datosReceta = {
+                id_cita,
+                nombre_medico: `${cita.Medico.nombre} ${cita.Medico.apellidos}`,
+                medicamentos,
+                info
+            };
+            resultados.receta_path = await generarRecetaPDF(datosReceta);
+
+            // Guardar receta en la base de datos
+            await RecetaMedica.create({
+                id_cita,
+                id_medico: cita.Medico.id,
+                id_paciente: cita.Paciente.id,
+                descripcion: medicamentos
+            });
+        }
+
+        // Generar factura si hay precio de consulta
+        if (precio_consulta) {
+            const datosFactura = {
+                id_cita,
+                nombre_paciente: `${cita.Paciente.nombre} ${cita.Paciente.apellidos}`,
+                nombre_medico: `${cita.Medico.nombre} ${cita.Medico.apellidos}`,
+                precio_consulta
+            };
+            resultados.factura_path = await generarFacturaPDF(datosFactura);
+
+            // Guardar factura en la base de datos
+            await Factura.create({
+                id_paciente: cita.Paciente.id,
+                monto: precio_consulta,
+                estado: 'en espera'
+            });
+        }
+
+        // Si se proporcionan datos para una nueva cita, crearla
+        if (id_medico && nueva_fecha && nueva_hora) {
+            try {
+                const nuevaCitaData = {
+                    id_paciente: cita.Paciente.id,
+                    id_medico,
+                    fecha: nueva_fecha,
+                    hora: nueva_hora
+                };
+                
+                // Crear una nueva cita utilizando la función del controlador global
+                const { crearCita } = require('./globalController');
+                await crearCita({ body: nuevaCitaData }, {
+                    status: (code) => ({
+                        json: (data) => {
+                            if (code === 201) {
+                                resultados.nueva_cita = data.data;
+                                resultados.mensaje_nueva_cita = 'Nueva cita creada exitosamente';
+                            } else {
+                                resultados.error_nueva_cita = data.mensaje;
+                            }
+                        }
+                    })
+                });
+            } catch (error) {
+                resultados.error_nueva_cita = 'Error al crear la nueva cita';
+                console.error('Error al crear nueva cita:', error);
+            }
+        }
+
+        res.json(resultados);
+    } catch (error) {
+        console.error('Error al finalizar cita:', error);
+        res.status(500).json({ error: 'Error al finalizar la cita' });
+    }
+}
+
+module.exports = {
+    obtenerCitasDia,
+    anularCita,
+    finalizarCita
+};

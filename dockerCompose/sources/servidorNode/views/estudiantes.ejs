@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estudiantes</title>
+    <style>
+        th,
+        td,
+        tr {
+            padding: 10px 50px 10px 0;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Lista Estudiantes</h1>
+    <table>
+        <thead>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Edad</th>
+        </thead>
+        <tbody>
+            <% estudiantes.forEach(estudiante=> { %>
+                <tr>
+                    <td>
+                        <%= estudiante.id %>
+                    </td>
+                    <td>
+                        <%= estudiante.nombre %>
+                    </td>
+                    <td>
+                        <%= estudiante.email %>
+                    </td>
+                    <td>
+                        <%= estudiante.edad %>
+                    </td>
+                    <td>
+                        <button onclick="eliminar('<%= estudiante.id %>')">Eliminar</button>
+                    </td>
+                </tr>
+                <% }); %>
+        </tbody>
+    </table>
+    <br>
+    <h1>Agregar Estudiante</h1>
+    <form id="agregarForm">
+        <label for="nombreEstudiante">Nombre:</label>
+        <input type="text" id="nombreEstudiante" required>
+
+        <label for="emailEstudiante">Email:</label>
+        <input type="email" id="emailEstudiante" required>
+
+        <label for="edadEstudiante">Edad:</label>
+        <input type="text" id="edadEstudiante" required>
+
+        <button type="submit">Agregar</button>
+    </form>
+    <br>
+    <div id="messageAgregar"></div>
+    <br>
+    <h1>Buscar Estudiante</h1>
+    <form id="buscarForm">
+        <label for="idEstudianteBuscar">ID:</label>
+        <input type="text" id="idEstudianteBuscar" required>
+
+        <button type="submit">Buscar</button>
+    </form>
+    <br>
+    <div id="messageBuscar"></div>
+    <br>
+    <h1>Buscar Por Edad</h1>
+    <form id="buscarEdadForm">
+        <label for="edadMinima">Edad Minima:</label>
+        <input type="text" id="edadMinima" required>
+
+        <button type="submit">Buscar Edad</button>
+    </form>
+    <br>
+    <div id="estudiantesEdad"></div>
+
+    <script>
+
+        async function eliminar(idEliminar) {
+            try {
+                const response = await fetch(`/students/${idEliminar}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.href = '/students'
+                } else {
+                    console.error(data.message);
+                }
+
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        document.getElementById('agregarForm').addEventListener('submit', async function (evento) {
+            evento.preventDefault();
+
+            const nombreEstudiante = document.getElementById('nombreEstudiante').value;
+            const emailEstudiante = document.getElementById('emailEstudiante').value;
+            const edadEstudiante = document.getElementById('edadEstudiante').value;
+
+            try {
+                const response = await fetch('/students', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ nombreEstudiante, emailEstudiante, edadEstudiante })
+                });
+
+                const data = await response.json();
+
+                document.getElementById('messageAgregar').innerText = data.message;
+
+                if (data.success) {
+                    setTimeout(() => {
+                        window.location.href = '/students';
+                    }, 1000);
+                } else {
+                    setTimeout(() => {
+                        document.getElementById('messageAgregar').innerText = '';
+                    }, 2000);
+                }
+
+            } catch (error) {
+                console.error(error);
+            }
+
+        });
+
+        document.getElementById('buscarForm').addEventListener('submit', async function(evento) {
+            evento.preventDefault();
+
+            const idEstudianteBuscar = document.getElementById('idEstudianteBuscar').value;
+
+            try {
+                const response = await fetch(`/students/${idEstudianteBuscar}`, {
+                    method: 'GET'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('messageBuscar').innerHTML = 
+                    `
+                        ID: ${data.estudianteBuscado.id}<br>
+                        Nombre: ${data.estudianteBuscado.nombre}<br>
+                        Email: ${data.estudianteBuscado.email}<br>
+                        Edad: ${data.estudianteBuscado.edad}
+                    `;
+                } else {
+                    document.getElementById('messageBuscar').innerText = data.message;
+
+                    setTimeout(() => {
+                        document.getElementById('messageBuscar').innerText = '';
+                    }, 1000);
+
+                }
+
+            } catch (error) {
+                console.error(error);
+            }
+
+        });
+
+        function crearTableEstudiantesEdad(listaEstudiantesEdad) {
+            document.getElementById('estudiantesEdad').innerHTML= '';
+
+            try {
+                const tableEstudiantesEdad = document.createElement('table');
+
+                const headers = document.createElement('tr');
+
+                const head1 = document.createElement('th');
+                head1.textContent = 'ID';
+                headers.appendChild(head1);
+                const head2 = document.createElement('th');
+                head2.textContent = 'Nombre';
+                headers.appendChild(head2);
+                const head3 = document.createElement('th');
+                head3.textContent = 'Email';
+                headers.appendChild(head3);
+                const head4 = document.createElement('th');
+                head4.textContent = 'Edad';
+                headers.appendChild(head4);
+
+                tableEstudiantesEdad.appendChild(headers);
+
+                listaEstudiantesEdad.forEach(estudiante => {
+                    const fila = document.createElement('tr');
+
+                    const idCelda = document.createElement('td');
+                    idCelda.textContent = estudiante.id;
+                    fila.appendChild(idCelda);
+
+                    const nombreCelda = document.createElement('td');
+                    nombreCelda.textContent = estudiante.nombre;
+                    fila.appendChild(nombreCelda);
+
+                    const emailCelda = document.createElement('td');
+                    emailCelda.textContent = estudiante.email;
+                    fila.appendChild(emailCelda);
+
+                    const edadCelda = document.createElement('td');
+                    edadCelda.textContent = estudiante.edad;
+                    fila.appendChild(edadCelda);
+
+                    tableEstudiantesEdad.appendChild(fila);
+                });
+
+                document.getElementById('estudiantesEdad').appendChild(tableEstudiantesEdad);
+
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        document.getElementById('buscarEdadForm').addEventListener('submit', async function(evento) {
+            evento.preventDefault();
+
+            const edadMinima = document.getElementById('edadMinima').value;
+
+            try {
+                const response = await fetch(`/studentsbyage/${edadMinima}`, {
+                    method: 'GET'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    crearTableEstudiantesEdad(data.listaEstudiantesEdad);
+                } else {
+                    document.getElementById('estudiantesEdad').innerText = data.message;
+
+                    setTimeout(() => {
+                        document.getElementById('estudiantesEdad').innerText = '';
+                    }, 1000);
+
+                }
+
+            } catch (error) {
+                console.error(error);
+            }
+
+        });
+
+    </script>
+
+</body>
+
+</html>

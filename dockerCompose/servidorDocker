@@ -1,0 +1,19 @@
+# Usar la imagen base de Node.js
+FROM node
+
+# Actualizar apt y agregar el script wait-for-it
+RUN apt update
+
+RUN curl -o /usr/local/bin/wait-for-it.sh https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh && chmod +x /usr/local/bin/wait-for-it.sh
+
+# Establecer el directorio de trabajo en el contenedor
+WORKDIR /app
+
+# Copiar el resto del código de la aplicación después de instalar las dependencias
+COPY ./sources/servidorNode/ .
+
+# Exponer el puerto 3000 para la aplicación
+EXPOSE 3000
+
+# Comando para iniciar la aplicación
+CMD ["node", "app.js"]

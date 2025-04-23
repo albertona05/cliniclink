@@ -1,0 +1,31 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+.env
+
+# Angular
+dist/
+.angular/
+.angular-cache/
+.tmp/
+out-tsc/
+coverage/
+
+# IDEs y editores
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos específicos
+*.png
+*.jpeg
+*.jpg
+*.txt
