@@ -7,22 +7,27 @@ import { tap } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://192.168.1.2:3000';
+  private apiUrl = 'http://192.168.2.2:3000';
   
   constructor(private http: HttpClient) {}
 
   login(email: string, contrasena: string): Observable<any> {
+    console.log('AuthService: Intentando login para usuario', email);
     return this.http.post(`${this.apiUrl}/login`, { email, contrasena })
       .pipe(
         tap((response: any) => {
           if (response.token) {
+            console.log('AuthService: Login exitoso, token recibido');
             localStorage.setItem('token', response.token);
+          } else {
+            console.log('AuthService: Login fallido, no se recibió token');
           }
         })
       );
   }
 
   logout(): void {
+    console.log('AuthService: Realizando logout');
     localStorage.removeItem('token');
   }
 

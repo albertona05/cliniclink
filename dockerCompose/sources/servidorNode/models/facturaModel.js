@@ -1,6 +1,6 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../../config/database');
-const Paciente = require('./Paciente');
+const sequelize = require('../config/database');
+const Paciente = require('./pacienteModel');
 
 const Factura = sequelize.define('Factura', {
     id: {

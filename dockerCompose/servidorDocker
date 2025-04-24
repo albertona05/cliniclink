@@ -6,15 +6,17 @@ FROM node:20
 # Instala el script wait-for-it
 RUN apt update && apt install -y curl && \
     curl -o /usr/local/bin/wait-for-it.sh https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh && \
-    chmod +x /usr/local/bin/wait-for-it.sh
+    chmod +x /usr/local/bin/wait-for-it.sh && \
+    npm install -g nodemon@3.0.2
 
 WORKDIR /app
 
 # Copia los archivos y luego instala dependencias
 COPY ./sources/servidorNode/package*.json ./
-RUN npm install
 
-COPY ./sources/servidorNode .
+COPY ./sources/servidorNode/ ./
+
+RUN npm install
 
 EXPOSE 3000
 

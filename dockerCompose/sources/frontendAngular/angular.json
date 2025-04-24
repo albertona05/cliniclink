@@ -11,7 +11,7 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:application",
+          "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "outputPath": "dist/frontendAngular",
             "index": "src/index.html",
@@ -21,9 +21,12 @@
             ],
             "tsConfig": "tsconfig.app.json",
             "assets": [
+              "src/favicon.ico",
+              "src/assets",
               {
                 "glob": "**/*",
-                "input": "public"
+                "input": "public",
+                "output": "/"
               }
             ],
             "styles": [
@@ -63,10 +66,10 @@
           },
           "configurations": {
             "production": {
-              "browserTarget": "frontendAngular:build:production"
+              
             },
             "development": {
-              "browserTarget": "frontendAngular:build:development"
+              
             }
           },
           "defaultConfiguration": "development"
@@ -83,9 +86,12 @@
             ],
             "tsConfig": "tsconfig.spec.json",
             "assets": [
+              "src/favicon.ico",
+              "src/assets",
               {
                 "glob": "**/*",
-                "input": "public"
+                "input": "public",
+                "output": "/"
               }
             ],
             "styles": [

@@ -3,7 +3,7 @@ const Paciente = require('../models/pacienteModel');
 const Cita = require('../models/citaModel');
 const Factura = require('../models/facturaModel');
 const { Op } = require('sequelize');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const sequelize = require('../config/database');
 const xss = require('xss');
 
