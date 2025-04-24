@@ -35,7 +35,7 @@ services:
       networks:
         red_frontend:
           ipv4_address: 192.168.2.3
-      command: ["ng","serve","--host","0.0.0.0"]
+      command: ["npm", "start"]
       ports:
         - "4200:4200"
 

@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "clinic-management": {
+    "frontendAngular": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -13,9 +13,9 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/clinic-management",
+            "outputPath": "dist/frontendAngular",
             "index": "src/index.html",
-            "browser": "src/main.ts",
+            "main": "src/main.ts",
             "polyfills": [
               "zone.js"
             ],
@@ -58,12 +58,15 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "browserTarget": "frontendAngular:build"
+          },
           "configurations": {
             "production": {
-              "buildTarget": "clinic-management:build:production"
+              "browserTarget": "frontendAngular:build:production"
             },
             "development": {
-              "buildTarget": "clinic-management:build:development"
+              "browserTarget": "frontendAngular:build:development"
             }
           },
           "defaultConfiguration": "development"
