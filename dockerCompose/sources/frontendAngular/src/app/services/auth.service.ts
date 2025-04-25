@@ -7,7 +7,7 @@ import { tap } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://192.168.2.2:3000';
+  private apiUrl = 'http://backend:3000'; // Cambiar la URL del backend para que coincida con el servidorNode
   
   constructor(private http: HttpClient) {}
 
@@ -37,5 +37,19 @@ export class AuthService {
 
   isLoggedIn(): boolean {
     return !!this.getToken();
+  }
+
+  handleResponse(response: any): string {
+    if (response.message) {
+      return response.message;
+    }
+    return 'Operación exitosa';
+  }
+
+  handleError(error: any): string {
+    if (error.error && error.error.message) {
+      return error.error.message;
+    }
+    return 'Error desconocido';
   }
 }

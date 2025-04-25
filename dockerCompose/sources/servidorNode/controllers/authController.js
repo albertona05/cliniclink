@@ -33,7 +33,7 @@ exports.login = async (req, res) => {
         if (!email || !contrasena) {
             return res.status(400).json({
                 success: false,
-                message: 'Email y contraseña son requeridos'
+                message: 'Email y contraseña son requeridos',
             });
         }
 
@@ -42,7 +42,7 @@ exports.login = async (req, res) => {
         if (!emailRegex.test(email)) {
             return res.status(400).json({
                 success: false,
-                message: 'Formato de email inválido'
+                message: 'Formato de email inválido',
             });
         }
 
@@ -50,7 +50,7 @@ exports.login = async (req, res) => {
         if (contrasena.length < 8) {
             return res.status(400).json({
                 success: false,
-                message: 'La contraseña debe tener al menos 8 caracteres'
+                message: 'La contraseña debe tener al menos 8 caracteres',
             });
         }
 
@@ -59,7 +59,7 @@ exports.login = async (req, res) => {
         if (!usuario) {
             return res.status(401).json({
                 success: false,
-                message: 'Credenciales inválidas'
+                message: 'Credenciales inválidas. Por favor, verifique su email y contraseña.',
             });
         }
 
@@ -68,7 +68,7 @@ exports.login = async (req, res) => {
         if (!contrasenaValida) {
             return res.status(401).json({
                 success: false,
-                message: 'Credenciales inválidas'
+                message: 'Credenciales inválidas. Por favor, verifique su email y contraseña.',
             });
         }
 
@@ -89,7 +89,7 @@ exports.login = async (req, res) => {
         console.error('Error en login:', error);
         res.status(500).json({
             success: false,
-            message: 'Error al iniciar sesión'
+            message: 'Error al iniciar sesión. Intente nuevamente más tarde.'
         });
     }
 };
@@ -110,7 +110,7 @@ exports.cerrarSesion = async (req, res) => {
         console.error('Error al cerrar sesión:', error);
         res.status(500).json({
             success: false,
-            message: 'Error al cerrar sesión',
+            message: 'Error al cerrar sesión. Intente nuevamente más tarde.',
             error: error.message
         });
     }

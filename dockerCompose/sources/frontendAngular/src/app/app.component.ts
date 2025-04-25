@@ -3,6 +3,7 @@ import { RouterOutlet, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from './services/auth.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-root',
@@ -20,7 +21,8 @@ export class AppComponent {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private http: HttpClient
   ) {}
 
   togglePasswordVisibility() {
@@ -33,9 +35,26 @@ export class AppComponent {
       next: (response) => {
         console.log('Login exitoso');
         this.router.navigate(['/dashboard']);
+        const successMessage = this.authService.handleResponse(response);
+        console.log(successMessage);
       },
       error: (error) => {
-        this.errorMessage = error.error.message || 'Error al iniciar sesión';
+        this.errorMessage = this.authService.handleError(error);
+      }
+    });
+  }
+
+  ngOnInit() {
+    this.checkConnection();
+  }
+
+  checkConnection() {
+    this.http.get('http://192.168.2.2:3000/login').subscribe({
+      next: () => console.log('Conexión exitosa con el servidor.'),
+      error: (error) => {
+        console.error('Error al conectar con el servidor:', error);
+        this.errorMessage = 'Error al conectar con el servidor: ' + (error.message || 'Unknown Error');
+        console.error('Detalles del error:', error);
       }
     });
   }
