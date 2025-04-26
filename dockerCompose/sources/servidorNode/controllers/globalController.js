@@ -3,6 +3,14 @@ const Usuario = require('../models/usuarioModel');
 const Cita = require('../models/citaModel');
 const { Op } = require('sequelize');
 
+//Para ver que funciona muestra Servidor Working
+const funciona = (req, res) => {
+    res.status(200).json({
+        success: true,
+        mensaje: 'Servidor Working'
+    });
+};
+
 // Función para obtener todos los médicos
 const obtenerMedicos = async (req, res) => {
     try {
@@ -97,4 +105,5 @@ const obtenerHorasLibres = async (req, res) => {
 module.exports = {
     obtenerMedicos,
     obtenerHorasLibres,
+    funciona,
 };

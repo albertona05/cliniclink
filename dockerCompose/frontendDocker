@@ -1,9 +1,21 @@
-FROM sergiogn04/angular
+# Usa Node 18 con Angular CLI compatible con Angular 15.2.10
+FROM node:18
 
-RUN apt update
+# Instala Angular CLI globalmente (versión específica compatible con Angular 15.2.10)
+RUN npm install -g @angular/cli@15.2.0
 
+# Establece el directorio de trabajo
 WORKDIR /app
 
-COPY ./sources/frontendAngular .
+# Copia package.json y package-lock.json antes para aprovechar cache de Docker
+COPY ./sources/frontendAngular/package*.json ./
 
-EXPOSE 3000
+# Instala dependencias
+RUN npm install
+
+# Exponer el puerto para desarrollo
+EXPOSE 4200
+
+# Comando para arrancar el servidor Angular con configuración para entorno Docker
+CMD ["ng", "serve", "--host", "0.0.0.0", "--port", "4200", "--disable-host-check"]
+

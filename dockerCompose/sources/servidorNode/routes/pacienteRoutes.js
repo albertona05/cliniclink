@@ -4,7 +4,7 @@ const pacienteController = require('../controllers/pacienteController');
 const authMiddleware = require('../middleware/authMiddleware');
 
 // Aplicar middleware de autenticación a todas las rutas
-router.use(authMiddleware);
+router.use(authMiddleware.verificarToken);
 
 // Rutas para gestión de citas
 router.post('/citas', pacienteController.crearCita);

@@ -1,58 +1,67 @@
 services:
-    db:
-      image: mysql
-      container_name: db
-      environment:
-        MYSQL_ROOT_PASSWORD: root
-        MYSQL_DATABASE: Centro
-      volumes:
-        - db_datos:/var/lib/mysql
-      networks:
-        red_backend:
-          ipv4_address: 192.168.1.3
-    
-    backend:
-      build:
-        context: .
-        dockerfile: servidorDocker
-      container_name: backend
-      depends_on:
-        - db
-      networks:
-        red_backend:
-          ipv4_address: 192.168.1.2
-        red_frontend:
-          ipv4_address: 192.168.2.2
-      command: ["wait-for-it.sh", "192.168.1.3:3306", "--timeout=30", "--", "node", "app.js"]
-    
-    frontend:
-      build:
-        context: .
-        dockerfile: frontendDocker
-      container_name: frontend
-      depends_on:
-        - backend
-      networks:
-        red_frontend:
-          ipv4_address: 192.168.2.3
-      command: ["ng","serve","--host","0.0.0.0"]
-      ports:
-        - "4200:4200"
+  db:
+    image: mysql
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: Centro
+    volumes:
+      - db_datos:/var/lib/mysql
+    networks:
+      red_backend:
+        ipv4_address: 192.168.1.3
 
-    ftp:
-      image: stilliard/pure-ftpd
-      container_name: ftp
-      networks:
-        red_backend:
-          ipv4_address: 192.168.1.4
-      environment:
-        FTP_USER_NAME: user
-        FTP_USER_PASS: password
-        FTP_USER_HOME: /home/user
-      volumes:
-        - ftp_data:/home/user
+  backend:
+    build:
+      context: .
+      dockerfile: servidorDocker
+    container_name: backend
+    depends_on:
+      - db
+    volumes:
+      - ./sources/servidorNode:/app
+      - /app/node_modules
+    networks:
+      red_backend:
+        ipv4_address: 192.168.1.2
+      red_frontend:
+        ipv4_address: 192.168.2.2
+    command: ["wait-for-it.sh", "192.168.1.3:3306", "--timeout=30", "--", "node", "app.js"]
+    ports:
+      - "3000:3000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontendDocker
+    container_name: frontend
+    depends_on:
+      - backend
+    volumes:
+      - ./sources/frontendAngular:/app  # Montaje del código fuente frontend
+      - /app/node_modules                # Evita sobreescritura de node_modules
+    networks:
+      red_frontend:
+        ipv4_address: 192.168.2.3
+    command: ["npm", "start"]
+    ports:
+      - "4200:4200"
+
+  ftp:
+    image: stilliard/pure-ftpd
+    container_name: ftp
+    networks:
+      red_backend:
+        ipv4_address: 192.168.1.4
+    environment:
+      FTP_USER_NAME: user
+      FTP_USER_PASS: password
+      FTP_USER_HOME: /home/user
+    volumes:
+      - ftp_data:/home/user
 
 volumes:
+  node_modules:
   db_datos:
     driver: local
   ftp_data:

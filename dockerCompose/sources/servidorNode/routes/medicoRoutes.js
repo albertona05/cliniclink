@@ -3,8 +3,8 @@ const router = express.Router();
 const medicoController = require('../controllers/medicoController');
 const authMiddleware = require('../middleware/authMiddleware');
 
-// Rutas protegidas para médicos
-router.use(authMiddleware);
+// Aplicar middleware de autenticación a todas las rutas
+router.use(authMiddleware.verificarToken);
 
 // Obtener citas del día
 router.post('/citas-dia', medicoController.obtenerCitasDia);

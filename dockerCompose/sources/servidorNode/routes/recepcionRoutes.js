@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const recepcionController = require('../controllers/recepcionController');
 const authMiddleware = require('../middleware/authMiddleware');
-
+/*** 
 // Middleware para verificar rol de recepción
 const verificarRolRecepcion = (req, res, next) => {
     if (req.usuario && req.usuario.rol === 'recepcion') {
@@ -10,10 +10,10 @@ const verificarRolRecepcion = (req, res, next) => {
     } else {
         res.status(403).json({ mensaje: 'Acceso denegado. Se requiere rol de recepción.' });
     }
-};
+};*/
 
-// Aplicar middleware de autenticación y verificación de rol a todas las rutas
-router.use(authMiddleware, verificarRolRecepcion);
+// Aplicar middleware de autenticación a todas las rutas
+router.use(authMiddleware.verificarToken);
 
 // Rutas para gestión de pacientes
 router.get('/pacientes/buscar', recepcionController.buscarPaciente);
