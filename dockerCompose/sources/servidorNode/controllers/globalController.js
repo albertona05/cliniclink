@@ -2,13 +2,28 @@ const Medico = require('../models/medicoModel');
 const Usuario = require('../models/usuarioModel');
 const Cita = require('../models/citaModel');
 const { Op } = require('sequelize');
+const bcrypt = require('bcryptjs');
+
 
 //Para ver que funciona muestra Servidor Working
-const funciona = (req, res) => {
-    res.status(200).json({
-        success: true,
-        mensaje: 'Servidor Working'
-    });
+const funciona = async(req, res) => {
+    try {
+        const contrasenaPlano = 'contrasena_segura123'; 
+        const hash = await bcrypt.hash(contrasenaPlano, 10);
+
+        res.status(200).json({
+            success: true,
+            mensaje: 'Contraseña hasheada con éxito',
+            hash: hash
+        });
+    } catch (error) {
+        console.error('Error al hashear la contraseña:', error);
+        res.status(500).json({
+            success: false,
+            mensaje: 'Error al hashear la contraseña',
+            error: error.message
+        });
+    }
 };
 
 // Función para obtener todos los médicos

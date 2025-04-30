@@ -1,24 +1,24 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
 
-
-const Recepcion = sequelize.define('Recepcion', {
-    id: {
-        type: DataTypes.BIGINT,
-        autoIncrement: true,
-        primaryKey: true,
-    },
-    id_usuario: {
-        type: DataTypes.BIGINT,
-        allowNull: false,
-        references: {
-            model: 'Usuario',
-            key: 'id'
+module.exports = (sequelize) => {
+    const Recepcion = sequelize.define('Recepcion', {
+        id: {
+            type: DataTypes.BIGINT,
+            autoIncrement: true,
+            primaryKey: true,
         },
-    },
-}, {
-    timestamps: false,
-    tableName: 'Recepcion',
-});
+        id_usuario: {
+            type: DataTypes.BIGINT,
+            allowNull: false,
+            references: {
+                model: 'Usuario',  // Relacionado con la tabla 'Usuario'
+                key: 'id'
+            }
+        },
+    }, {
+        tableName: 'Recepcion',
+        timestamps: false
+    });
 
-module.exports = Recepcion;
+    return Recepcion;
+};

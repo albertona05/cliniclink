@@ -16,33 +16,56 @@ const sanitizarInput = (input) => {
 // Buscar paciente por DNI o nombre
 const buscarPaciente = async (req, res) => {
     try {
-        const { busqueda } = req.query;
+        let { busqueda } = req.query;
+
+        // Validar que exista el parámetro de búsqueda
+        if (!busqueda) {
+            return res.status(400).json({ 
+                success: false,
+                mensaje: 'El parámetro de búsqueda es requerido' 
+            });
+        }
+
+        // Sanitizar el parámetro de búsqueda
+        busqueda = sanitizarInput(busqueda);
 
         // Buscar pacientes que coincidan con DNI o nombre
         const pacientes = await Paciente.findAll({
             include: [{
                 model: Usuario,
                 as: 'usuario',
+                attributes: ['nombre'],
                 where: {
-                    [Op.or]: [
-                        { nombre: { [Op.like]: `%${busqueda}%` } }
-                    ]
+                    nombre: {
+                        [Op.like]: `%${busqueda}%`
+                    }
                 }
             }],
             where: {
-                [Op.or]: [
-                    { dni: { [Op.like]: `%${busqueda}%` } }
-                ]
+                dni: {
+                    [Op.like]: `%${busqueda}%`
+                }
             }
         });
 
-        res.json(pacientes.map(paciente => ({
+        // Formatear la respuesta
+        const resultado = pacientes.map(paciente => ({
             id: paciente.id_usuario,
             nombre: paciente.usuario.nombre,
             dni: paciente.dni
-        })));
+        }));
+
+        res.status(200).json({
+            success: true,
+            data: resultado
+        });
     } catch (error) {
-        res.status(500).json({ mensaje: 'Error al buscar paciente', error: error.message });
+        console.error('Error al buscar paciente:', error);
+        res.status(500).json({ 
+            success: false,
+            mensaje: 'Error al buscar paciente',
+            error: error.message 
+        });
     }
 };
 

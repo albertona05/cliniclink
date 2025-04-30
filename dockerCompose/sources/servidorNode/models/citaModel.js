@@ -1,44 +1,26 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
-const Paciente = require('./pacienteModel');
-const Medico = require('./medicoModel');
-
-const Cita = sequelize.define('Cita', {
-    id: {
-        type: DataTypes.BIGINT,
-        autoIncrement: true,
-        primaryKey: true,
-    },
-    id_paciente: {
-        type: DataTypes.BIGINT,
-        allowNull: false,
-        references: {
-            model: Paciente, // Relación con Paciente
-            key: 'id'
+module.exports = (sequelize, DataTypes) => {
+    const Cita = sequelize.define('Cita', {
+        id: { type: DataTypes.BIGINT, autoIncrement: true, primaryKey: true },
+        id_paciente: { type: DataTypes.BIGINT, allowNull: false },
+        id_medico: { type: DataTypes.BIGINT, allowNull: true },
+        fecha: { type: DataTypes.DATE, allowNull: false },
+        hora: { type: DataTypes.TIME, allowNull: false },
+        estado: {
+            type: DataTypes.ENUM('espera', 'cancelado', 'finalizado'),
+            allowNull: false,
+            defaultValue: 'espera'
         },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
-    },
-    fecha: {
-        type: DataTypes.DATE,
-        allowNull: false
-    },
-    hora: {
-        type: DataTypes.TIME,
-        allowNull: false
-    },
-    estado: {
-        type: DataTypes.ENUM('espera', 'cancelado', 'finalizado'),
-        allowNull: false,
-        defaultValue: 'espera'
-    },
-    info: {
-        type: DataTypes.STRING(100),
-        allowNull: true,
-    },
-}, {
-    timestamps: false,
-    tableName: 'Cita'
-});
+        info: { type: DataTypes.STRING(100), allowNull: true }
+    }, {
+        tableName: 'Cita',
+        timestamps: false
+    });
 
-module.exports = Cita;
+    Cita.associate = (models) => {
+        Cita.belongsTo(models.Paciente, { foreignKey: 'id_paciente', as: 'paciente' });
+        Cita.belongsTo(models.Medico, { foreignKey: 'id_medico', as: 'medico' });
+        Cita.hasMany(models.RecetaMedica, { foreignKey: 'id_cita', as: 'recetas' });
+    };
+
+    return Cita;
+};

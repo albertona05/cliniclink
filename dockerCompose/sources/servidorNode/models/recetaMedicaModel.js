@@ -1,51 +1,21 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
-const Paciente = require('./pacienteModel');
-const Medico = require('./medicoModel');
-const Cita = require('./citaModel');
+module.exports = (sequelize, DataTypes) => {
+    const RecetaMedica = sequelize.define('RecetaMedica', {
+        id: { type: DataTypes.BIGINT, autoIncrement: true, primaryKey: true },
+        id_cita: { type: DataTypes.BIGINT, allowNull: false },
+        id_medico: { type: DataTypes.BIGINT, allowNull: false },
+        id_paciente: { type: DataTypes.BIGINT, allowNull: false },
+        descripcion: { type: DataTypes.TEXT, allowNull: false },
+        fecha: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW }
+    }, {
+        tableName: 'RecetaMedica',
+        timestamps: false
+    });
 
-const RecetaMedica = sequelize.define('RecetaMedica', {
-    id: {
-        type: DataTypes.BIGINT,
-        autoIncrement: true,
-        primaryKey: true,
-    },
-    id_cita: {
-        type: DataTypes.BIGINT,
-        allowNull: false,
-        references: {
-            model: Cita,
-            key: 'id'
-        }
-    },
-    id_medico: {
-        type: DataTypes.BIGINT,
-        allowNull: false,
-        references: {
-            model: Medico,
-            key: 'id'
-        }
-    },
-    id_paciente: {
-        type: DataTypes.BIGINT,
-        allowNull: false,
-        references: {
-            model: Paciente,
-            key: 'id'
-        }
-    },
-    descripcion: {
-        type: DataTypes.TEXT,
-        allowNull: false
-    },
-    fecha: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW
-    }
-}, {
-    timestamps: false,
-    tableName: 'RecetaMedica'
-});
+    RecetaMedica.associate = (models) => {
+        RecetaMedica.belongsTo(models.Cita, { foreignKey: 'id_cita', as: 'cita' });
+        RecetaMedica.belongsTo(models.Medico, { foreignKey: 'id_medico', as: 'medico' });
+        RecetaMedica.belongsTo(models.Paciente, { foreignKey: 'id_paciente', as: 'paciente' });
+    };
 
-module.exports = RecetaMedica;
+    return RecetaMedica;
+};

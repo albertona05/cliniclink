@@ -1,49 +1,29 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
-const Paciente = require('./pacienteModel');
-
-const Factura = sequelize.define('Factura', {
-    id: {
-        type: DataTypes.BIGINT,
-        autoIncrement: true,
-        primaryKey: true,
-    },
-    id_paciente: {
-        type: DataTypes.BIGINT,
-        allowNull: false,
-        references: {
-            model: Paciente, // Relación con Paciente
-            key: 'id'
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
-    },
-    monto: {
-        type: DataTypes.DECIMAL(10, 2),
-        allowNull: false,
-        validate: {
-            isDecimal: {
-                msg: 'El monto debe ser un número válido con hasta dos decimales'
-            },
-            min: {
-                args: [0.01],
-                msg: 'El monto debe ser mayor a 0'
+module.exports = (sequelize, DataTypes) => {
+    const Factura = sequelize.define('Factura', {
+        id: { type: DataTypes.BIGINT, autoIncrement: true, primaryKey: true },
+        id_paciente: { type: DataTypes.BIGINT, allowNull: false },
+        monto: {
+            type: DataTypes.DECIMAL(10, 2),
+            allowNull: false,
+            validate: {
+                isDecimal: true,
+                min: 0.01
             }
-        }
-    },
-    estado: {
-        type: DataTypes.ENUM('en espera', 'cobrado'),
-        allowNull: false,
-        defaultValue: 'en espera'
-    },
-    fecha: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW
-    }
-}, {
-    timestamps: false,
-    tableName: 'Factura',
-});
+        },
+        estado: {
+            type: DataTypes.ENUM('en espera', 'cobrado'),
+            allowNull: false,
+            defaultValue: 'en espera'
+        },
+        fecha: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW }
+    }, {
+        tableName: 'Factura',
+        timestamps: false
+    });
 
-module.exports = Factura;
+    Factura.associate = (models) => {
+        Factura.belongsTo(models.Paciente, { foreignKey: 'id_paciente', as: 'paciente' });
+    };
+
+    return Factura;
+};

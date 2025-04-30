@@ -7,7 +7,7 @@ import { tap } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://backend:3000'; // Cambiar la URL del backend para que coincida con el servidorNode
+  private apiUrl = 'http://localhost:3000'; // Cambiar la URL del backend para que coincida con el servidorNode
   
   constructor(private http: HttpClient) {}
 
@@ -32,7 +32,31 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem('token');
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        // Decodificar el token para verificar su expiración
+        const tokenParts = token.split('.');
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          const expirationTime = payload.exp * 1000; // Convertir a milisegundos
+          const currentTime = Date.now();
+          
+          // Si el token está próximo a expirar (menos de 1 hora), hacer logout
+          if (expirationTime - currentTime < 3600000) {
+            console.log('AuthService: Token próximo a expirar, realizando logout');
+            this.logout();
+            return null;
+          }
+        }
+        return token;
+      } catch (error) {
+        console.error('AuthService: Error al verificar token:', error);
+        this.logout();
+        return null;
+      }
+    }
+    return null;
   }
 
   isLoggedIn(): boolean {

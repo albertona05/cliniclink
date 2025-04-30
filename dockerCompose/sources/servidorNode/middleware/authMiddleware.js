@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
-const Usuario = require('../models/usuarioModel');
+const { Usuario } = require('../models');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'tu_clave_secreta_temporal';
+const JWT_SECRET = process.env.JWT_SECRET || '1234';
 
 // Middleware para verificar token
 exports.verificarToken = async (req, res, next) => {
