@@ -1,0 +1,49 @@
+<app-nav></app-nav>
+
+<div class="content-header">
+  <h2>Buscar Paciente</h2>
+</div>
+
+<div class="content-body">
+  <div class="search-container">
+    <div class="input-group">
+      <input type="text" class="form-control" placeholder="DNI o nombre" aria-label="Buscar paciente" [(ngModel)]="terminoBusqueda">
+      <button class="btn btn-primary" type="button" (click)="buscarPaciente()">
+        Buscar
+      </button>
+    </div>
+  </div>
+
+  <!-- Indicador de carga -->
+  <div *ngIf="cargando" class="text-center my-4">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <p class="mt-2">Buscando pacientes...</p>
+  </div>
+
+  <!-- Mensaje de error -->
+  <div *ngIf="mensajeError" class="alert alert-danger">
+    {{ mensajeError }}
+  </div>
+
+  <!-- Lista de pacientes -->
+  <div class="patient-list" *ngIf="pacientes.length > 0 && !cargando">
+    <div class="patient-card" *ngFor="let paciente of pacientes">
+      <div class="patient-info">
+        <span class="patient-name">{{ paciente.nombre }}</span>
+        <span class="patient-dni">DNI: {{ paciente.dni }}</span>
+      </div>
+      <div class="patient-actions">
+        <button class="btn btn-success" (click)="verDetallesPaciente(paciente.id)">
+          Ver más
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensaje cuando no hay resultados -->
+  <div *ngIf="pacientes.length === 0 && !cargando && !mensajeError" class="alert alert-info">
+    No se encontraron pacientes que coincidan con la búsqueda.
+  </div>
+</div>

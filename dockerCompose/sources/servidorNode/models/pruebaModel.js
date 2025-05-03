@@ -1,29 +1,15 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
-const Medico = require('./medicoModel');
+module.exports = (sequelize, DataTypes) => {
+    const Prueba = sequelize.define('Prueba', {
+        id: { type: DataTypes.BIGINT, autoIncrement: true, primaryKey: true },
+        id_medicoManda: { type: DataTypes.BIGINT, allowNull: false }
+    }, {
+        tableName: 'Prueba',
+        timestamps: false
+    });
 
-// Aseguramos que la tabla Medico exista antes de crear la relación
-Medico.sync();
+    Prueba.associate = (models) => {
+        Prueba.belongsTo(models.Medico, { foreignKey: 'id_medicoManda', as: 'medico' });
+    };
 
-const Prueba = sequelize.define('Prueba', {
-    id: {
-        type: DataTypes.BIGINT,
-        autoIncrement: true,
-        primaryKey: true,
-    },
-    id_medicoManda: {
-        type: DataTypes.BIGINT,
-        allowNull: false,
-        references: {
-            model: Medico, // Relación con Medico
-            key: 'id'
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
-    },
-}, {
-    timestamps: false,
-    tableName: 'Prueba'
-});
-
-module.exports = Prueba;
+    return Prueba;
+};

@@ -1,0 +1,29 @@
+<div class="container">
+  <div class="card">
+    <div class="card-body">
+      <h1 class="card-title">ClinicLink</h1>
+      <form class="mt-4" (ngSubmit)="onSubmit()">
+        <h2 class="titulo-iniciar-sesion">Iniciar Sesión</h2>
+        <div class="form-group">
+          <label for="email">Correo Electrónico</label>
+          <input type="email" class="form-control" id="email" placeholder="Correo Electrónico" [(ngModel)]="email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label for="contraseña">Contraseña</label>
+          <div class="input-group">
+            <input [type]="showPassword ? 'text' : 'password'" class="form-control" id="contraseña" placeholder="Contraseña" [(ngModel)]="contrasena" name="contrasena" required>
+            <div class="input-group-append">
+              <button class="btn btn-outline-secondary" type="button" (click)="togglePasswordVisibility()">
+                <i class="bi" [ngClass]="{'bi-eye': !showPassword, 'bi-eye-slash': showPassword}"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="errorMessage" class="alert alert-danger mt-3">
+          {{ errorMessage }}
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Acceder</button>
+      </form>
+    </div>
+  </div>
+</div>

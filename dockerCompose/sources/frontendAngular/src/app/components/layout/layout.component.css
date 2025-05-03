@@ -1,0 +1,13 @@
+.layout-container {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Media queries para responsividad */
+@media (max-width: 480px) {
+  .layout-container {
+    flex-direction: column;
+  }
+}

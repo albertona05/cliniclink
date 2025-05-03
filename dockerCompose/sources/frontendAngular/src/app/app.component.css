@@ -1,3 +1,14 @@
+body {
+  background: linear-gradient(to bottom, #0077b6, #00bcd4);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Arial, sans-serif;
+}
+
+
+
 .container {
   width: 100%;
   max-width: 1200px;
@@ -185,4 +196,26 @@ label {
 .bi-eye {
   font-size: 1.2rem;
   color: #555;
+}
+
+
+/* Estilos para el layout principal cuando el usuario está logueado */
+:host {
+  display: block;
+  height: 100vh;
+}
+
+.logged-in-container {
+  display: flex;
+  height: 100vh;
+}
+
+app-nav {
+  width: 250px;
+  flex-shrink: 0;
+}
+
+.main-content {
+  flex-grow: 1;
+  overflow-y: auto;
 }
