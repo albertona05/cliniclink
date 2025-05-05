@@ -1,6 +1,4 @@
-const Medico = require('../models/medicoModel');
-const Usuario = require('../models/usuarioModel');
-const Cita = require('../models/citaModel');
+const { Medico, Usuario, Cita } = require('../models');
 const { Op } = require('sequelize');
 const bcrypt = require('bcryptjs');
 

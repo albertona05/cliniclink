@@ -16,9 +16,10 @@ export class NavComponent {
   constructor(private authService: AuthService, private router: Router) {}
 
   logout() {
-    this.authService.logout();
-    setTimeout(() => {
-      this.router.navigate(['/login']);
-    }, 100);
+    this.authService.logout().subscribe({
+      next: () => console.log('Logout exitoso'),
+      error: (error) => console.error('Error en logout:', error)
+    });
+    return false;
   }
 }

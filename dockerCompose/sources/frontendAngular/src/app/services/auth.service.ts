@@ -1,15 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { tap, catchError, finalize } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:3000'; // Cambiar la URL del backend para que coincida con el servidorNode
+  private apiUrl = 'http://localhost:3000';
   
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private router: Router) {}
 
   login(email: string, contrasena: string): Observable<any> {
     console.log('AuthService: Intentando login para usuario', email);
@@ -26,10 +27,7 @@ export class AuthService {
       );
   }
 
-  logout(): void {
-    console.log('AuthService: Realizando logout');
-    localStorage.removeItem('token');
-  }
+ 
 
   getToken(): string | null {
     const token = localStorage.getItem('token');
@@ -75,5 +73,42 @@ export class AuthService {
       return error.error.message;
     }
     return 'Error desconocido';
+  }
+
+  logout(): Observable<any> {
+    console.log('AuthService: Iniciando proceso de logout');
+    const token = this.getToken();
+    
+    // Limpiar el token del localStorage
+    localStorage.removeItem('token');
+    
+    // Realizar la navegación inmediatamente para asegurar que ocurra
+    // independientemente de si alguien se suscribe al Observable
+    setTimeout(() => {
+      console.log('AuthService: Redirigiendo a login');
+      this.router.navigate(['/login']);
+    }, 0);
+    
+    // Si hay un token, notificar al backend
+    if (token) {
+      return this.http.post(`${this.apiUrl}/logout`, {}).pipe(
+        tap(() => {
+          console.log('AuthService: Logout exitoso en el backend');
+        }),
+        catchError(error => {
+          console.error('AuthService: Error durante el logout:', error);
+          return throwError(() => error);
+        }),
+        finalize(() => {
+          console.log('AuthService: Finalizando proceso de logout');
+        })
+      );
+    }
+    
+    // Si no hay token, simplemente completar el Observable
+    return new Observable(subscriber => {
+      console.log('AuthService: No hay token para logout');
+      subscriber.complete();
+    });
   }
 }

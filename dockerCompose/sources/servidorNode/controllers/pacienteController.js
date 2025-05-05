@@ -1,5 +1,4 @@
-const Cita = require('../models/citaModel');
-const Factura = require('../models/facturaModel');
+const { Cita, Factura, Medico } = require('../models');
 const xss = require('xss');
 
 // Función para sanitizar input
