@@ -1,0 +1,70 @@
+<app-nav></app-nav>
+<div class="content-header">
+  <h2>Registro de Nuevo Paciente</h2>
+</div>
+
+<div class="content-body">
+  <div class="registration-form">
+    <form [formGroup]="registroForm" (ngSubmit)="onSubmit()">
+      <div *ngIf="mensajeExito" class="alert alert-success">{{ mensajeExito }}</div>
+      <div *ngIf="mensajeError" class="alert alert-danger">{{ mensajeError }}</div>
+
+      <!-- Información Personal -->
+      <div class="form-group">
+        <label>DNI</label>
+        <input type="text" class="form-control" formControlName="dni" [ngClass]="{ 'is-invalid': submitted && f['dni'].errors }">
+        <div *ngIf="submitted && f['dni'].errors" class="validation-error">
+          {{ getErrorMessage('dni') }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Nombre Completo</label>
+        <input type="text" class="form-control" formControlName="nombreCompleto" [ngClass]="{ 'is-invalid': submitted && f['nombreCompleto'].errors }">
+        <div *ngIf="submitted && f['nombreCompleto'].errors" class="validation-error">
+          {{ getErrorMessage('nombreCompleto') }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Correo Electrónico</label>
+        <input type="email" class="form-control" formControlName="email" [ngClass]="{ 'is-invalid': submitted && f['email'].errors }">
+        <div *ngIf="submitted && f['email'].errors" class="validation-error">
+          {{ getErrorMessage('email') }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Teléfono</label>
+        <input type="tel" class="form-control" formControlName="telefono" [ngClass]="{ 'is-invalid': submitted && f['telefono'].errors }">
+        <div *ngIf="submitted && f['telefono'].errors" class="validation-error">
+          {{ getErrorMessage('telefono') }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Dirección</label>
+        <input type="text" class="form-control" formControlName="direccion" [ngClass]="{ 'is-invalid': submitted && f['direccion'].errors }">
+        <div *ngIf="submitted && f['direccion'].errors" class="validation-error">
+          {{ getErrorMessage('direccion') }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Fecha de Nacimiento</label>
+        <input type="date" class="form-control" formControlName="fechaNacimiento" [ngClass]="{ 'is-invalid': submitted && f['fechaNacimiento'].errors }">
+        <div *ngIf="submitted && f['fechaNacimiento'].errors" class="validation-error">
+          {{ getErrorMessage('fechaNacimiento') }}
+        </div>
+      </div>
+
+      <!-- Información Médica -->
+      <div class="button-group">
+        <button type="submit" class="btn btn-primary" [disabled]="loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+          Registrar Paciente
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

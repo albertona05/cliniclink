@@ -1,5 +1,4 @@
-const Usuario = require('../models/usuarioModel');
-const Paciente = require('../models/pacienteModel');
+const { Usuario, Paciente } = require('../models');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const sequelize = require('../config/database');

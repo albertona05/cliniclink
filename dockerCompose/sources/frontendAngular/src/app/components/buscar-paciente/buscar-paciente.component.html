@@ -1,6 +1,6 @@
 <app-nav></app-nav>
 
-<div class="content-header">
+<div class="content-header" style="background-color: #009688; color: white;">
   <h2>Buscar Paciente</h2>
 </div>
 
@@ -31,8 +31,7 @@
   <div class="patient-list" *ngIf="pacientes.length > 0 && !cargando">
     <div class="patient-card" *ngFor="let paciente of pacientes">
       <div class="patient-info">
-        <span class="patient-name">{{ paciente.nombre }}</span>
-        <span class="patient-dni">DNI: {{ paciente.dni }}</span>
+        <span class="patient-dni">{{ paciente.dni }} - </span> <span class="patient-name">{{ paciente.nombre }}</span>
       </div>
       <div class="patient-actions">
         <button class="btn btn-success" (click)="verDetallesPaciente(paciente.id)">

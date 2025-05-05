@@ -1,7 +1,4 @@
-const Usuario = require('../models/usuarioModel');
-const Paciente = require('../models/pacienteModel');
-const Cita = require('../models/citaModel');
-const Factura = require('../models/facturaModel');
+const { Usuario, Paciente, Cita, Factura } = require('../models');
 const { Op } = require('sequelize');
 const bcrypt = require('bcryptjs');
 const sequelize = require('../config/database');
@@ -15,7 +12,7 @@ const sanitizarInput = (input) => {
 
 // Buscar paciente por DNI o nombre
 const buscarPaciente = async (req, res) => {
-    try {
+    try {        
         let { busqueda } = req.query;
 
         // Validar que exista el parámetro de búsqueda
@@ -28,30 +25,55 @@ const buscarPaciente = async (req, res) => {
 
         // Sanitizar el parámetro de búsqueda
         busqueda = sanitizarInput(busqueda);
-
-        // Buscar pacientes que coincidan con DNI o nombre
-        const pacientes = await Paciente.findAll({
-            include: [{
-                model: Usuario,
-                as: 'usuario',
-                attributes: ['nombre'],
+        
+        // Verificar si la búsqueda parece ser un DNI (8 dígitos seguidos de una letra)
+        const esDNI = /^\d{8}[A-Za-z]$/.test(busqueda);
+        
+        let consulta = {};
+        
+        if (esDNI) {
+            consulta = {
+                include: [{
+                    model: Usuario,
+                    as: 'usuario',
+                    attributes: ['nombre']
+                }],
                 where: {
-                    nombre: {
+                    dni: {
                         [Op.like]: `%${busqueda}%`
                     }
                 }
-            }],
-            where: {
-                dni: {
-                    [Op.like]: `%${busqueda}%`
-                }
-            }
-        });
+            };
+        } else {
+            consulta = {
+                include: [{
+                    model: Usuario,
+                    as: 'usuario',
+                    attributes: ['nombre'],
+                    where: {
+                        nombre: {
+                            [Op.like]: `%${busqueda}%`
+                        }
+                    }
+                }]
+            };
+        }
+        
+        const pacientes = await Paciente.findAll(consulta);
+        
+        if (pacientes.length === 0) {
+            console.log('No se encontraron pacientes con el criterio de búsqueda');
+        } else {
+            console.log('Pacientes encontrados:', JSON.stringify(pacientes.map(p => ({ 
+                id: p.id_usuario, 
+                nombre: p.usuario?.nombre || 'Sin nombre', 
+                dni: p.dni 
+            })), null, 2));
+        }
 
-        // Formatear la respuesta
         const resultado = pacientes.map(paciente => ({
             id: paciente.id_usuario,
-            nombre: paciente.usuario.nombre,
+            nombre: paciente.usuario?.nombre || 'Sin nombre',
             dni: paciente.dni
         }));
 
@@ -61,6 +83,7 @@ const buscarPaciente = async (req, res) => {
         });
     } catch (error) {
         console.error('Error al buscar paciente:', error);
+        console.error('Stack de error:', error.stack);
         res.status(500).json({ 
             success: false,
             mensaje: 'Error al buscar paciente',
@@ -83,10 +106,20 @@ const obtenerPaciente = async (req, res) => {
             }]
         });
 
+        console.log("Solicitud recibida para obtener paciente con ID:", id);
         if (!paciente) {
+            console.log("Paciente no encontrado para ID:", id);
             return res.status(404).json({ mensaje: 'Paciente no encontrado' });
         }
-
+        console.log("Paciente encontrado:", {
+            id: paciente.id_usuario,
+            nombre: paciente.usuario.nombre,
+            email: paciente.usuario.email,
+            dni: paciente.dni,
+            telefono: paciente.telefono,
+            fechaNacimiento: paciente.fechaNacimiento,
+            direccion: paciente.direccion
+        });
         res.json({
             id: paciente.id_usuario,
             nombre: paciente.usuario.nombre,
@@ -128,9 +161,9 @@ const actualizarPaciente = async (req, res) => {
             direccion: direccion || paciente.direccion
         });
 
-        res.json({ mensaje: 'Paciente actualizado correctamente' });
+        res.json({ success: true, mensaje: 'Paciente actualizado correctamente' });
     } catch (error) {
-        res.status(500).json({ mensaje: 'Error al actualizar paciente', error: error.message });
+        res.status(500).json({ success: false, mensaje: 'Error al actualizar paciente', error: error.message });
     }
 };
 
