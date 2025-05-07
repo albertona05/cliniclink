@@ -9,6 +9,7 @@
   position: fixed;
   left: 0;
   top: 0;
+  z-index: 999; /* Asegúrate de que esté encima del contenido */
 }
 
 .nav-header {
@@ -60,25 +61,49 @@
 }
 
 /* Media queries para tablets */
+@media (max-width: 1024px) {
+  .nav-container {
+    width: 280px; /* Ancho ajustado para tablets */
+  }
+}
+
 @media (max-width: 768px) {
   .nav-container {
-    width: 280px;
+    width: 100%; /* En pantallas más pequeñas, el nav ocupará todo el ancho */
+    height: auto; /* Se ajustará al contenido */
+    position: fixed;
+    top: 0;
+    z-index: 1000;
   }
-  
+
   .nav-header h1 {
     font-size: 20px;
   }
-  
-  .user-info {
-    font-size: 16px;
+
+  .nav-links {
+    flex-direction: row; /* Cambiar la dirección a fila para más espacio */
+    justify-content: space-around;
+    padding: 0;
   }
-  
+
+  .nav-link {
+    padding: 10px;
+    text-align: center;
+    flex-direction: column;
+  }
+
   .nav-link i {
-    font-size: 18px;
+    margin-right: 0;
+    margin-bottom: 5px;
   }
-  
+
   .nav-link span {
-    font-size: 14px;
+    font-size: 12px;
+  }
+
+  /* Hacer que el contenido se mueva debajo del nav */
+  :host {
+    margin-left: 0;
   }
 }
 
@@ -87,33 +112,9 @@
   .nav-container {
     width: 100%;
     height: auto;
-    position: fixed;
-    top: 0;
-    z-index: 1000;
   }
-  
-  .nav-header, .user-info {
-    padding: 10px;
-  }
-  
-  .nav-links {
-    flex-direction: row;
-    justify-content: space-around;
-    padding: 0;
-  }
-  
-  .nav-link {
-    flex-direction: column;
-    padding: 10px;
-    text-align: center;
-  }
-  
-  .nav-link i {
-    margin-right: 0;
-    margin-bottom: 5px;
-  }
-  
-  .nav-link span {
-    font-size: 12px;
+
+  .nav-header h1 {
+    font-size: 18px;
   }
 }

@@ -1,43 +1,177 @@
+:host {
+  background: linear-gradient(135deg, #0a5d7c, #42a5b6);
+}
+
 .container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, #009688, #42a5b6);
+  background-size: 400% 400%;
+  animation: gradientAnimation 15s ease infinite;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+@keyframes gradientAnimation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .card {
   width: 100%;
   max-width: 400px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  border-radius: 16px;
+  background-color: rgba(255, 255, 255, 0.97);
+  overflow: hidden;
+  transform: translateY(0);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-top: 5px solid #009688;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.card-body {
+  padding: 2.5rem;
 }
 
 .card-title {
   text-align: center;
-  color: #2c3e50;
-  margin-bottom: 1.5rem;
+  color: #009688;
+  margin-bottom: 1rem;
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+
+.card-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 3px;
+  background: linear-gradient(to right, #0a5d7c, #42a5b6);
+  border-radius: 3px;
 }
 
 .titulo-iniciar-sesion {
   font-size: 1.5rem;
   text-align: center;
-  color: #34495e;
+  color: #2c3e50;
   margin-bottom: 2rem;
+  font-weight: 500;
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.8rem;
+  position: relative;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #546e7a;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: color 0.3s ease;
+}
+
+.form-group:focus-within label {
+  color: #009688;
 }
 
 .btn-block {
   width: 100%;
-  margin-top: 1.5rem;
+  margin-top: 2rem;
+  background: linear-gradient(to right, #0a5d7c, #42a5b6);
+  border: none;
+  border-radius: 50px;
+  padding: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(10, 93, 124, 0.3);
+  cursor: pointer;
+}
+
+.btn-block:hover {
+  background: linear-gradient(to right, #0a5d7c, #42a5b6);
+  box-shadow: 0 6px 18px rgba(10, 93, 124, 0.4);
+  transform: translateY(-2px);
+}
+
+.form-control {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #455a64;
+  transition: all 0.3s ease;
+  background-color: #f9f9f9;
+}
+
+.form-control:focus {
+  border-color: #42a5b6;
+  box-shadow: 0 0 0 3px rgba(66, 165, 182, 0.15);
+  background-color: #ffffff;
+  outline: none;
+}
+
+.input-group {
+  position: relative;
+}
+
+.input-group-append {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
 }
 
 .input-group-append button {
-  border-left: none;
+  height: 100%;
+  border: none;
+  background: transparent;
+  padding: 0 15px;
+  color: #78909c;
+  transition: color 0.3s ease;
+}
+
+.input-group-append button:hover {
+  color: #0a5d7c;
 }
 
 .bi {
   font-size: 1.2rem;
+}
+
+.alert-danger {
+  background-color: #ffebee;
+  color: #c62828;
+  border-radius: 8px;
+  padding: 12px 15px;
+  border-left: 4px solid #ef5350;
+  font-size: 0.95rem;
 }

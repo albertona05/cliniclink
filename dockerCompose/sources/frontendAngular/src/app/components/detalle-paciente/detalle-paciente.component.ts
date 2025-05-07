@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { NavComponent } from '../nav/nav.component';
 import { ActivatedRoute, Router } from '@angular/router';
+import { catchError, finalize, of } from 'rxjs';
 
 @Component({
   selector: 'app-detalle-paciente',
@@ -35,10 +36,21 @@ export class DetallePacienteComponent implements OnInit {
   cargarPaciente(id: string) {
     this.cargando = true;
     this.mensajeError = '';
-    const token = localStorage.getItem('token');
     
-    this.http.get<any>(`http://localhost:3000/pacientes/${id}`).subscribe(
-      response => {
+    // En Angular 19, es mejor usar el interceptor para manejar los tokens
+    // y usar el patrón pipe para manejar los observables
+    this.http.get<any>(`http://localhost:3000/pacientes/${id}`)
+      .pipe(
+        catchError(error => {
+          console.error('Error al cargar paciente:', error);
+          this.mensajeError = 'Error al cargar los datos del paciente';
+          return of(null);
+        }),
+        finalize(() => {
+          this.cargando = false;
+        })
+      )
+      .subscribe(response => {
         if (response) {
           this.paciente = {
             id: response.id,
@@ -50,17 +62,10 @@ export class DetallePacienteComponent implements OnInit {
             direccion: response.direccion
           };
           console.log(this.paciente);
-        } else {
+        } else if (!this.mensajeError) {
           this.mensajeError = 'Error al cargar los datos del paciente';
         }
-        this.cargando = false;
-      },
-      error => {
-        console.error('Error al cargar paciente:', error);
-        this.mensajeError = 'Error al cargar los datos del paciente';
-        this.cargando = false;
-      }
-    );
+      });
   }
 
   verCitas() {
@@ -74,25 +79,27 @@ export class DetallePacienteComponent implements OnInit {
   guardarCambios() {
     this.cargando = true;
     this.mensajeError = '';
-    const token = localStorage.getItem('token');
+    this.mensajeExito = '';
 
-    this.http.put<any>(`http://localhost:3000/pacientes/${this.paciente.id}`, this.paciente).subscribe(
-      response => {
+    // En Angular 19, es mejor usar el interceptor para manejar los tokens
+    // y usar el patrón pipe para manejar los observables
+    this.http.put<any>(`http://localhost:3000/pacientes/${this.paciente.id}`, this.paciente)
+      .pipe(
+        catchError(error => {
+          console.error('Error al guardar cambios:', error);
+          this.mensajeError = 'Error al guardar los cambios';
+          return of({ success: false });
+        }),
+        finalize(() => {
+          this.cargando = false;
+        })
+      )
+      .subscribe(response => {
         if (response && response.success) {
           this.mensajeExito = 'Usuario actualizado correctamente';
-          this.mensajeError = ''; 
-        } else {
+        } else if (!this.mensajeError) {
           this.mensajeError = 'Error al guardar los cambios';
-          this.mensajeExito = ''; 
         }
-        this.cargando = false;
-      },
-      error => {
-        console.error('Error al guardar cambios:', error);
-        this.mensajeError = 'Error al guardar los cambios';
-        this.mensajeExito = '';
-        this.cargando = false;
-      }
-    );
+      });
   }
-}
+  }

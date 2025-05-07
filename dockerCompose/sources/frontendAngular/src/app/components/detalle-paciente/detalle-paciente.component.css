@@ -3,41 +3,66 @@
   margin-left: 350px;
   min-height: 100vh;
   background-color: #e0e0e0;
-  margin-top: 0;
   padding-top: 0;
   overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .content-header {
-  margin-top: 0;
-  padding: 11px 30px;
+  padding: 20px;
   text-align: center;
-  margin-bottom: 30px;
+  background-color: #009688;
+  color: #fff;
+}
+
+.content-header h2 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
 }
 
 .content-body {
   padding: 30px;
-  box-shadow: none;
   width: calc(100vw - 380px);
-  overflow-y: auto;
   margin: 0 auto;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .alert {
-  border-radius: 10px;
+  border-radius: 6px;
   padding: 15px;
   margin-bottom: 20px;
   max-width: 95%;
-  margin-left: 0;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 0.95rem;
+}
+
+.alert-danger {
+  background-color: #ffebee;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+}
+
+.alert-info {
+  background-color: #e3f2fd;
+  color: #0277bd;
+  border: 1px solid #bbdefb;
 }
 
 .patient-details {
-  background-color: #ffffff;
-  padding: 30px;
+  background-color: #fff;
+  padding: 25px;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.3s;
   max-width: 95%;
-  margin-left: 0;
+  margin: 0;
+}
+
+.patient-details:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .form-group {
@@ -46,27 +71,28 @@
 
 .form-group label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   font-weight: 500;
   color: #333;
+  font-size: 16px;
 }
 
 .form-control {
   width: 100%;
-  padding: 0.875rem 1.5rem;
+  height: 50px;
+  padding: 0.75rem 1.25rem;
   font-size: 1rem;
-  line-height: 1.5;
   color: #495057;
   background-color: #fff;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #ccc;
   border-radius: 4px;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  transition: border-color 0.3s;
+  box-sizing: border-box;
 }
 
 .form-control:focus {
+  outline: none;
   border-color: #009688;
-  outline: 0;
-  box-shadow: 0 0 0 0.2rem rgba(0, 150, 136, 0.25);
 }
 
 .button-group {
@@ -76,54 +102,55 @@
 }
 
 .btn {
-  padding: 0.875rem 2rem;
+  height: 50px;
+  padding: 0.75rem 1.25rem;
   font-size: 1rem;
-  line-height: 1.5;
   border-radius: 4px;
-  transition: all 0.3s ease;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  border: none;
+  color: white;
 }
 
 .btn-primary {
   background-color: #009688;
-  border-color: #009688;
-  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #00796b;
 }
 
 .btn-success {
-  background-color: #4CAF50;
-  border-color: #4CAF50;
-  color: white;
+  background-color: #4caf50;
+}
+
+.btn-success:hover {
+  background-color: #388e3c;
 }
 
 .btn-info {
   background-color: #2196F3;
-  border-color: #2196F3;
-  color: white;
 }
 
-.btn:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
+.btn-info:hover {
+  background-color: #1976D2;
 }
 
 .spinner-border {
   width: 3rem;
   height: 3rem;
+  color: #00bcd4;
 }
 
-.text-center {
-  text-align: center;
-}
+@media (max-width: 1024px) {
+  :host {
+    margin-left: 280px;
+  }
 
-.my-4 {
-  margin-top: 1.5rem;
-  margin-bottom: 1.5rem;
+  .content-body {
+    width: calc(100vw - 310px);
+  }
 }
-
-.mt-2 {
-  margin-top: 0.5rem;
-}
-
 
 @media (max-width: 768px) {
   :host {
@@ -132,11 +159,7 @@
 
   .content-body {
     width: 100%;
-    padding: 15px;
-  }
-
-  .form-group {
-    margin-bottom: 15px;
+    padding: 20px;
   }
 
   .button-group {
@@ -150,28 +173,23 @@
 }
 
 @media (max-width: 480px) {
-  :host {
-    margin-top: 185px;
-    margin-left: 0;
-    padding-top: 10px;
-  }
-
-  .content-header {
-    padding: 10px;
-    margin-bottom: 10px;
-  }
-
-  .content-body {
-    padding: 10px;
-  }
-
-  .form-control {
-    padding: 0.75rem 1rem;
-    font-size: 0.9rem;
-  }
-
+  .form-control,
   .btn {
-    padding: 0.75rem 1.5rem;
-    font-size: 0.9rem;
+    height: 40px;
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .content-header h2 {
+    font-size: 20px;
+  }
+
+  .patient-details {
+    padding: 15px;
+  }
+
+  .form-group label {
+    font-size: 14px;
+    margin-bottom: 8px;
   }
 }

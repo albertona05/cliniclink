@@ -12,7 +12,16 @@ const app = express();
 app.use(express.json());
 app.use(body_parser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
-app.use(cors());
+
+
+const corsOptions = {
+  origin: 'http://localhost:4200',  // Permitimos solo esta dirección IP
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Métodos que puedes permitir
+  allowedHeaders: ['Content-Type', 'Authorization'],  // Cabeceras permitidas
+};
+
+app.use(cors(corsOptions))
+
 
 // Importación centralizada de modelos y asociaciones
 const { sequelize, setupAssociations } = require('./models');
