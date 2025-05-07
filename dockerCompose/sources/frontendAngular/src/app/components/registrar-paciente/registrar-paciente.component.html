@@ -11,7 +11,7 @@
 
       <!-- Información Personal -->
       <div class="form-group">
-        <label>DNI</label>
+        <label>DNI:</label>
         <input type="text" class="form-control" formControlName="dni" [ngClass]="{ 'is-invalid': submitted && f['dni'].errors }">
         <div *ngIf="submitted && f['dni'].errors" class="validation-error">
           {{ getErrorMessage('dni') }}
@@ -19,7 +19,7 @@
       </div>
 
       <div class="form-group">
-        <label>Nombre Completo</label>
+        <label>Nombre Completo:</label>
         <input type="text" class="form-control" formControlName="nombre" [ngClass]="{ 'is-invalid': submitted && f['nombre'].errors }">
         <div *ngIf="submitted && f['nombre'].errors" class="validation-error">
           {{ getErrorMessage('nombre') }}
@@ -27,7 +27,7 @@
       </div>
 
       <div class="form-group">
-        <label>Correo Electrónico</label>
+        <label>Email:</label>
         <input type="email" class="form-control" formControlName="email" [ngClass]="{ 'is-invalid': submitted && f['email'].errors }">
         <div *ngIf="submitted && f['email'].errors" class="validation-error">
           {{ getErrorMessage('email') }}
@@ -35,7 +35,7 @@
       </div>
 
       <div class="form-group">
-        <label>Teléfono</label>
+        <label>Teléfono:</label>
         <input type="tel" class="form-control" formControlName="telefono" [ngClass]="{ 'is-invalid': submitted && f['telefono'].errors }">
         <div *ngIf="submitted && f['telefono'].errors" class="validation-error">
           {{ getErrorMessage('telefono') }}
@@ -43,7 +43,7 @@
       </div>
 
       <div class="form-group">
-        <label>Dirección</label>
+        <label>Dirección:</label>
         <input type="text" class="form-control" formControlName="direccion" [ngClass]="{ 'is-invalid': submitted && f['direccion'].errors }">
         <div *ngIf="submitted && f['direccion'].errors" class="validation-error">
           {{ getErrorMessage('direccion') }}
@@ -51,7 +51,7 @@
       </div>
 
       <div class="form-group">
-        <label>Fecha de Nacimiento</label>
+        <label>Fecha de Nacimiento:</label>
         <input type="date" class="form-control" formControlName="fechaNacimiento" [ngClass]="{ 'is-invalid': submitted && f['fechaNacimiento'].errors }">
         <div *ngIf="submitted && f['fechaNacimiento'].errors" class="validation-error">
           {{ getErrorMessage('fechaNacimiento') }}
