@@ -1,8 +1,8 @@
-# Usa Node 18 con Angular CLI compatible con Angular 15.2.10
+# Usa Node 20 con Angular CLI compatible con Angular 19
 FROM node:20
 
-# Instala Angular CLI globalmente (versión específica compatible con Angular 15.2.10)
-RUN npm install -g @angular/cli
+# Instala Angular CLI globalmente (versión compatible con Angular 19)
+RUN npm install -g @angular/cli@19
 
 # Establece el directorio de trabajo
 WORKDIR /app

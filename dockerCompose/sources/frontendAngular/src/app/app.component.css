@@ -7,7 +7,9 @@ body {
     font-family: Arial, sans-serif;
   }
   
-  
+  .content-container {
+    padding: 0px;
+  }
   
   .container {
     width: 100%;

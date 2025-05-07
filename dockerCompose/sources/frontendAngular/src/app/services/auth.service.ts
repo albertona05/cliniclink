@@ -40,17 +40,15 @@ export class AuthService {
           const expirationTime = payload.exp * 1000; // Convertir a milisegundos
           const currentTime = Date.now();
           
-          // Si el token está próximo a expirar (menos de 1 hora), hacer logout
+          // Si el token está próximo a expirar (menos de 1 hora), solo retornar null
           if (expirationTime - currentTime < 3600000) {
-            console.log('AuthService: Token próximo a expirar, realizando logout');
-            this.logout();
+            console.log('AuthService: Token próximo a expirar');
             return null;
           }
         }
         return token;
       } catch (error) {
         console.error('AuthService: Error al verificar token:', error);
-        this.logout();
         return null;
       }
     }

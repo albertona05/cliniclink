@@ -5,6 +5,10 @@
   overflow: hidden;
 }
 
+.content-container {
+  padding: 0px;
+}
+
 /* Media queries para responsividad */
 @media (max-width: 480px) {
   .layout-container {
