@@ -29,7 +29,7 @@ export class RegistrarPacienteComponent implements OnInit {
   ngOnInit(): void {
     this.registroForm = this.formBuilder.group({
       dni: ['', [Validators.required, Validators.pattern('^[0-9]{8}[A-Za-z]$')]],
-      nombreCompleto: ['', [Validators.required, Validators.minLength(2)]],
+      nombre: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
       telefono: ['', [Validators.required, Validators.pattern('^[0-9]{9}$')]],
       direccion: ['', Validators.required],
@@ -60,10 +60,18 @@ export class RegistrarPacienteComponent implements OnInit {
     this.pacienteService.registrarPaciente(this.registroForm.value).subscribe(
       (response) => {
         this.mensajeExito = 'Paciente registrado exitosamente';
-        this.router.navigate(['/buscar-paciente']);
+        this.loading = false;
+        // Resetear el formulario después de un registro exitoso
+        this.registroForm.reset();
+        this.submitted = false;
       },
       (error) => {
-        this.mensajeError = 'Error al registrar el paciente';
+        if (error.mensaje) {
+          console.log(error)
+          this.mensajeError = error.mensaje;
+        } else {
+          this.mensajeError = 'Error al registrar el paciente';
+        }
         this.loading = false;
       }
     );

@@ -7,7 +7,6 @@
   <div class="registration-form">
     <form [formGroup]="registroForm" (ngSubmit)="onSubmit()">
       <div *ngIf="mensajeExito" class="alert alert-success">{{ mensajeExito }}</div>
-      <div *ngIf="mensajeError" class="alert alert-danger">{{ mensajeError }}</div>
 
       <!-- Información Personal -->
       <div class="form-group">
@@ -20,9 +19,9 @@
 
       <div class="form-group">
         <label>Nombre Completo</label>
-        <input type="text" class="form-control" formControlName="nombreCompleto" [ngClass]="{ 'is-invalid': submitted && f['nombreCompleto'].errors }">
-        <div *ngIf="submitted && f['nombreCompleto'].errors" class="validation-error">
-          {{ getErrorMessage('nombreCompleto') }}
+        <input type="text" class="form-control" formControlName="nombre" [ngClass]="{ 'is-invalid': submitted && f['nombre'].errors }">
+        <div *ngIf="submitted && f['nombre'].errors" class="validation-error">
+          {{ getErrorMessage('nombre') }}
         </div>
       </div>
 
@@ -58,7 +57,10 @@
         </div>
       </div>
 
-      <!-- Información Médica -->
+      <!-- Mensajes de error justo encima del botón -->
+      <div *ngIf="mensajeError" class="alert alert-danger mb-3">{{ mensajeError }}</div>
+      
+      <!-- Botón de registro -->
       <div class="button-group">
         <button type="submit" class="btn btn-primary" [disabled]="loading">
           <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
