@@ -19,7 +19,6 @@ body {
 .content-header {
   padding: 20px;
   text-align: center;
-  margin-bottom: 30px;
   background-color: #009688;
   color: #fff;
 }
@@ -131,9 +130,7 @@ body {
 }
 
 .patient-info {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  display: inline-block;
   align-items: center;
 }
 

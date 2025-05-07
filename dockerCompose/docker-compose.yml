@@ -26,7 +26,7 @@ services:
         ipv4_address: 192.168.1.2
       red_frontend:
         ipv4_address: 192.168.2.2
-    command: ["wait-for-it.sh", "192.168.1.3:3306", "--timeout=30", "--", "node", "app.js"]
+    command: ["wait-for-it.sh", "192.168.1.3:3306", "--timeout=30", "--", "node", "app.js", "--watch"]
     ports:
       - "3000:3000"
 

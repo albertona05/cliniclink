@@ -4,7 +4,8 @@
 </div>
 
 <div class="content-body">
-  <div class="registration-form">
+  <div class="patient-details">
+
     <form [formGroup]="registroForm" (ngSubmit)="onSubmit()">
       <div *ngIf="mensajeExito" class="alert alert-success">{{ mensajeExito }}</div>
 

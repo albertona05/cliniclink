@@ -34,7 +34,7 @@
     <div *ngIf="pacientes.length > 0 && !cargando" class="patient-list">
       <div class="patient-card" *ngFor="let paciente of pacientes">
         <div class="patient-info">
-          <span class="patient-dni">{{ paciente.dni }}</span>
+          <span class="patient-dni">{{ paciente.dni }} - </span>
           <span class="patient-name">{{ paciente.nombre }}</span>
         </div>
         <div class="patient-actions">

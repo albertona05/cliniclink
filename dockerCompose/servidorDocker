@@ -1,5 +1,3 @@
-# servidorDocker
-
 # Usa Node LTS
 FROM node:20
 
