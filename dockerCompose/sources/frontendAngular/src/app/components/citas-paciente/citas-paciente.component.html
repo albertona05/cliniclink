@@ -1,0 +1,55 @@
+<app-nav></app-nav>
+
+<div class="container">
+  <div class="content-header">
+    <h2>Citas del Paciente</h2>
+  </div>
+
+  <div class="content-body">
+    <div *ngIf="cargando" class="text-center my-4">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="mt-2">Cargando citas...</p>
+    </div>
+
+    <div *ngIf="mensajeError" class="alert alert-danger">
+      {{ mensajeError }}
+    </div>
+
+    <div *ngIf="mensajeExito" class="alert alert-success">
+      {{ mensajeExito }}
+    </div>
+
+    <div *ngIf="citas.length > 0 && !cargando" class="citas-list">
+      <div class="cita-card" *ngFor="let cita of citas">
+        <div class="cita-info">
+          <div class="cita-header">
+            <span class="cita-fecha">{{ formatearFecha(cita.fecha) }}</span>
+            <span class="cita-hora">{{ cita.hora.substring(0,5) }}</span>
+          </div>
+          <div class="cita-details">
+            <span class="cita-especialidad">Especialidad: {{ cita.especialidad }}</span>
+            <span [class.text-danger]="cita.estado === 'cancelado'">Estado: {{ cita.estado }}</span>
+          </div>
+        </div>
+        <div class="cita-actions">
+          <button *ngIf="esFechaFutura(cita.fecha, cita.hora) && cita.estado !== 'cancelado'" 
+                  class="btn btn-danger" 
+                  (click)="anularCita(cita.id)">
+            Anular
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="citas.length === 0 && !cargando && !mensajeError" class="alert alert-info">
+      No hay citas registradas para este paciente.
+    </div>
+    <div class="actions-container mt-4">
+      <button class="btn btn-secondary" (click)="volver()">
+        <i class="fas fa-arrow-left"></i> Volver
+      </button>
+    </div>
+  </div>
+</div>

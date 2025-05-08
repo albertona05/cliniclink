@@ -9,6 +9,7 @@ router.use(authMiddleware.verificarToken);
 // Rutas para gestión de citas
 router.post('/citas', pacienteController.crearCita);
 router.get('/citas/:id', pacienteController.obtenerCitasPaciente);
+router.put('/citas/:id', pacienteController.anularCita);
 
 // Rutas para gestión de facturas
 router.get('/facturas/:id', pacienteController.obtenerFacturasPaciente);

@@ -23,6 +23,7 @@ const obtenerCitasPaciente = async (req, res) => {
             where: { id_paciente: id },
             include: [{
                 model: Medico,
+                as: 'medico',
                 attributes: ['especialidad']
             }],
             attributes: ['id', 'fecha', 'hora', 'estado']
@@ -33,7 +34,7 @@ const obtenerCitasPaciente = async (req, res) => {
             fecha: cita.fecha,
             hora: cita.hora,
             estado: cita.estado,
-            especialidad: cita.Medico.especialidad
+            especialidad: cita.medico.especialidad
         })));
     } catch (error) {
         console.error('Error al obtener citas:', error);
@@ -202,9 +203,39 @@ const obtenerHistorialPaciente = async (req, res) => {
     }
 };
 
+// Anular una cita
+async function anularCita(req, res) {
+    try {
+        const id_cita = parseInt(req.params.id);
+
+        // Validar ID de la cita
+        if (!id_cita || isNaN(id_cita)) {
+            return res.status(400).json({
+                success: false,
+                mensaje: 'ID de cita inválido'
+            });
+        }
+
+        const cita = await Cita.findByPk(id_cita);
+        if (!cita) {
+            return res.status(404).json({ error: 'Cita no encontrada' });
+        }
+
+        await cita.update({ estado: 'cancelado' });
+        res.json({ mensaje: 'Cita anulada exitosamente' });
+    } catch (error) {
+        console.error('Error al anular cita:', error);
+        res.status(500).json({
+            success: false,
+            mensaje: 'Error al anular la cita'
+        });
+    }
+}
+
 module.exports = {
     obtenerCitasPaciente,
     obtenerFacturasPaciente,
     crearCita,
+    anularCita,
     obtenerHistorialPaciente
 };

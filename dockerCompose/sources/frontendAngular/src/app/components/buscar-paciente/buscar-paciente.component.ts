@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { NavComponent } from '../nav/nav.component';
 import { Router } from '@angular/router';
+import { Bootstrap } from 'bootstrap';
 import { catchError, finalize, of } from 'rxjs';
 
 @Component({

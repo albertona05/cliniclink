@@ -9,9 +9,6 @@ router.use(authMiddleware.verificarToken);
 // Obtener citas del día
 router.post('/citas-dia', medicoController.obtenerCitasDia);
 
-// Anular cita
-router.post('/anular-cita', medicoController.anularCita);
-
 // Finalizar cita y generar documentos
 router.post('/finalizar-cita', medicoController.finalizarCita);
 

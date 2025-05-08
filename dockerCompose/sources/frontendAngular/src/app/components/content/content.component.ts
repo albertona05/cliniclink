@@ -10,6 +10,5 @@ import { RouterOutlet } from '@angular/router';
   styleUrls: ['./content.component.css']
 })
 export class ContentComponent {
-  // Este componente servirá como contenedor para el contenido dinámico
-  // que cambiará según la opción seleccionada en el nav
+  
 }

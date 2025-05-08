@@ -1,0 +1,195 @@
+/* === General === */
+body {
+  background-color: #e0e0e0;
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+:host {
+  display: block;
+  margin-left: 350px; /* Esto es para pantallas grandes */
+  min-height: 100vh;
+  background-color: #e0e0e0;
+  padding-top: 0;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* === Header === */
+.content-header {
+  padding: 20px;
+  text-align: center;
+  background-color: #009688;
+  color: #fff;
+}
+
+.content-header h2 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+}
+
+/* === Body === */
+.content-body {
+  padding: 30px;
+  width: calc(100vw - 380px); /* El contenido se ajusta al lado del nav */
+  margin: 0 auto;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* === Alerts === */
+.alert {
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 20px;
+  max-width: 95%;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 0.95rem;
+}
+
+.alert-danger {
+  background-color: #ffebee;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+}
+
+.alert-info {
+  background-color: #e3f2fd;
+  color: #0277bd;
+  border: 1px solid #bbdefb;
+}
+
+/* === Facturas === */
+.facturas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 95%;
+}
+
+.factura-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+  padding: 18px 22px;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.3s;
+}
+
+.factura-card:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.factura-info {
+  display: inline-block;
+  align-items: center;
+}
+
+.factura-fecha,
+.factura-monto {
+  color: #333;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.factura-estado {
+  margin-left: 10px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.estado-pagado {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.estado-pendiente {
+  background-color: #fff8e1;
+  color: #ff8f00;
+}
+
+.factura-actions .btn {
+  background-color: #4caf50;
+  border: none;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 1rem;
+}
+
+.factura-actions .btn:hover {
+  background-color: #388e3c;
+}
+
+/* Botón volver */
+.button-container {
+  margin-top: 20px;
+}
+
+.btn-secondary {
+  background-color: #757575;
+  border: none;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-secondary:hover {
+  background-color: #616161;
+}
+
+/* === Spinner === */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+  color: #00bcd4;
+}
+
+/* === Responsive === */
+@media (max-width: 1024px) {
+  :host {
+    margin-left: 280px;
+  }
+
+  .content-body {
+    width: calc(100vw - 310px);
+  }
+}
+
+@media (max-width: 768px) {
+  :host {
+    margin-left: 0;
+  }
+
+  .content-body {
+    width: 100%;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .factura-info {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .factura-fecha {
+    margin-bottom: 5px;
+  }
+
+  .content-header h2 {
+    font-size: 20px;
+  }
+}

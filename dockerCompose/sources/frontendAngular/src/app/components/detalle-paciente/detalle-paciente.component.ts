@@ -69,7 +69,7 @@ export class DetallePacienteComponent implements OnInit {
   }
 
   verCitas() {
-    this.router.navigate(['/citas', this.paciente.id]);
+    this.router.navigate(['/citas-paciente', this.paciente.id]);
   }
 
   verFacturas() {
@@ -81,8 +81,6 @@ export class DetallePacienteComponent implements OnInit {
     this.mensajeError = '';
     this.mensajeExito = '';
 
-    // En Angular 19, es mejor usar el interceptor para manejar los tokens
-    // y usar el patrón pipe para manejar los observables
     this.http.put<any>(`http://localhost:3000/pacientes/${this.paciente.id}`, this.paciente)
       .pipe(
         catchError(error => {

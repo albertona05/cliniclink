@@ -75,39 +75,6 @@ async function obtenerCitasDia(req, res) {
     }
 }
 
-// Anular una cita
-async function anularCita(req, res) {
-    try {
-        const id_cita = parseInt(req.body.id_cita);
-
-        // Validar ID de la cita
-        if (!id_cita || isNaN(id_cita)) {
-            return res.status(400).json({
-                success: false,
-                mensaje: 'ID de cita inválido'
-            });
-        }
-
-        if (!id_cita) {
-            return res.status(400).json({ error: 'ID de la cita es requerido' });
-        }
-
-        const cita = await Cita.findByPk(id_cita);
-        if (!cita) {
-            return res.status(404).json({ error: 'Cita no encontrada' });
-        }
-
-        await cita.update({ estado: 'cancelado' });
-        res.json({ mensaje: 'Cita anulada exitosamente' });
-    } catch (error) {
-        console.error('Error al anular cita:', error);
-        res.status(500).json({
-            success: false,
-            mensaje: 'Error al anular la cita'
-        });
-    }
-}
-
 // Generar PDF de receta médica
 async function generarRecetaPDF(datos) {
     return new Promise((resolve, reject) => {
@@ -268,6 +235,5 @@ async function finalizarCita(req, res) {
 
 module.exports = {
     obtenerCitasDia,
-    anularCita,
     finalizarCita
 };

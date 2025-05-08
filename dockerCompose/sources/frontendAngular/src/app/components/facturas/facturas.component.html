@@ -1,0 +1,45 @@
+<app-nav></app-nav>
+
+<div class="container">
+  <div class="content-header">
+    <h2>Facturas del Paciente</h2>
+  </div>
+
+  <div class="content-body">
+    <!-- Indicador de carga -->
+    <div *ngIf="cargando" class="text-center my-4">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="mt-2">Cargando facturas...</p>
+    </div>
+
+    <!-- Mensaje de error -->
+    <div *ngIf="mensajeError" class="alert alert-danger">
+      {{ mensajeError }}
+    </div>
+
+    <!-- Lista de facturas -->
+    <div *ngIf="facturas.length > 0 && !cargando" class="facturas-list">
+      <div class="factura-card" *ngFor="let factura of facturas">
+        <div class="factura-info">
+          <span class="factura-fecha">{{ formatearFecha(factura.fecha) }} - </span>
+          <span class="factura-monto">{{ factura.monto }}€</span>
+        </div>
+        <div class="factura-actions">
+          <button class="btn" (click)="descargarFactura(factura.id)">Descargar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensaje cuando no hay facturas -->
+    <div *ngIf="facturas.length === 0 && !cargando && !mensajeError" class="alert alert-info">
+      No hay facturas disponibles para este paciente.
+    </div>
+
+    <!-- Botón para volver -->
+    <div class="button-container">
+      <button class="btn btn-secondary" (click)="volver()">Volver</button>
+    </div>
+  </div>
+</div>
