@@ -1,0 +1,79 @@
+<app-nav></app-nav>
+
+<div class="container-fluid px-4 mt-3">
+  <div class="content-header rounded p-4 mb-4" style="background-color: #009688; color: white;">
+    <h2 class="m-0">Gestionar Cita</h2>
+  </div>
+
+  <div class="content-body p-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-light">
+        <h4 class="card-title mb-0">Información de la Cita</h4>
+      </div>
+      <div class="card-body">
+        <form [formGroup]="citaForm" (ngSubmit)="onSubmit()">
+          <div *ngIf="mensajeExito" class="alert alert-success">{{ mensajeExito }}</div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <div class="form-group">
+                <label>Fecha:</label>
+                <input type="date" class="form-control" formControlName="fecha" [ngClass]="{ 'is-invalid': submitted && f['fecha'].errors }">
+                <div *ngIf="submitted && f['fecha'].errors" class="invalid-feedback">
+                  {{ getErrorMessage('fecha') }}
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="form-group">
+                <label>Médico:</label>
+                <select class="form-control" formControlName="medico" [ngClass]="{ 'is-invalid': submitted && f['medico'].errors }">
+                  <option value="">Seleccione un médico</option>
+                  <option *ngFor="let medico of medicos" [value]="medico.id">{{ medico.nombre }} - {{ medico.especialidad }}</option>
+                </select>
+                <div *ngIf="submitted && f['medico'].errors" class="invalid-feedback">
+                  {{ getErrorMessage('medico') }}
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="form-group">
+                <label>Paciente:</label>
+                <input type="text" class="form-control" formControlName="paciente" [ngClass]="{ 'is-invalid': submitted && f['paciente'].errors }">
+                <div *ngIf="submitted && f['paciente'].errors" class="invalid-feedback">
+                  {{ getErrorMessage('paciente') }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección de Horas Disponibles -->
+          <div class="mt-4">
+            <h5>Horas Disponibles</h5>
+            <div class="d-flex flex-wrap gap-2 mt-3">
+              <button type="button" *ngFor="let hora of horasDisponibles"
+                      class="btn btn-outline-primary"
+                      [class.active]="horaSeleccionada === hora"
+                      (click)="seleccionarHora(hora)">
+                {{ hora }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Mensajes de error -->
+          <div *ngIf="mensajeError" class="alert alert-danger mb-3 mt-4">{{ mensajeError }}</div>
+          
+          <!-- Botón de reservar -->
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+            <button type="submit" class="btn btn-primary" [disabled]="loading || !horaSeleccionada">
+              <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+              Reservar Cita
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

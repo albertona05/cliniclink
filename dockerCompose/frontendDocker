@@ -13,6 +13,9 @@ COPY ./sources/frontendAngular/package*.json ./
 # Instala dependencias
 RUN npm install
 
+# Crear directorio de cache de Angular y establecer permisos
+RUN mkdir -p /app/.angular/cache && chmod -R 777 /app/.angular
+
 # Exponer el puerto para desarrollo
 #EXPOSE 4200
 

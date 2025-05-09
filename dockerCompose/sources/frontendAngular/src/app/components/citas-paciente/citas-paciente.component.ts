@@ -92,6 +92,7 @@ export class CitasPacienteComponent implements OnInit {
     }
   }
   
+
   anularCita(idCita: string): void {
     if (confirm('¿Está seguro que desea anular esta cita?')) {
       this.cargando = true;

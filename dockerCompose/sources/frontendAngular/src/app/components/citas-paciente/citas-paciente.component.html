@@ -1,11 +1,12 @@
 <app-nav></app-nav>
 
-<div class="container mt-3">
-  <div class="content-header rounded p-3 mb-4" style="background-color: #009688; color: white;">
+<div class="container-fluid px-4 mt-3">
+  <div class="content-header rounded p-4 mb-4" style="background-color: #009688; color: white;">
     <h2 class="m-0">Citas del Paciente</h2>
   </div>
 
-  <div class="content-body p-3">
+  <div class="content-body p-4">
+    <!-- Indicador de carga -->
     <div *ngIf="cargando" class="text-center my-4">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Cargando...</span>
@@ -13,6 +14,7 @@
       <p class="mt-2">Cargando citas...</p>
     </div>
 
+    <!-- Mensajes de alerta -->
     <div *ngIf="mensajeError" class="alert alert-danger">
       {{ mensajeError }}
     </div>
@@ -21,36 +23,46 @@
       {{ mensajeExito }}
     </div>
 
-    <div *ngIf="citas.length > 0 && !cargando" class="citas-list row">
-      <div class="col-12 mb-3" *ngFor="let cita of citas">
-          <div class="cita-card card shadow-sm">
-        <div class="cita-info card-body">
-          <div class="cita-header d-flex gap-3">
-            <span class="cita-fecha fw-bold">{{ formatearFecha(cita.fecha) }}</span>
-            <span class="cita-hora text-primary fw-bold">{{ cita.hora.substring(0,5) }}</span>
+    <!-- Lista de citas -->
+    <div *ngIf="citas.length > 0 && !cargando" class="row">
+      <div class="col-12 col-md-6 col-lg-4 mb-4" *ngFor="let cita of citas">
+        <div class="card shadow-sm h-100">
+          <div class="card-header bg-light">
+            <h5 class="card-title mb-0 d-flex justify-content-between align-items-center">
+              <span>{{ formatearFecha(cita.fecha) }}</span>
+              <span class="badge" [ngClass]="{
+                'bg-success': cita.estado === 'confirmado',
+                'bg-danger': cita.estado === 'cancelado',
+                'bg-warning': cita.estado === 'pendiente'
+              }">{{ cita.estado }}</span>
+            </h5>
           </div>
-          <div class="cita-details d-flex flex-column gap-1">
-            <span class="cita-especialidad">Especialidad: {{ cita.especialidad }}</span>
-            <span [class.text-danger]="cita.estado === 'cancelado'">Estado: {{ cita.estado }}</span>
+          <div class="card-body">
+            <div class="cita-details">
+              <p class="mb-2"><i class="bi bi-clock me-2"></i>{{ cita.hora.substring(0,5) }}</p>
+              <p class="mb-2"><i class="bi bi-hospital me-2"></i>{{ cita.especialidad }}</p>
+            </div>
           </div>
-        </div>
-        <div class="cita-actions card-footer bg-transparent border-top-0 text-end">
-          <button *ngIf="esFechaFutura(cita.fecha, cita.hora) && cita.estado !== 'cancelado'" 
-                  class="btn btn-danger" 
-                  (click)="anularCita(cita.id)">
-            Anular
-          </button>
+          <div class="card-footer bg-transparent border-top-0">
+            <div class="d-flex justify-content-end gap-2">
+              <button *ngIf="cita.estado !== 'cancelado'" class="btn btn-outline-danger btn-sm" (click)="anularCita(cita.id)">
+                <i class="bi bi-x-circle me-1"></i>Cancelar
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div *ngIf="citas.length === 0 && !cargando && !mensajeError" class="alert alert-info">
-      No hay citas registradas para este paciente.
+    <!-- Mensaje cuando no hay citas -->
+    <div *ngIf="citas.length === 0 && !cargando" class="alert alert-info">
+      <i class="bi bi-info-circle me-2"></i>No hay citas programadas.
     </div>
-    <div class="actions-container d-flex mt-4">
-      <button class="btn btn-secondary d-flex align-items-center gap-2" (click)="volver()">
-        <i class="fas fa-arrow-left"></i> Volver
+
+    <!-- Botón para volver -->
+    <div class="mt-4">
+      <button class="btn btn-secondary" (click)="volver()">
+        <i class="bi bi-arrow-left me-1"></i>Volver
       </button>
     </div>
   </div>

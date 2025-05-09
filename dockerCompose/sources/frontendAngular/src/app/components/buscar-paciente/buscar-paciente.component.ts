@@ -5,7 +5,6 @@ import { HttpClient } from '@angular/common/http';
 import { NavComponent } from '../nav/nav.component';
 import { Router } from '@angular/router';
 import { catchError, finalize, of } from 'rxjs';
-// Bootstrap CSS y JS ya están importados globalmente en angular.json
 
 @Component({
   selector: 'app-buscar-paciente',

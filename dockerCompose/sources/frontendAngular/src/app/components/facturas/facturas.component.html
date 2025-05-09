@@ -1,11 +1,11 @@
 <app-nav></app-nav>
 
-<div class="container mt-3">
-  <div class="content-header rounded p-3 mb-4" style="background-color: #009688; color: white;">
+<div class="container-fluid px-4 mt-3">
+  <div class="content-header rounded p-4 mb-4" style="background-color: #009688; color: white;">
     <h2 class="m-0">Facturas del Paciente</h2>
   </div>
 
-  <div class="content-body p-3">
+  <div class="content-body p-4">
     <!-- Indicador de carga -->
     <div *ngIf="cargando" class="text-center my-4">
       <div class="spinner-border text-primary" role="status">
@@ -21,16 +21,20 @@
 
     <!-- Lista de facturas -->
     <div *ngIf="facturas.length > 0 && !cargando" class="row">
-      <div class="col-12 col-md-6 col-lg-4 mb-3" *ngFor="let factura of facturas">
+      <div class="col-12 col-md-6 col-lg-4 mb-4" *ngFor="let factura of facturas">
         <div class="card shadow-sm h-100">
-          <div class="card-body">
-            <h5 class="card-title">Factura</h5>
+          <div class="card-header bg-light">
+            <h5 class="card-title mb-0 d-flex justify-content-between align-items-center">
+              <span>Factura #{{ factura.id }}</span>
+              <span class="badge bg-success">{{ factura.monto }}€</span>
+            </h5>
+          </div>
+          <div class="card-body d-flex flex-column">
             <p class="card-text">
-              <i class="fas fa-calendar me-2"></i>{{ formatearFecha(factura.fecha) }}<br>
-              <i class="fas fa-euro-sign me-2"></i>{{ factura.monto }}€
+              <i class="fas fa-calendar me-2"></i>{{ formatearFecha(factura.fecha) }}
             </p>
-            <div class="d-grid">
-              <button class="btn btn-primary" (click)="descargarFactura(factura.id)">
+            <div class="mt-auto">
+              <button class="btn btn-primary w-100" (click)="descargarFactura(factura.id)">
                 <i class="fas fa-download me-1"></i> Descargar
               </button>
             </div>
@@ -47,7 +51,7 @@
     <!-- Botón para volver -->
     <div class="mt-4">
       <button class="btn btn-secondary" (click)="volver()">
-        <i class="fas fa-arrow-left me-1"></i> Volver
+        <i class="bi bi-arrow-left me-1"></i>Volver
       </button>
     </div>
   </div>

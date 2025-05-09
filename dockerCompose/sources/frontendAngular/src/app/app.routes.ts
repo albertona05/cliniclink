@@ -5,6 +5,7 @@ import { DetallePacienteComponent } from './components/detalle-paciente/detalle-
 import { RegistrarPacienteComponent } from './components/registrar-paciente/registrar-paciente.component';
 import { CitasPacienteComponent } from './components/citas-paciente/citas-paciente.component';
 import { FacturasComponent } from './components/facturas/facturas.component';
+import { GestionarCitaComponent } from './components/gestionar-cita/gestionar-cita.component';
 import { inject } from '@angular/core';
 import { AuthGuard } from './guards/auth.guard';
 
@@ -34,6 +35,11 @@ export const routes: Routes = [
   {
     path: 'facturas/:id',
     component: FacturasComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'gestionar-citas',
+    component: GestionarCitaComponent,
     canActivate: [AuthGuard]
   },
   { path: 'logout', redirectTo: 'login', pathMatch: 'full' }
