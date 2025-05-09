@@ -1,70 +1,109 @@
 <app-nav></app-nav>
 
-<div class="content-header" style="background-color: #009688; color: white;">
-  <h2>Detalles del Paciente</h2>
-</div>
-
-<div class="content-body">
-  <!-- Indicador de carga -->
-  <div *ngIf="cargando" class="text-center my-4">
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Cargando...</span>
-    </div>
-    <p class="mt-2">Cargando datos del paciente...</p>
+<div class="container mt-3">
+  <div class="content-header rounded p-3 mb-4" style="background-color: #009688; color: white;">
+    <h2 class="m-0">Detalles del Paciente</h2>
   </div>
 
-  <!-- Formulario de detalles del paciente -->
-  <div class="patient-details" *ngIf="!cargando">
-    <div class="form-group">
-      <label for="dni">DNI:</label>
-      <input type="text" id="dni" class="form-control" [(ngModel)]="paciente.dni" placeholder="DNI">
+  <div class="content-body p-3">
+    <!-- Indicador de carga -->
+    <div *ngIf="cargando" class="text-center my-4">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="mt-2">Cargando datos del paciente...</p>
     </div>
 
-    <div class="form-group">
-      <label for="nombre">Nombre Completo:</label>
-      <input type="text" id="nombre" class="form-control" [(ngModel)]="paciente.nombre" placeholder="Nombre">
-    </div>
+    <!-- Contenido principal -->
+    <div *ngIf="!cargando" class="row">
+      <!-- Información personal -->
+      <div class="col-12 mb-4">
+        <div class="card shadow-sm">
+          <div class="card-header bg-light">
+            <h4 class="card-title mb-0">Información Personal</h4>
+          </div>
+          <div class="card-body">
+            <div class="patient-info row">
+              <div class="col-md-6 mb-3">
+                <div class="form-group">
+                  <label for="dni">DNI:</label>
+                  <input type="text" id="dni" class="form-control" [(ngModel)]="paciente.dni" placeholder="DNI">
+                </div>
+              </div>
 
-    <div class="form-group">
-      <label for="email">Email:</label>
-      <input type="email" id="email" class="form-control" [(ngModel)]="paciente.email" placeholder="Email">
-    </div>
+              <div class="col-md-6 mb-3">
+                <div class="form-group">
+                  <label for="nombre">Nombre Completo:</label>
+                  <input type="text" id="nombre" class="form-control" [(ngModel)]="paciente.nombre" placeholder="Nombre">
+                </div>
+              </div>
 
-    <div class="form-group">
-      <label for="telefono">Teléfono:</label>
-      <input type="tel" id="telefono" class="form-control" [(ngModel)]="paciente.telefono" placeholder="Teléfono">
-    </div>
+              <div class="col-md-6 mb-3">
+                <div class="form-group">
+                  <label for="fechaNacimiento">Fecha de Nacimiento:</label>
+                  <input type="date" id="fechaNacimiento" class="form-control" [(ngModel)]="paciente.fechaNacimiento">
+                </div>
+              </div>
 
-    <div class="form-group">
-      <label for="direccion">Dirección:</label>
-      <input type="text" id="direccion" class="form-control" [(ngModel)]="paciente.direccion" placeholder="Dirección">
-    </div>
+              <div class="col-md-6 mb-3">
+                <div class="form-group">
+                  <label for="email">Email:</label>
+                  <input type="email" id="email" class="form-control" [(ngModel)]="paciente.email" placeholder="Email">
+                </div>
+              </div>
 
-    <div class="form-group">
-      <label for="fechaNacimiento">Fecha de Nacimiento:</label>
-      <input type="date" id="fechaNacimiento" class="form-control" [(ngModel)]="paciente.fechaNacimiento">
-    </div>
+              <div class="col-md-6 mb-3">
+                <div class="form-group">
+                  <label for="telefono">Teléfono:</label>
+                  <input type="tel" id="telefono" class="form-control" [(ngModel)]="paciente.telefono" placeholder="Teléfono">
+                </div>
+              </div>
 
-    <!-- Mensaje de éxito -->
+              <div class="col-md-6 mb-3">
+                <div class="form-group">
+                  <label for="direccion">Dirección:</label>
+                  <input type="text" id="direccion" class="form-control" [(ngModel)]="paciente.direccion" placeholder="Dirección">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mensajes de alerta -->
     <div *ngIf="mensajeExito" class="alert alert-success">
       {{ mensajeExito }}
     </div>
 
-    <!-- Mensaje de error -->
     <div *ngIf="mensajeError" class="alert alert-danger">
       {{ mensajeError }}
     </div>
 
-    <div class="button-group">
-      <button class="btn btn-primary" (click)="guardarCambios()">
-        Guardar
-      </button>
-      <button class="btn btn-success" (click)="verCitas()">
-        Ver Citas
-      </button>
-      <button class="btn btn-info" (click)="verFacturas()">
-        Ver Facturas
-      </button>
+      <!-- Acciones -->
+      <div class="col-12">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <div class="d-flex flex-wrap gap-2 justify-content-between">
+              <div>
+                <button class="btn btn-primary me-2" (click)="guardarCambios()">
+                  <i class="fas fa-save me-1"></i> Guardar Cambios
+                </button>
+                <button class="btn btn-secondary" (click)="volver()">
+                  <i class="fas fa-arrow-left me-1"></i> Volver
+                </button>
+              </div>
+              <div>
+                <button class="btn btn-success me-2" (click)="verCitas()">
+                  <i class="fas fa-calendar-check me-1"></i> Ver Citas
+                </button>
+                <button class="btn btn-info" (click)="verFacturas()">
+                  <i class="fas fa-file-invoice-dollar me-1"></i> Ver Facturas
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

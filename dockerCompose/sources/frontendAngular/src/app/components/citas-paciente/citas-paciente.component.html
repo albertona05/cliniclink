@@ -1,13 +1,13 @@
 <app-nav></app-nav>
 
-<div class="container">
-  <div class="content-header">
-    <h2>Citas del Paciente</h2>
+<div class="container mt-3">
+  <div class="content-header rounded p-3 mb-4" style="background-color: #009688; color: white;">
+    <h2 class="m-0">Citas del Paciente</h2>
   </div>
 
-  <div class="content-body">
+  <div class="content-body p-3">
     <div *ngIf="cargando" class="text-center my-4">
-      <div class="spinner-border" role="status">
+      <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Cargando...</span>
       </div>
       <p class="mt-2">Cargando citas...</p>
@@ -21,24 +21,26 @@
       {{ mensajeExito }}
     </div>
 
-    <div *ngIf="citas.length > 0 && !cargando" class="citas-list">
-      <div class="cita-card" *ngFor="let cita of citas">
-        <div class="cita-info">
-          <div class="cita-header">
-            <span class="cita-fecha">{{ formatearFecha(cita.fecha) }}</span>
-            <span class="cita-hora">{{ cita.hora.substring(0,5) }}</span>
+    <div *ngIf="citas.length > 0 && !cargando" class="citas-list row">
+      <div class="col-12 mb-3" *ngFor="let cita of citas">
+          <div class="cita-card card shadow-sm">
+        <div class="cita-info card-body">
+          <div class="cita-header d-flex gap-3">
+            <span class="cita-fecha fw-bold">{{ formatearFecha(cita.fecha) }}</span>
+            <span class="cita-hora text-primary fw-bold">{{ cita.hora.substring(0,5) }}</span>
           </div>
-          <div class="cita-details">
+          <div class="cita-details d-flex flex-column gap-1">
             <span class="cita-especialidad">Especialidad: {{ cita.especialidad }}</span>
             <span [class.text-danger]="cita.estado === 'cancelado'">Estado: {{ cita.estado }}</span>
           </div>
         </div>
-        <div class="cita-actions">
+        <div class="cita-actions card-footer bg-transparent border-top-0 text-end">
           <button *ngIf="esFechaFutura(cita.fecha, cita.hora) && cita.estado !== 'cancelado'" 
                   class="btn btn-danger" 
                   (click)="anularCita(cita.id)">
             Anular
           </button>
+          </div>
         </div>
       </div>
     </div>
@@ -46,8 +48,8 @@
     <div *ngIf="citas.length === 0 && !cargando && !mensajeError" class="alert alert-info">
       No hay citas registradas para este paciente.
     </div>
-    <div class="actions-container mt-4">
-      <button class="btn btn-secondary" (click)="volver()">
+    <div class="actions-container d-flex mt-4">
+      <button class="btn btn-secondary d-flex align-items-center gap-2" (click)="volver()">
         <i class="fas fa-arrow-left"></i> Volver
       </button>
     </div>

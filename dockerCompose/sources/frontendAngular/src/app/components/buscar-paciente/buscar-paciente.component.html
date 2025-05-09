@@ -1,50 +1,59 @@
 <app-nav></app-nav>
 
-<div class="container">
-  <div class="content-header">
-    <h2>Buscar Paciente</h2>
+<div class="container mt-3">
+  <div class="content-header rounded p-3 mb-4" style="background-color: #009688; color: white;">
+    <h2 class="m-0">Buscar Paciente</h2>
   </div>
 
-  <div class="content-body">
-    <div class="search-container">
-      <div class="input-group">
-        <input
-          type="text"
-          class="form-control"
-          placeholder="DNI o nombre"
-          [(ngModel)]="terminoBusqueda"
-        />
-        <button class="btn" type="button" (click)="buscarPaciente()">
-          Buscar
-        </button>
+  <div class="content-body p-3">
+    <!-- Barra de búsqueda -->
+    <div class="card shadow-sm mb-4">
+        <div class="input-group">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Buscar por DNI o nombre"
+            [(ngModel)]="terminoBusqueda"
+          />
+          <button class="btn btn-primary" type="button" (click)="buscarPaciente()">
+            <i class="fas fa-search me-1"></i> Buscar
+          </button>
       </div>
     </div>
 
+    <!-- Indicador de carga -->
     <div *ngIf="cargando" class="text-center my-4">
-      <div class="spinner-border" role="status">
+      <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Cargando...</span>
       </div>
       <p class="mt-2">Buscando pacientes...</p>
     </div>
 
+    <!-- Mensaje de error -->
     <div *ngIf="mensajeError" class="alert alert-danger">
       {{ mensajeError }}
     </div>
 
-    <div *ngIf="pacientes.length > 0 && !cargando" class="patient-list">
-      <div class="patient-card" *ngFor="let paciente of pacientes">
-        <div class="patient-info">
-          <span class="patient-dni">{{ paciente.dni }} - </span>
-          <span class="patient-name">{{ paciente.nombre }}</span>
-        </div>
-        <div class="patient-actions">
-          <button class="btn" (click)="verDetallesPaciente(paciente.id)">Ver más</button>
+    <!-- Lista de pacientes -->
+    <div *ngIf="pacientes.length > 0 && !cargando" class="row">
+      <div class="col-12 col-md-6 col-lg-4 mb-3" *ngFor="let paciente of pacientes">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="card-title">{{ paciente.nombre }}</h5>
+            <p class="card-text text-muted mb-3">DNI: {{ paciente.dni }}</p>
+            <div class="d-grid">
+              <button class="btn btn-primary" (click)="verDetallesPaciente(paciente.id)">
+                <i class="fas fa-eye me-1"></i> Ver Detalles
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
+    <!-- Mensaje cuando no hay resultados -->
     <div *ngIf="pacientes.length === 0 && !cargando && !mensajeError" class="alert alert-info">
-      No se encontraron pacientes que coincidan con la búsqueda.
+      No se encontraron pacientes con esos criterios.
     </div>
   </div>
 </div>
