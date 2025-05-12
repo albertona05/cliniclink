@@ -36,7 +36,7 @@ sequelize.authenticate()
   });
 
 // Sincronizar tablas y asociaciones
-sequelize.sync({ alter: true })
+sequelize.sync({ alter: false })
   .then(() => {
     console.log('Se han creado las tablas correctamente');
   })

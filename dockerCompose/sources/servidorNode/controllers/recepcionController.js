@@ -286,122 +286,98 @@ const registrarPaciente = async (req, res) => {
 
 // Crear nueva cita
 const crearCita = async (req, res) => {
-    console.log('=== INICIO: Creación de nueva cita ===');
-    console.log('Datos recibidos:', JSON.stringify(req.body, null, 2));
-    
     let t;
     try {
         t = await sequelize.transaction();
-        console.log('Transacción iniciada correctamente');
-        
         const { fecha, hora, id_medico, dni_paciente } = req.body;
-        console.log('Datos extraídos del body:', { fecha, hora, id_medico, dni_paciente });
+        console.log('Datos recibidos:', { fecha, hora, id_medico, dni_paciente });
+        
+        // Sanitizar y validar datos
+        const fechaSanitizada = sanitizarInput(fecha);
+        const horaSanitizada = sanitizarInput(hora);
+        const idMedicoSanitizado = id_medico ? Number(id_medico) : null;
+        const dniPacienteSanitizado = sanitizarInput(dni_paciente);
 
         // Validar datos requeridos
-        if (!fecha || !hora || !id_medico || !dni_paciente) {
-            console.log('Error: Campos vacíos detectados', { 
-                fecha: !!fecha, 
-                hora: !!hora, 
-                id_medico: !!id_medico, 
-                dni_paciente: !!dni_paciente 
+        if (!fechaSanitizada || !horaSanitizada || !idMedicoSanitizado || !dniPacienteSanitizado) {
+            await t.rollback();
+            return res.status(400).json({ 
+                success: false,
+                mensaje: 'Todos los campos son obligatorios' 
             });
-            await t.rollback();
-            console.log('Transacción cancelada: campos vacíos');
-            return res.status(400).json({ mensaje: 'Todos los campos son obligatorios' });
         }
-        console.log('Validación de campos vacíos: OK');
 
-        // Buscar paciente por DNI
-        console.log('Buscando paciente con DNI:', dni_paciente);
-        const paciente = await Paciente.findOne({
-            where: { dni: dni_paciente },
-            transaction: t
-        });
-
-        if (!paciente) {
-            console.log('Paciente no encontrado con DNI:', dni_paciente);
+        // Validar formato de DNI
+        if (!/^\d{8}[A-Za-z]$/.test(dniPacienteSanitizado)) {
             await t.rollback();
-            console.log('Transacción cancelada: paciente no encontrado');
-            return res.status(404).json({ mensaje: 'Paciente no encontrado' });
+            return res.status(400).json({ 
+                success: false,
+                mensaje: 'El formato del DNI no es válido. Debe contener 8 dígitos seguidos de una letra' 
+            });
         }
-        console.log('Paciente encontrado con ID:', paciente.id);
 
-        // Verificar si el médico existe
-        console.log('Verificando existencia del médico con ID:', id_medico);
-        const medico = await Medico.findByPk(id_medico, { transaction: t });
-        if (!medico) {
-            console.log('Médico no encontrado con ID:', id_medico);
+        // Buscar paciente y médico
+        const [paciente, medico] = await Promise.all([
+            Paciente.findOne({ where: { dni: dniPacienteSanitizado }, transaction: t }),
+            Medico.findByPk(idMedicoSanitizado, { transaction: t })
+        ]);
+
+        if (!paciente || !medico) {
             await t.rollback();
-            console.log('Transacción cancelada: médico no encontrado');
-            return res.status(404).json({ mensaje: 'Médico no encontrado' });
+            return res.status(404).json({ 
+                success: false,
+                mensaje: !paciente ? 'Paciente no encontrado' : 'Médico no encontrado'
+            });
         }
-        console.log('Médico encontrado correctamente');
 
-        // Verificar disponibilidad del médico en esa fecha y hora
-        console.log('Verificando disponibilidad del médico en fecha:', fecha, 'y hora:', hora);
+        // Verificar disponibilidad
         const citaExistente = await Cita.findOne({
             where: {
-                id_medico: id_medico,
-                fecha: fecha,
-                hora: hora
+                id_medico: idMedicoSanitizado,
+                fecha: fechaSanitizada,
+                hora: horaSanitizada
             },
             transaction: t
         });
 
         if (citaExistente) {
-            console.log('Cita existente encontrada con ID:', citaExistente.id);
             await t.rollback();
-            console.log('Transacción cancelada: horario ocupado');
-            return res.status(400).json({ mensaje: 'El médico ya tiene una cita programada en ese horario' });
+            return res.status(400).json({ 
+                success: false,
+                mensaje: 'El médico ya tiene una cita programada en ese horario' 
+            });
         }
-        console.log('Verificación de disponibilidad: OK');
 
         // Crear la cita
-        console.log('Creando nueva cita con datos:', {
-            id_paciente: paciente.id,
-            id_medico,
-            fecha,
-            hora
-        });
         const nuevaCita = await Cita.create({
             id_paciente: paciente.id,
-            id_medico: id_medico,
-            fecha: fecha,
-            hora: hora,
-            estado: 'en espera'
+            id_medico: idMedicoSanitizado,
+            fecha: fechaSanitizada,
+            hora: horaSanitizada,
+            estado: 'espera'
         }, { transaction: t });
-        console.log('Cita creada correctamente con ID:', nuevaCita.id);
-
+        
         await t.commit();
-        console.log('Transacción confirmada: cita creada exitosamente');
-        console.log('=== FIN: Creación de cita exitosa ===');
         res.status(201).json({
+            success: true,
             mensaje: 'Cita creada correctamente',
             cita: nuevaCita
         });
 
     } catch (error) {
         if (t) await t.rollback();
-        console.error('=== ERROR: Creación de cita fallida ===');
         console.error('Error al crear cita:', error);
-        console.error('Mensaje de error:', error.message);
-        console.error('Stack de error:', error.stack);
         
-        // Verificar si es un error de validación de Sequelize
         if (error.name === 'SequelizeValidationError') {
-            console.error('Error de validación de Sequelize:', error.errors.map(e => e.message));
             return res.status(400).json({ 
+                success: false,
                 mensaje: 'Error de validación', 
                 errores: error.errors.map(e => e.message) 
             });
         }
         
-        // Verificar si es un error de base de datos
-        if (error.name === 'SequelizeDatabaseError') {
-            console.error('Error de base de datos:', error.parent?.sqlMessage || error.message);
-        }
-        
         res.status(500).json({ 
+            success: false,
             mensaje: 'Error al crear la cita', 
             error: error.message 
         });

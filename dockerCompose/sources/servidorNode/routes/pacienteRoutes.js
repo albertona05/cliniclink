@@ -7,9 +7,9 @@ const authMiddleware = require('../middleware/authMiddleware');
 router.use(authMiddleware.verificarToken);
 
 // Rutas para gestión de citas
-router.post('/citas', pacienteController.crearCita);
 router.get('/citas/:id', pacienteController.obtenerCitasPaciente);
 router.put('/citas/:id', pacienteController.anularCita);
+router.post('/citasPaciente', pacienteController.crearCita);
 
 // Rutas para gestión de facturas
 router.get('/facturas/:id', pacienteController.obtenerFacturasPaciente);

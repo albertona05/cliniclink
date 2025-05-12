@@ -11,9 +11,15 @@ import { AuthService } from '../../services/auth.service';
   styleUrls: ['./nav.component.css']
 })
 export class NavComponent {
-  userName: string = 'Pedro Benitez Sanchez';
+  userName: string | null = null;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService, private router: Router) {
+    this.updateUserName();
+  }
+
+  private updateUserName() {
+    this.userName = this.authService.getUserName();
+  }
 
   logout() {
     this.authService.logout().subscribe({

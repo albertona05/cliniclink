@@ -59,41 +59,46 @@ const obtenerMedicos = async (req, res) => {
 
 // Función para obtener las horas disponibles de un médico en una fecha específica
 const obtenerHorasLibres = async (req, res) => {
-    try {
-        const { id_medico, fecha } = req.query;
+    const { id_medico, fecha } = req.query;
 
-        // Obtener todas las citas del médico para esa fecha
+    try {
         const citasDelDia = await Cita.findAll({
             where: {
                 id_medico,
-                fecha
+                fecha,
+                estado: {
+                    [Op.in]: ['espera', 'finalizado']
+                }
             },
-            attributes: ['hora']
+            attributes: ['hora', 'estado']
         });
-
-        // Crear arrays con los rangos de horas de trabajo incluyendo medias horas
+    
+        console.log('Citas encontradas:', citasDelDia.map(cita => ({ hora: cita.hora, estado: cita.estado })));
+    
         const generarIntervalos = (inicio, fin) => {
             const intervalos = [];
             for (let hora = inicio; hora < fin; hora++) {
-                intervalos.push(`${hora}:00`);
-                intervalos.push(`${hora}:30`);
+                intervalos.push(`${hora.toString().padStart(2, '0')}:00`);
+                intervalos.push(`${hora.toString().padStart(2, '0')}:30`);
             }
             return intervalos;
         };
-
+    
         const horasManana = generarIntervalos(8, 13); // 8:00 a 12:30
         const horasTarde = generarIntervalos(17, 20); // 17:00 a 19:30
         const todasLasHoras = [...horasManana, ...horasTarde];
-
-        // Obtener las horas ocupadas
-        const horasOcupadas = citasDelDia.map(cita => cita.hora);
-
-        // Filtrar las horas disponibles considerando que cada cita dura 30 minutos
-        const horasDisponibles = todasLasHoras.filter(hora => {
-            // Verificar que ni la hora actual ni la siguiente media hora estén ocupadas
-            return !horasOcupadas.includes(hora);
+    
+        // Obtener las horas ocupadas (normalizadas por si acaso)
+        const horasOcupadas = citasDelDia.map(cita => {
+            const [hora, minutos] = cita.hora.split(':');
+            return `${hora.padStart(2, '0')}:${minutos.padStart(2, '0')}`;
         });
-
+    
+        console.log('Horas ocupadas:', horasOcupadas);
+    
+        // Filtrar solo las horas que no están ocupadas
+        const horasDisponibles = todasLasHoras.filter(hora => !horasOcupadas.includes(hora));
+    
         res.status(200).json({
             success: true,
             data: {

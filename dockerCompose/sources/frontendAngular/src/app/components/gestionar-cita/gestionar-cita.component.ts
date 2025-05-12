@@ -1,110 +1,217 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { NavComponent } from '../nav/nav.component';
-
-interface Medico {
-  id: number;
-  nombre: string;
-  especialidad: string;
-}
+import { ActivatedRoute, Router } from '@angular/router';
+import { catchError, finalize, of } from 'rxjs';
+import { CitaService } from '../../services/cita.service';
 
 @Component({
-  selector: 'gestionar-cita',
+  selector: 'app-gestionar-cita',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NavComponent],
+  imports: [CommonModule, FormsModule, NavComponent],
   templateUrl: './gestionar-cita.component.html',
   styleUrls: ['./gestionar-cita.component.css']
 })
 export class GestionarCitaComponent implements OnInit {
-  citaForm: FormGroup;
-  medicos: Medico[] = [];
+  fecha: string = '';
+  medico: string = '';
+  pacienteId: string = '';
   horasDisponibles: string[] = [];
   horaSeleccionada: string = '';
-  submitted = false;
-  loading = false;
-  mensajeExito: string = '';
+  medicos: any[] = [];
+  cargando: boolean = false;
   mensajeError: string = '';
-
+  mensajeExito: string = '';
+  fechaMinima: string = '';
+  
   constructor(
-    private formBuilder: FormBuilder,
-    private router: Router
-  ) {
-    this.citaForm = this.formBuilder.group({
-      fecha: ['', [Validators.required]],
-      medico: ['', [Validators.required]],
-      paciente: ['', [Validators.required]]
-    });
-  }
+    private http: HttpClient,
+    private route: ActivatedRoute,
+    private router: Router,
+    private citaService: CitaService
+  ) {}
 
   ngOnInit() {
-    // Simular carga de médicos
-    this.medicos = [
-      { id: 1, nombre: 'Dr. Juan Pérez', especialidad: 'Cardiología' },
-      { id: 2, nombre: 'Dra. María García', especialidad: 'Pediatría' },
-      { id: 3, nombre: 'Dr. Carlos López', especialidad: 'Dermatología' }
-    ];
-
-    // Simular horas disponibles
-    this.horasDisponibles = [
-      '09:00', '09:30', '10:00', '10:30', '11:00',
-      '11:30', '12:00', '15:00', '15:30', '16:00'
-    ];
-
-    // Suscribirse a cambios en el formulario
-    this.citaForm.get('fecha')?.valueChanges.subscribe(() => {
-      this.horaSeleccionada = '';
-    });
-
-    this.citaForm.get('medico')?.valueChanges.subscribe(() => {
-      this.horaSeleccionada = '';
+    // Establecer la fecha mínima como mañana
+    const hoy = new Date();
+    const manana = new Date(hoy);
+    manana.setDate(manana.getDate() + 1);
+    this.fechaMinima = manana.toISOString().split('T')[0];
+    this.fecha = this.fechaMinima;
+    
+    // Cargar la lista de médicos disponibles
+    this.cargarMedicos();
+    
+    // Verificar si se pasó un ID de paciente como parámetro
+    this.route.queryParams.subscribe(params => {
+      if (params['pacienteId']) {
+        this.pacienteId = params['pacienteId'];
+      }
     });
   }
-
-  // Getter para acceder fácilmente a los campos del formulario
-  get f() {
-    return this.citaForm.controls;
+  
+  cargarMedicos() {
+    this.cargando = true;
+    this.mensajeError = '';
+    
+    this.http.get<any>('http://localhost:3000/medicos')
+      .pipe(
+        catchError(error => {
+          console.error('Error al cargar médicos:', error);
+          this.mensajeError = 'Error al cargar la lista de médicos';
+          return of({ success: false, data: [] });
+        }),
+        finalize(() => {
+          this.cargando = false;
+        })
+      )
+      .subscribe(response => {
+        if (response && response.success && response.data) {
+          this.medicos = response.data;
+        } else {
+          this.medicos = [];
+          if (!this.mensajeError) {
+            this.mensajeError = 'No se pudieron cargar los médicos';
+          }
+        }
+      });
   }
-
+  
+  consultarHorasDisponibles() {
+    if (!this.fecha || !this.medico) {
+      this.mensajeError = 'Debe seleccionar fecha y médico';
+      return;
+    }
+    
+    this.cargando = true;
+    this.mensajeError = '';
+    this.horasDisponibles = [];
+    
+    this.http.get<any>(`http://localhost:3000/medicos/horas-libres?fecha=${this.fecha}&id_medico=${this.medico}`)
+      .pipe(
+        catchError(error => {
+          console.error('Error al consultar disponibilidad:', error);
+          this.mensajeError = 'Error al consultar horas disponibles';
+          return of({ success: false, data: { horas_disponibles: [] } });
+        }),
+        finalize(() => {
+          this.cargando = false;
+        })
+      )
+      .subscribe(response => {
+        if (response && response.success && response.data && response.data.horas_disponibles) {
+          this.horasDisponibles = response.data.horas_disponibles;
+        } else {
+          this.horasDisponibles = [];
+          if (!this.mensajeError) {
+            this.mensajeError = 'No hay horas disponibles para la fecha seleccionada';
+          }
+        }
+      });
+  }
+  
+  reservarCita() {
+    console.log('=== INICIO: Proceso de reserva de cita ===');
+    console.log('Estado inicial de campos:', {
+      fecha: this.fecha,
+      medico: this.medico,
+      horaSeleccionada: this.horaSeleccionada,
+      pacienteId: this.pacienteId
+    });
+    
+    // Validación más estricta de los campos
+    if (!this.fecha) {
+      console.log('Error de validación: Fecha vacía');
+      this.mensajeError = 'Debe seleccionar una fecha';
+      return;
+    }
+    
+    if (!this.medico || this.medico === '') {
+      console.log('Error de validación: Médico no seleccionado');
+      this.mensajeError = 'Debe seleccionar un médico';
+      return;
+    }
+    console.log('Tipo de dato de médico:', typeof this.medico, 'Valor:', this.medico);
+    
+    if (!this.horaSeleccionada) {
+      console.log('Error de validación: Hora no seleccionada');
+      this.mensajeError = 'Debe seleccionar una hora disponible';
+      return;
+    }
+    
+    if (!this.pacienteId || this.pacienteId.trim() === '') {
+      console.log('Error de validación: DNI de paciente vacío');
+      this.mensajeError = 'Debe ingresar el DNI del paciente';
+      return;
+    }
+    console.log('Tipo de dato de pacienteId:', typeof this.pacienteId, 'Valor:', this.pacienteId);
+    
+    this.cargando = true;
+    this.mensajeError = '';
+    this.mensajeExito = '';
+    
+    const citaData = {
+      fecha: this.fecha,
+      hora: this.horaSeleccionada,
+      medicoId: this.medico,
+      pacienteId: this.pacienteId.trim() // El servicio transformará esto a dni_paciente
+    };
+    
+    // Verificación detallada antes de enviar
+    console.log('Datos a enviar al servicio:', JSON.stringify(citaData));
+    console.log('Tipos de datos:', {
+      fecha: typeof citaData.fecha,
+      hora: typeof citaData.hora,
+      medicoId: typeof citaData.medicoId,
+      pacienteId: typeof citaData.pacienteId
+    });
+    
+    try {
+      this.citaService.crearCita(citaData)
+        .pipe(
+          catchError(error => {
+            console.error('Error al reservar cita:', error);
+            console.error('Detalles del error:', {
+              status: error.status,
+              statusText: error.statusText,
+              mensaje: error.error?.mensaje,
+              error: error.error
+            });
+            this.mensajeError = error.error?.mensaje || 'Error al reservar la cita';
+            return of(null);
+          }),
+          finalize(() => {
+            console.log('Finalización de la solicitud de cita');
+            this.cargando = false;
+          })
+        )
+        .subscribe(response => {
+          console.log('Respuesta del servidor:', response);
+          if (response) {
+            console.log('Cita creada exitosamente:', response);
+            this.mensajeExito = 'Cita reservada correctamente';
+            // Limpiar los campos después de reservar
+            this.horaSeleccionada = '';
+            this.horasDisponibles = [];
+          } else {
+            console.log('No se recibió respuesta válida del servidor');
+          }
+        });
+    } catch (error) {
+      console.error('Excepción capturada al intentar crear cita:', error);
+      this.mensajeError = 'Error en la aplicación al procesar la solicitud';
+      this.cargando = false;
+    }
+    console.log('=== FIN: Proceso de reserva de cita ===');
+  }
+  
   seleccionarHora(hora: string) {
     this.horaSeleccionada = hora;
   }
-
-  getErrorMessage(field: string): string {
-    if (this.f[field].errors) {
-      if (this.f[field].errors['required']) {
-        return 'Este campo es requerido';
-      }
-    }
-    return '';
-  }
-
-  onSubmit() {
-    this.submitted = true;
-
-    if (this.citaForm.invalid || !this.horaSeleccionada) {
-      if (!this.horaSeleccionada) {
-        this.mensajeError = 'Por favor seleccione una hora disponible';
-      }
-      return;
-    }
-
-    this.loading = true;
-    this.mensajeError = '';
-
-    // Simular el proceso de reserva
-    setTimeout(() => {
-      this.loading = false;
-      this.mensajeExito = 'Cita reservada exitosamente';
-      
-      // Resetear el formulario después de 2 segundos
-      setTimeout(() => {
-        this.submitted = false;
-        this.citaForm.reset();
-        this.horaSeleccionada = '';
-        this.mensajeExito = '';
-      }, 2000);
-    }, 1500);
+  
+  volver() {
+    this.router.navigate(['/buscar-paciente']);
   }
 }

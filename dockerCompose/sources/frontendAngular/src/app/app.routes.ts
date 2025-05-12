@@ -38,7 +38,7 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
-    path: 'gestionar-citas',
+    path: 'gestionar-cita',
     component: GestionarCitaComponent,
     canActivate: [AuthGuard]
   },

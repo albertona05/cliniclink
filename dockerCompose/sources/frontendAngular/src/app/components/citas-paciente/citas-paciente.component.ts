@@ -53,12 +53,36 @@ export class CitasPacienteComponent implements OnInit {
       )
       .subscribe(citas => {
         this.citas = citas;
-        // Ordenar citas por fecha (más reciente primero)
-        this.citas.sort((a, b) => {
+        // Separar citas en futuras y pasadas
+        const ahora = new Date();
+        const citasFuturas: any[] = [];
+        const citasPasadas: any[] = [];
+
+        this.citas.forEach(cita => {
+          const fechaCita = new Date(cita.fecha + 'T' + cita.hora);
+          if (fechaCita > ahora) {
+            citasFuturas.push(cita);
+          } else {
+            citasPasadas.push(cita);
+          }
+        });
+
+        // Ordenar citas futuras de la más próxima a la más lejana
+        citasFuturas.sort((a, b) => {
+          const fechaA = new Date(a.fecha + 'T' + a.hora);
+          const fechaB = new Date(b.fecha + 'T' + b.hora);
+          return fechaA.getTime() - fechaB.getTime();
+        });
+
+        // Ordenar citas pasadas de la más reciente a la más antigua
+        citasPasadas.sort((a, b) => {
           const fechaA = new Date(a.fecha + 'T' + a.hora);
           const fechaB = new Date(b.fecha + 'T' + b.hora);
           return fechaB.getTime() - fechaA.getTime();
         });
+
+        // Combinar las citas ordenadas: primero las futuras, luego las pasadas
+        this.citas = [...citasFuturas, ...citasPasadas];
       });
   }
   

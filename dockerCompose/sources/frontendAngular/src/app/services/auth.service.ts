@@ -55,6 +55,22 @@ export class AuthService {
     return null;
   }
 
+  getUserName(): string | null {
+    const token = this.getToken();
+    if (token) {
+      try {
+        const tokenParts = token.split('.');
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          return payload.nombre || null;
+        }
+      } catch (error) {
+        console.error('AuthService: Error al obtener nombre de usuario:', error);
+      }
+    }
+    return null;
+  }
+
   isLoggedIn(): boolean {
     return !!this.getToken();
   }
