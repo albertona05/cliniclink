@@ -88,13 +88,9 @@
         <div class="card shadow-sm">
           <div class="card-body">
             <div class="d-flex flex-wrap gap-2 justify-content-between">
-              <div>
-                <button class="btn btn-secondary me-2" (click)="volver()">
-                  <i class="bi bi-arrow-left me-1"></i> Volver
-                </button>
-              </div>
-              <div>
-                <button class="btn btn-success me-2" 
+              
+              <div class="d-flex gap-2">
+                <button class="btn btn-success" 
                   [disabled]="!fecha || !medico || medico === '' || !horaSeleccionada"
                   (click)="reservarCita()">
                   <i class="bi bi-calendar-check me-1"></i> Reservar
@@ -105,5 +101,8 @@
         </div>
       </div>
     </div>
+
+    <!-- Botón para volver -->
+    <app-boton-volver></app-boton-volver>
   </div>
 </div>

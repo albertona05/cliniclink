@@ -18,6 +18,27 @@ export class NavComponent {
     this.updateUserInfo();
   }
 
+  navigateToCitas() {
+    const userId = this.authService.getUserID();
+    if (userId) {
+      this.router.navigate(['/citas-paciente', userId]);
+    }
+  }
+
+  navigateToFacturas() {
+    const userId = this.authService.getUserID();
+    if (userId) {
+      this.router.navigate(['/facturas', userId]);
+    }
+  }
+
+  navigateToHistorial() {
+    const userId = this.authService.getUserID();
+    if (userId) {
+      this.router.navigate(['/historial-paciente', userId]);
+    }
+  }
+
   private updateUserInfo() {
     this.userName = this.authService.getUserName();
     this.userRole = this.authService.getUserRole();

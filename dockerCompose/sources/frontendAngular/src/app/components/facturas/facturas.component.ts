@@ -5,11 +5,12 @@ import { HttpClient } from '@angular/common/http';
 import { NavComponent } from '../nav/nav.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, finalize, of } from 'rxjs';
+import { BotonVolverComponent } from '../boton-volver/boton-volver.component';
 
 @Component({
   selector: 'app-facturas',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavComponent],
+  imports: [BotonVolverComponent, CommonModule, FormsModule, NavComponent],
   templateUrl: './facturas.component.html',
   styleUrls: ['./facturas.component.css']
 })

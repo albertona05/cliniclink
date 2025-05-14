@@ -1,7 +1,7 @@
 
 <div class="nav-container">
   <div class="nav-header">
-    <h1>CLINIC MANAGEMENT</h1>
+    <h1>CLINICLINK</h1>
   </div>
   
   <div class="user-info">
@@ -33,17 +33,17 @@
       <span>Reservar Cita</span>
     </a>
     
-    <a *ngIf="isPaciente()" class="nav-link" [routerLink]="['/mis-citas']" routerLinkActive="active">
+    <a *ngIf="isPaciente()" class="nav-link" (click)="navigateToCitas()" routerLinkActive="active">
       <i class="bi bi-calendar-week"></i>
       <span>Citas</span>
     </a>
     
-    <a *ngIf="isPaciente()" class="nav-link" [routerLink]="['/historial']" routerLinkActive="active">
+    <a *ngIf="isPaciente()" class="nav-link" (click)="navigateToHistorial()" routerLinkActive="active">
       <i class="bi bi-journal-medical"></i>
       <span>Historial</span>
     </a>
     
-    <a *ngIf="isPaciente()" class="nav-link" [routerLink]="['/mis-facturas']" routerLinkActive="active">
+    <a *ngIf="isPaciente()" class="nav-link" (click)="navigateToFacturas()" routerLinkActive="active">
       <i class="bi bi-receipt"></i>
       <span>Facturas</span>
     </a>

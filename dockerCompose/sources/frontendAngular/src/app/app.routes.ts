@@ -7,6 +7,7 @@ import { CitasPacienteComponent } from './components/citas-paciente/citas-pacien
 import { FacturasComponent } from './components/facturas/facturas.component';
 import { GestionarCitaComponent } from './components/gestionar-cita/gestionar-cita.component';
 import { ReservarCitaComponent } from './components/reservar-cita/reservar-cita.component';
+import { HistorialPacienteComponent } from './components/historial-paciente/historial-paciente.component';
 import { inject } from '@angular/core';
 import { AuthGuard } from './guards/auth.guard';
 
@@ -35,13 +36,13 @@ export const routes: Routes = [
     path: 'citas-paciente/:id',
     component: CitasPacienteComponent,
     canActivate: [AuthGuard],
-    data: { rolesPermitidos: ['recepcion'] }
+    data: { rolesPermitidos: ['recepcion', 'paciente'] }
   },
   {
     path: 'facturas/:id',
     component: FacturasComponent,
     canActivate: [AuthGuard],
-    data: { rolesPermitidos: ['recepcion'] }
+    data: { rolesPermitidos: ['recepcion', 'paciente'] }
   },
   {
     path: 'gestionar-cita',
@@ -55,5 +56,11 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     data: { rolesPermitidos: ['paciente'] }
   },
-  { path: 'logout', redirectTo: 'login', pathMatch: 'full' }
+  { path: 'logout', redirectTo: 'login', pathMatch: 'full' },
+  {
+    path: 'historial-paciente/:id',
+    component: HistorialPacienteComponent,
+    canActivate: [AuthGuard],
+    data: { rolesPermitidos: ['recepcion', 'paciente'] }
+  }
 ];

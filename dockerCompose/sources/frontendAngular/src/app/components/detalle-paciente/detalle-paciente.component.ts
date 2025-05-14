@@ -106,6 +106,10 @@ export class DetallePacienteComponent implements OnInit {
     this.router.navigate(['/facturas', this.paciente.id]);
   }
 
+  verHistorial() {
+    this.router.navigate(['/historial-paciente', this.paciente.id], { queryParams: { id: this.paciente.id } });
+  }
+
   guardarCambios() {
     this.cargando = true;
     this.mensajeError = '';

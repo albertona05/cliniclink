@@ -1,4 +1,4 @@
-const { Cita, Factura, Medico } = require('../models');
+const { Cita, Factura, Medico, Usuario } = require('../models');
 const xss = require('xss');
 
 // Función para sanitizar input
@@ -160,7 +160,14 @@ const crearCita = async (req, res) => {
 // Función para obtener el historial de citas de un paciente
 const obtenerHistorialPaciente = async (req, res) => {
     try {
-        const { id_paciente } = req.params;
+        const id_paciente = req.params.id;
+        
+        if (!id_paciente) {
+            return res.status(400).json({
+                success: false,
+                mensaje: 'ID del paciente es requerido'
+            });
+        }
 
         const historialCitas = await Cita.findAll({
             where: { 
@@ -169,6 +176,7 @@ const obtenerHistorialPaciente = async (req, res) => {
             },
             include: [{
                 model: Medico,
+                as: 'medico',
                 attributes: ['especialidad'],
                 include: [{
                     model: Usuario,
@@ -184,8 +192,8 @@ const obtenerHistorialPaciente = async (req, res) => {
             id: cita.id,
             fecha: cita.fecha,
             hora: cita.hora,
-            especialidad: cita.Medico.especialidad,
-            medico: cita.Medico.usuario.nombre,
+            especialidad: cita.medico?.especialidad || 'No especificada',
+            medico: cita.medico?.usuario?.nombre || 'No especificado',
             info: cita.info || 'Sin información adicional'
         }));
 

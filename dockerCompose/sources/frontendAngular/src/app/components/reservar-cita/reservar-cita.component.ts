@@ -7,11 +7,12 @@ import { Router } from '@angular/router';
 import { catchError, finalize, of } from 'rxjs';
 import { CitaService } from '../../services/cita.service';
 import { AuthService } from '../../services/auth.service';
+import { BotonVolverComponent } from '../boton-volver/boton-volver.component';
 
 @Component({
   selector: 'app-reservar-cita',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavComponent],
+  imports: [CommonModule, FormsModule, NavComponent, BotonVolverComponent],
   templateUrl: './reservar-cita.component.html',
   styleUrls: ['./reservar-cita.component.css']
 })
@@ -50,24 +51,18 @@ export class ReservarCitaComponent implements OnInit {
   }
   
   obtenerDniPaciente() {
-    // Obtener el token y extraer el DNI del payload
-    const token = this.authService.getToken();
-    if (token) {
-      try {
-        const tokenParts = token.split('.');
-        if (tokenParts.length === 3) {
-          const payload = JSON.parse(atob(tokenParts[1]));
-          this.pacienteDni = payload.dni || '';
-          
-          if (!this.pacienteDni) {
-            this.mensajeError = 'No se pudo obtener el DNI del paciente';
-          }
-        }
-      } catch (error) {
-        console.error('Error al obtener DNI del paciente:', error);
-        this.mensajeError = 'Error al obtener información del paciente';
-      }
+    // Utilizar el método específico del servicio de autenticación para obtener el DNI
+    const dni = this.authService.getUserDni();
+    
+    if (dni) {
+      this.pacienteDni = dni;
+      console.log('DNI del paciente obtenido:', this.pacienteDni);
     } else {
+      console.error('No se pudo obtener el DNI del paciente');
+      this.mensajeError = 'No se pudo obtener el DNI del paciente';
+    }
+    
+    if (!this.authService.getToken()) {
       this.mensajeError = 'Usuario no autenticado';
       this.router.navigate(['/login']);
     }

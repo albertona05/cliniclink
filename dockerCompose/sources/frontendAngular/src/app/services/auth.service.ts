@@ -71,6 +71,22 @@ export class AuthService {
     return null;
   }
 
+  getUserDni(): string | null {
+    const token = this.getToken();
+    if (token) {
+      try {
+        const tokenParts = token.split('.');
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          return payload.dni || null;
+        }
+      } catch (error) {
+        console.error('AuthService: Error al obtener DNI de usuario:', error);
+      }
+    }
+    return null;
+  }
+
   getUserRole(): string | null {
     const token = this.getToken();
     if (token) {
@@ -82,6 +98,22 @@ export class AuthService {
         }
       } catch (error) {
         console.error('AuthService: Error al obtener rol de usuario:', error);
+      }
+    }
+    return null;
+  }
+
+  getUserID(): string | null {
+    const token = this.getToken();
+    if (token) {
+      try {
+        const tokenParts = token.split('.');
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          return payload.id || null;
+        }
+      } catch (error) {
+        console.error('AuthService: Error al obtener ID de usuario:', error);
       }
     }
     return null;

@@ -5,11 +5,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NavComponent } from '../nav/nav.component';
 import { CitaService } from '../../services/cita.service';
 import { catchError, finalize, of } from 'rxjs';
+import { BotonVolverComponent } from '../boton-volver/boton-volver.component';
+
 
 @Component({
   selector: 'app-citas-paciente',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavComponent],
+  imports: [CommonModule, FormsModule, NavComponent, BotonVolverComponent],
   templateUrl: './citas-paciente.component.html',
   styleUrls: ['./citas-paciente.component.css']
 })

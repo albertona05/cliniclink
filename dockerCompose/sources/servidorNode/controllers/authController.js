@@ -71,14 +71,22 @@ exports.login = async (req, res) => {
             });
         }
 
-        // Generar JWT con DNI incluido
-        const tokenData = {
+        // Generar JWT con DNI incluido solo para pacientes
+        let tokenData = {
             id: usuario.id,
             nombre: usuario.nombre,
             email: usuario.email,
             rol: usuario.rol,
-            dni: usuario.rol === 'recepcion' ? '' : usuario.dni
+            dni: ''
         };
+
+        // Si es paciente, buscar su DNI en la tabla Paciente
+        if (usuario.rol === 'paciente') {
+            const paciente = await Paciente.findOne({ where: { id_usuario: usuario.id } });
+            if (paciente) {
+                tokenData.dni = paciente.dni;
+            }
+        }
 
         const token = jwt.sign(tokenData, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
