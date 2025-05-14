@@ -1,4 +1,4 @@
-const { Cita, Factura, Medico, Usuario } = require('../models');
+const { Cita, Factura, Medico, Usuario, Paciente } = require('../models');
 const xss = require('xss');
 
 // Función para sanitizar input
@@ -141,6 +141,30 @@ const crearCita = async (req, res) => {
             hora,
             estado: 'en espera'
         });
+
+        // Obtener información del paciente y médico para el correo
+        console.log('Buscando información del paciente:', id_paciente);
+        const paciente = await Paciente.findByPk(id_paciente, {
+            include: [{ model: Usuario, as: 'usuario' }]
+        });
+        console.log('Información del paciente encontrada:', {
+            id: paciente?.id,
+            tiene_usuario: !!paciente?.usuario,
+            email: paciente?.usuario?.email
+        });
+
+        console.log('Buscando información del médico:', id_medico);
+        const medico = await Medico.findByPk(id_medico, {
+            include: [{ model: Usuario, as: 'usuario' }]
+        });
+        console.log('Información del médico encontrada:', {
+            id: medico?.id,
+            tiene_usuario: !!medico?.usuario,
+            nombre: medico?.usuario?.nombre,
+            especialidad: medico?.especialidad
+        });
+
+       
 
         res.status(201).json({
             success: true,

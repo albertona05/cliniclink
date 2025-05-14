@@ -1,7 +1,8 @@
 const { Usuario, Paciente, Cita, Factura, Medico } = require('../models');
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 const bcrypt = require('bcryptjs');
 const sequelize = require('../config/database');
+const { enviarConfirmacionCita } = require('../config/emailConfig');
 const xss = require('xss');
 
 // Función para sanitizar input (prevenir XSS)
@@ -322,6 +323,12 @@ const crearCita = async (req, res) => {
             Medico.findByPk(idMedicoSanitizado, { transaction: t })
         ]);
 
+        // Buscar Usuario -> paciente y médico
+        const [uPaciente, uMedico] = await Promise.all([
+            Usuario.findOne({ where: { id: paciente.id_usuario }, transaction: t }),
+            Usuario.findOne({ where: { id: medico.id_usuario }, transaction: t })
+        ]);
+
         if (!paciente || !medico) {
             await t.rollback();
             return res.status(404).json({ 
@@ -356,6 +363,21 @@ const crearCita = async (req, res) => {
             hora: horaSanitizada,
             estado: 'espera'
         }, { transaction: t });
+
+        console.log(uPaciente.email)
+         // Enviar correo de confirmación
+         if (uPaciente?.email) {
+            console.log('Intentando enviar correo de confirmación');
+            const emailEnviado = await enviarConfirmacionCita(uPaciente?.email, {
+                fecha,
+                hora,
+                medico: medico?.nombre || 'No especificado',
+                especialidad: medico?.especialidad || 'No especificada'
+            });
+            console.log('Resultado del envío de correo:', emailEnviado);
+        } else {
+            console.log('No se pudo enviar el correo: email del paciente no disponible');
+        }
         
         await t.commit();
         res.status(201).json({
