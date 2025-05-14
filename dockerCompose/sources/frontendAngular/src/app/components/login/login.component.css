@@ -1,5 +1,5 @@
 :host {
-  background: linear-gradient(135deg, #0a5d7c, #42a5b6);
+  background: linear-gradient(135deg, #009688, #42a5b6);
 }
 
 .container {
@@ -21,6 +21,7 @@
   bottom: 0;
   overflow: hidden;
   max-width: 100%;
+  z-index: 1000;
 }
 
 @keyframes gradientAnimation {

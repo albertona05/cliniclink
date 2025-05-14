@@ -71,12 +71,16 @@ exports.login = async (req, res) => {
             });
         }
 
-        // Generar JWT
-        const token = jwt.sign(
-            { id: usuario.id, nombre: usuario.nombre, email: usuario.email, rol: usuario.rol },
-            JWT_SECRET,
-            { expiresIn: JWT_EXPIRES_IN }
-        );
+        // Generar JWT con DNI incluido
+        const tokenData = {
+            id: usuario.id,
+            nombre: usuario.nombre,
+            email: usuario.email,
+            rol: usuario.rol,
+            dni: usuario.rol === 'recepcion' ? '' : usuario.dni
+        };
+
+        const token = jwt.sign(tokenData, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
         res.json({
             success: true,

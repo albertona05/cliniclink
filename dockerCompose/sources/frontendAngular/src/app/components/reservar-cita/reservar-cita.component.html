@@ -1,0 +1,109 @@
+<app-nav></app-nav>
+
+<div class="container-fluid px-4 mt-3">
+  <div class="content-header rounded p-4 mb-4" style="background-color: #009688; color: white;">
+    <h2 class="m-0">Reservar Cita</h2>
+  </div>
+
+  <div class="content-body p-4">
+    <!-- Indicador de carga -->
+    <div *ngIf="cargando" class="text-center my-4">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="mt-2">Procesando solicitud...</p>
+    </div>
+
+    <!-- Formulario de cita -->
+    <div class="row">
+      <div class="col-12 mb-4">
+        <div class="card shadow-sm h-100">
+          <div class="card-header bg-light">
+            <h4 class="card-title mb-0">Información de la Cita</h4>
+          </div>
+          <div class="card-body d-flex flex-column">
+            <div class="patient-info row">
+              <div class="col-md-6 mb-3">
+                <div class="form-group">
+                  <label for="fecha">Fecha:</label>
+                  <input type="date" id="fecha" class="form-control" [(ngModel)]="fecha" [min]="fechaMinima" placeholder="Fecha">
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <div class="form-group">
+                  <label for="medico">Médico:</label>
+                  <select id="medico" class="form-control" [(ngModel)]="medico">
+                    <option value="">Seleccione un médico</option>
+                    <option *ngFor="let doc of medicos" [value]="doc.id">{{ doc.nombre }} - {{ doc.especialidad }}</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <div class="form-group mt-2">
+                  <button class="btn btn-primary me-2 mt-4" (click)="consultarHorasDisponibles()">
+                    <i class="bi bi-search me-1"></i> Consultar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Horas disponibles -->
+      <div class="col-12 mb-4" *ngIf="horasDisponibles.length > 0">
+        <div class="card shadow-sm h-100">
+          <div class="card-header bg-light">
+            <h4 class="card-title mb-0">Horas Disponibles</h4>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-4 mb-3" *ngFor="let hora of horasDisponibles">
+                <button class="btn btn-outline-primary w-100" 
+                  [class.active]="horaSeleccionada === hora"
+                  (click)="seleccionarHora(hora)">
+                  {{ hora }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mensajes de alerta -->
+      <div class="col-12">
+        <div *ngIf="mensajeError" class="alert alert-danger">
+          {{ mensajeError }}
+        </div>
+    
+        <div *ngIf="mensajeExito" class="alert alert-success">
+          {{ mensajeExito }}
+        </div>
+      </div>
+
+      <!-- Acciones -->
+      <div class="col-12">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <div class="d-flex flex-wrap gap-2 justify-content-between">
+              <div>
+                <button class="btn btn-secondary me-2" (click)="volver()">
+                  <i class="bi bi-arrow-left me-1"></i> Volver
+                </button>
+              </div>
+              <div>
+                <button class="btn btn-success me-2" 
+                  [disabled]="!fecha || !medico || medico === '' || !horaSeleccionada"
+                  (click)="reservarCita()">
+                  <i class="bi bi-calendar-check me-1"></i> Reservar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

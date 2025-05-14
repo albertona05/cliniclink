@@ -5,28 +5,58 @@
   </div>
   
   <div class="user-info">
-    <p>Pedro Benitez Sanchez</p>
+    <p>{{ userName || 'Usuario' }}</p>
+    <small *ngIf="userRole">{{ userRole | titlecase }}</small>
   </div>
   
   <div class="nav-links">
-    <a class="nav-link" [routerLink]="['/buscar-paciente']" routerLinkActive="active">
+    <a *ngIf="isRecepcionista()" class="nav-link" [routerLink]="['/buscar-paciente']" routerLinkActive="active">
       <i class="bi bi-person"></i>
       <span>Buscar Paciente</span>
     </a>
     
-    <a class="nav-link" [routerLink]="['/registrar-paciente']" routerLinkActive="active">
+    <a *ngIf="isRecepcionista()" class="nav-link" [routerLink]="['/registrar-paciente']" routerLinkActive="active">
       <i class="bi bi-person-plus"></i>
       <span>Registrar Paciente</span>
     </a>
     
-    <a class="nav-link" [routerLink]="['/gestionar-cita']" routerLinkActive="active">
+    <!-- Opciones para médicos -->
+    <a *ngIf="isRecepcionista()" class="nav-link" [routerLink]="['/gestionar-cita']" routerLinkActive="active">
       <i class="bi bi-calendar-check"></i>
       <span>Gestionar Citas</span>
     </a>
     
+    
+    <!-- Opciones solo para pacientes -->
+    <a *ngIf="isPaciente()" class="nav-link" [routerLink]="['/reservar-cita']" routerLinkActive="active">
+      <i class="bi bi-calendar-plus"></i>
+      <span>Reservar Cita</span>
+    </a>
+    
+    <a *ngIf="isPaciente()" class="nav-link" [routerLink]="['/mis-citas']" routerLinkActive="active">
+      <i class="bi bi-calendar-week"></i>
+      <span>Citas</span>
+    </a>
+    
+    <a *ngIf="isPaciente()" class="nav-link" [routerLink]="['/historial']" routerLinkActive="active">
+      <i class="bi bi-journal-medical"></i>
+      <span>Historial</span>
+    </a>
+    
+    <a *ngIf="isPaciente()" class="nav-link" [routerLink]="['/mis-facturas']" routerLinkActive="active">
+      <i class="bi bi-receipt"></i>
+      <span>Facturas</span>
+    </a>
+
+    <a *ngIf="isMedico()" class="nav-link" [routerLink]="['/agenda']" routerLinkActive="active">
+      <i class="bi bi-calendar-week"></i>
+      <span>Agenda</span>
+    </a>
+    
+    <!-- Opción de cierre de sesión para todos -->
     <a class="nav-link" (click)="logout()" routerLinkActive="active">
       <i class="bi bi-power"></i>
-      <span>Cerrar Sesion</span>
+      <span>Cerrar Sesión</span>
     </a>
   </div>
 </div>

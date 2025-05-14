@@ -6,6 +6,7 @@ import { RegistrarPacienteComponent } from './components/registrar-paciente/regi
 import { CitasPacienteComponent } from './components/citas-paciente/citas-paciente.component';
 import { FacturasComponent } from './components/facturas/facturas.component';
 import { GestionarCitaComponent } from './components/gestionar-cita/gestionar-cita.component';
+import { ReservarCitaComponent } from './components/reservar-cita/reservar-cita.component';
 import { inject } from '@angular/core';
 import { AuthGuard } from './guards/auth.guard';
 
@@ -15,32 +16,44 @@ export const routes: Routes = [
   {
     path: 'buscar-paciente',
     component: BuscarPacienteComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard],
+    data: { rolesPermitidos: ['recepcion'] }
   },
   {
     path: 'detalle-paciente/:id',
     component: DetallePacienteComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard],
+    data: { rolesPermitidos: ['recepcion'] }
   },
   {
     path: 'registrar-paciente',
     component: RegistrarPacienteComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard],
+    data: { rolesPermitidos: ['recepcion'] }
   },
   {
     path: 'citas-paciente/:id',
     component: CitasPacienteComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard],
+    data: { rolesPermitidos: ['recepcion'] }
   },
   {
     path: 'facturas/:id',
     component: FacturasComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard],
+    data: { rolesPermitidos: ['recepcion'] }
   },
   {
     path: 'gestionar-cita',
     component: GestionarCitaComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard],
+    data: { rolesPermitidos: ['recepcion'] }
+  },
+  {
+    path: 'reservar-cita',
+    component: ReservarCitaComponent,
+    canActivate: [AuthGuard],
+    data: { rolesPermitidos: ['paciente'] }
   },
   { path: 'logout', redirectTo: 'login', pathMatch: 'full' }
 ];
