@@ -1,0 +1,239 @@
+:host {
+  display: block;
+  margin-left: 350px;
+  min-height: 100vh;
+  background-color: #e0e0e0;
+  padding-top: 0;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.content-header {
+  padding: 20px;
+  text-align: center;
+  background-color: #009688;
+  color: #fff;
+}
+
+.content-header h2 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+}
+
+.content-body {
+  padding: 30px;
+  width: calc(100vw - 380px);
+  margin: 0 auto;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.alert {
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 20px;
+  max-width: 95%;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 0.95rem;
+}
+
+.alert-danger {
+  background-color: #ffebee;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+}
+
+.alert-success {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+}
+
+.alert-info {
+  background-color: #e3f2fd;
+  color: #0277bd;
+  border: 1px solid #bbdefb;
+}
+
+.card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.3s, transform 0.2s;
+  margin-bottom: 20px;
+  border: none;
+}
+
+.card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.card-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 15px 20px;
+}
+
+.card-title {
+  color: #333;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.form-control:focus {
+  border-color: #009688;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 150, 136, 0.2);
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background-color: #009688;
+  border-color: #009688;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #00796b;
+  border-color: #00796b;
+}
+
+.hover-shadow {
+  transition: all 0.3s ease;
+}
+
+.hover-shadow:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos responsivos para el componente */
+@media (max-width: 1024px) {
+  :host {
+    margin-left: 280px;
+  }
+  
+  .content-body {
+    width: calc(100vw - 310px);
+  }
+}
+
+@media (max-width: 768px) {
+  :host {
+    margin-left: 0;
+  }
+  
+  .content-body {
+    width: 100%;
+    padding: 20px;
+  }
+}
+
+.citas-container {
+  width: 100%;
+  padding: 20px 0;
+}
+
+.citas-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 10px;
+}
+
+.cita-card {
+  width: 100%;
+}
+
+.cita-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 15px 20px;
+  margin-bottom: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.cita-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cita-hora {
+  font-weight: 600;
+  color: #333;
+}
+
+.cita-paciente {
+  color: #666;
+}
+
+.cita-acciones {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-iniciar {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-iniciar:hover {
+  background-color: #45a049;
+}
+
+.btn-anular {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-anular:hover {
+  background-color: #da190b;
+}

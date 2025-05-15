@@ -1,0 +1,91 @@
+<app-nav></app-nav>
+
+<div class="container-fluid px-4 mt-3">
+  <div class="content-header rounded p-4 mb-4" style="background-color: #009688; color: white;">
+    <h2 class="m-0">{{ nombrePaciente }} - {{ dniPaciente }}</h2>
+    <button class="btn btn-light float-end" (click)="volver()">Ver Historial</button>
+  </div>
+
+  <div class="content-body p-4">
+    <div class="card shadow-sm h-100">
+
+      <div class="card-header bg-light">
+        <h4 class="card-title mb-0">Información</h4>
+      </div>
+      <div class="card-body">
+        <form [formGroup]="citaForm" (ngSubmit)="onSubmit()">
+          <div *ngIf="mensajeExito" class="alert alert-success">{{ mensajeExito }}</div>
+          <div *ngIf="mensajeError" class="alert alert-danger">{{ mensajeError }}</div>
+
+          <div class="row">
+            <div class="col-md-12 mb-3">
+              <div class="form-group">
+                <label>Información:</label>
+                <textarea class="form-control" formControlName="info" rows="4" [ngClass]="{ 'is-invalid': submitted && f['info'].errors }"></textarea>
+                <div *ngIf="submitted && f['info'].errors" class="invalid-feedback">
+                  {{ getErrorMessage('info') }}
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-12 mb-3">
+              <div class="form-group">
+                <label>Medicamentos:</label>
+                <textarea class="form-control" formControlName="medicamentos" rows="4"></textarea>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="form-group">
+                <label>Precio consulta:</label>
+                <input type="number" class="form-control" formControlName="precio_consulta" [ngClass]="{ 'is-invalid': submitted && f['precio_consulta'].errors }">
+                <div *ngIf="submitted && f['precio_consulta'].errors" class="invalid-feedback">
+                  {{ getErrorMessage('precio_consulta') }}
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="form-group">
+                <label>Prueba:</label>
+                <div class="input-group">
+                  <input type="text" class="form-control" value="Radiología" readonly>
+                  <div class="input-group-text">
+                    <input class="form-check-input mt-0" type="checkbox" formControlName="prueba">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-12 mt-3">
+              <h5>Programar nueva cita</h5>
+              <hr>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="form-group">
+                <label>Fecha:</label>
+                <input type="date" class="form-control" formControlName="nueva_fecha">
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="form-group">
+                <label>Hora:</label>
+                <input type="time" class="form-control" formControlName="nueva_hora">
+              </div>
+            </div>
+          </div>
+
+          <!-- Botón de enviar -->
+          <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+            <button type="submit" class="btn btn-primary px-5 py-2" [disabled]="loading">
+              <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+              Enviar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

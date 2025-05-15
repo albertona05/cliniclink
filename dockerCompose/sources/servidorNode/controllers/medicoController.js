@@ -1,8 +1,5 @@
-const Cita = require('../models/citaModel');
-const Paciente = require('../models/pacienteModel');
-const Medico = require('../models/medicoModel');
-const RecetaMedica = require('../models/recetaMedicaModel');
-const Factura = require('../models/facturaModel');
+const db = require('../models');
+const { Cita, Paciente, Medico, RecetaMedica, Factura, Usuario } = db;
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const xss = require('xss');
@@ -24,27 +21,28 @@ const validarFecha = (fecha) => {
 async function obtenerCitasDia(req, res) {
     try {
         const fecha = sanitizarInput(req.body.fecha);
-        const id_medico = parseInt(req.body.id_medico);
-
-        // Validar datos requeridos
-        if (!fecha || !id_medico) {
-            return res.status(400).json({
-                success: false,
-                mensaje: 'Fecha y ID del médico son requeridos'
-            });
-        }
-
-        // Validar ID del médico
-        if (isNaN(id_medico)) {
-            return res.status(400).json({
-                success: false,
-                mensaje: 'ID del médico inválido'
-            });
-        }
         
-        if (!fecha || !id_medico) {
-            return res.status(400).json({ error: 'Fecha y ID del médico son requeridos' });
+        // Validar datos requeridos
+        if (!fecha) {
+            return res.status(400).json({
+                success: false,
+                mensaje: 'La fecha es requerida'
+            });
         }
+
+        // Obtener el médico asociado al usuario autenticado
+        const medico = await Medico.findOne({
+            where: { id_usuario: req.usuario.id }
+        });
+
+        if (!medico) {
+            return res.status(403).json({
+                success: false,
+                mensaje: 'Acceso denegado. Usuario no es un médico'
+            });
+        }
+
+        const id_medico = medico.id;
 
         const citas = await Cita.findAll({
             where: {
@@ -54,7 +52,12 @@ async function obtenerCitasDia(req, res) {
             },
             include: [{
                 model: Paciente,
-                attributes: ['nombre', 'apellidos']
+                as: 'paciente',
+                include: [{
+                    model: Usuario,
+                    as: 'usuario',
+                    attributes: ['nombre']
+                }]
             }],
             attributes: ['id', 'hora']
         });
@@ -62,7 +65,7 @@ async function obtenerCitasDia(req, res) {
         const citasFormateadas = citas.map(cita => ({
             id: cita.id,
             hora: cita.hora,
-            nombre_paciente: `${cita.Paciente.nombre} ${cita.Paciente.apellidos}`
+            nombre_paciente: `${cita.paciente.usuario.nombre}`
         }));
 
         res.json(citasFormateadas);
@@ -136,10 +139,10 @@ async function finalizarCita(req, res) {
         const cita = await Cita.findByPk(id_cita, {
             include: [{
                 model: Paciente,
-                attributes: ['nombre', 'apellidos']
+                attributes: ['nombre']
             }, {
                 model: Medico,
-                attributes: ['nombre', 'apellidos']
+                attributes: ['nombre']
             }]
         });
 
@@ -182,7 +185,7 @@ async function finalizarCita(req, res) {
         if (precio_consulta) {
             const datosFactura = {
                 id_cita,
-                nombre_paciente: `${cita.Paciente.nombre} ${cita.Paciente.apellidos}`,
+                nombre_paciente: `${cita.paciente.nombre} ${cita.paciente.apellidos}`,
                 nombre_medico: `${cita.Medico.nombre} ${cita.Medico.apellidos}`,
                 precio_consulta
             };

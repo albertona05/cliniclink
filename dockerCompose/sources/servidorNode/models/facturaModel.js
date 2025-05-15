@@ -15,7 +15,8 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
             defaultValue: 'en espera'
         },
-        fecha: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW }
+        fecha: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
+        ruta: { type: DataTypes.STRING(255), allowNull: true }
     }, {
         tableName: 'Factura',
         timestamps: false

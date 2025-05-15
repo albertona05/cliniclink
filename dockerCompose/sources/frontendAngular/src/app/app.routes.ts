@@ -8,6 +8,8 @@ import { FacturasComponent } from './components/facturas/facturas.component';
 import { GestionarCitaComponent } from './components/gestionar-cita/gestionar-cita.component';
 import { ReservarCitaComponent } from './components/reservar-cita/reservar-cita.component';
 import { HistorialPacienteComponent } from './components/historial-paciente/historial-paciente.component';
+import { AgendaComponent } from './components/agenda/agenda.component';
+import { DatosCitaComponent } from './components/datos-cita/datos-cita.component';
 import { inject } from '@angular/core';
 import { AuthGuard } from './guards/auth.guard';
 
@@ -62,5 +64,17 @@ export const routes: Routes = [
     component: HistorialPacienteComponent,
     canActivate: [AuthGuard],
     data: { rolesPermitidos: ['recepcion', 'paciente'] }
+  },
+  {
+    path: 'agenda',
+    component: AgendaComponent,
+    canActivate: [AuthGuard],
+    data: { rolesPermitidos: ['medico'] }
+  },
+  {
+    path: 'datos-cita/:id',
+    component: DatosCitaComponent,
+    canActivate: [AuthGuard],
+    data: { rolesPermitidos: ['medico'] }
   }
 ];

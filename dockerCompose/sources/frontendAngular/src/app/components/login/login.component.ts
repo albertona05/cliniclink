@@ -36,6 +36,8 @@ export class LoginComponent {
           this.router.navigate(['/buscar-paciente']);
         } else if (rol === 'paciente') {
           this.router.navigate(['/reservar-cita']);
+        } else if (rol === 'medico') {
+          this.router.navigate(['/agenda']);
         } else {
           this.errorMessage = 'Rol de usuario no válido';
           return;

@@ -5,7 +5,8 @@ module.exports = (sequelize, DataTypes) => {
         id_medico: { type: DataTypes.BIGINT, allowNull: false },
         id_paciente: { type: DataTypes.BIGINT, allowNull: false },
         descripcion: { type: DataTypes.TEXT, allowNull: false },
-        fecha: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW }
+        fecha: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
+        ruta: { type: DataTypes.STRING(255), allowNull: true }
     }, {
         tableName: 'RecetaMedica',
         timestamps: false
