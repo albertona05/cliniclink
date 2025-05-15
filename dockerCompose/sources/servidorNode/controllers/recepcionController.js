@@ -364,14 +364,14 @@ const crearCita = async (req, res) => {
             estado: 'espera'
         }, { transaction: t });
 
-        console.log(uPaciente.email)
+        console.log(uMedico)
          // Enviar correo de confirmación
          if (uPaciente?.email) {
             console.log('Intentando enviar correo de confirmación');
             const emailEnviado = await enviarConfirmacionCita(uPaciente?.email, {
                 fecha,
                 hora,
-                medico: medico?.nombre || 'No especificado',
+                medico: uMedico?.nombre || 'No especificado',
                 especialidad: medico?.especialidad || 'No especificada'
             });
             console.log('Resultado del envío de correo:', emailEnviado);
