@@ -45,34 +45,51 @@
               </div>
             </div>
 
-            <div class="col-md-6 mb-3">
-              <div class="form-group">
-                <label>Prueba:</label>
-                <div class="input-group">
-                  <input type="text" class="form-control" value="Radiología" readonly>
-                  <div class="input-group-text">
-                    <input class="form-check-input mt-0" type="checkbox" formControlName="prueba">
-                  </div>
-                </div>
-              </div>
-            </div>
+
 
             <div class="col-md-12 mt-3">
               <h5>Programar nueva cita</h5>
               <hr>
             </div>
 
-            <div class="col-md-6 mb-3">
+            <div class="col-md-12 mb-3">
               <div class="form-group">
                 <label>Fecha:</label>
                 <input type="date" class="form-control" formControlName="nueva_fecha">
               </div>
             </div>
 
-            <div class="col-md-6 mb-3">
+            <div class="col-md-12 mb-3">
+              <div class="form-group">
+                <label>Médico:</label>
+                <select class="form-control" formControlName="id_medico">
+                  <option value="">Seleccione un médico</option>
+                  <option *ngFor="let doc of medicos" [value]="doc.id">{{ doc.nombre }} - {{ doc.especialidad }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-md-12 mb-3">
+              <div class="form-group">
+                <button type="button" class="btn btn-primary" (click)="consultarHorasDisponibles()" [disabled]="!citaForm.value.nueva_fecha || !citaForm.value.id_medico">
+                  Consultar horas disponibles
+                </button>
+              </div>
+            </div>
+
+            <!-- Horas disponibles -->
+            <div class="col-md-12 mb-3" *ngIf="horasDisponibles.length > 0">
               <div class="form-group">
                 <label>Hora:</label>
-                <input type="time" class="form-control" formControlName="nueva_hora">
+                <div class="row">
+                  <div class="col-md-4 mb-2" *ngFor="let hora of horasDisponibles">
+                    <button type="button" class="btn btn-outline-primary w-100" 
+                      [class.active]="horaSeleccionada === hora"
+                      (click)="seleccionarHora(hora)">
+                      {{ hora }}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

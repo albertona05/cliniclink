@@ -22,6 +22,9 @@ export class DatosCitaComponent implements OnInit {
   idCita: string = '';
   nombrePaciente: string = '';
   dniPaciente: string = '';
+  medicos: any[] = [];
+  horasDisponibles: string[] = [];
+  horaSeleccionada: string = '';
   
   constructor(
     private formBuilder: FormBuilder,
@@ -42,13 +45,15 @@ export class DatosCitaComponent implements OnInit {
       this.dniPaciente = params['dni'] || '';
     });
 
+    // Cargar la lista de médicos
+    this.cargarMedicos();
+
     this.citaForm = this.formBuilder.group({
       info: ['', Validators.required],
       medicamentos: [''],
       precio_consulta: ['', [Validators.required, Validators.min(0)]],
       nueva_fecha: [''],
-      nueva_hora: [''],
-      prueba: [false]
+      id_medico: [''],
     });
   }
 
@@ -76,11 +81,18 @@ export class DatosCitaComponent implements OnInit {
     };
 
     // Si se ha seleccionado programar una nueva cita
-    if (this.citaForm.value.nueva_fecha && this.citaForm.value.nueva_hora) {
+    if (this.citaForm.value.nueva_fecha && this.citaForm.value.id_medico) {
       datosCita.nueva_fecha = this.citaForm.value.nueva_fecha;
-      datosCita.nueva_hora = this.citaForm.value.nueva_hora;
-      // Aquí se podría añadir el ID del médico actual
-      datosCita.id_medico = localStorage.getItem('userId') ?? undefined;
+      datosCita.id_medico = this.citaForm.value.id_medico;
+      
+      // Añadir la hora seleccionada si existe
+      if (this.horaSeleccionada) {
+        datosCita.nueva_hora = this.horaSeleccionada;
+      } else if (this.horasDisponibles.length > 0) {
+        this.mensajeError = 'Debe seleccionar una hora para la nueva cita';
+        this.loading = false;
+        return;
+      }
     }
 
     this.medicoService.finalizarCita(datosCita).subscribe({
@@ -131,6 +143,59 @@ export class DatosCitaComponent implements OnInit {
   volver() {
     this.router.navigate(['/agenda']);
   }
+
+  cargarMedicos() {
+    this.medicoService.obtenerMedicos().subscribe({
+      next: (response) => {
+        if (response && response.success && response.data) {
+          this.medicos = response.data;
+        } else {
+          this.medicos = [];
+          this.mensajeError = 'No se pudieron cargar los médicos';
+        }
+      },
+      error: (error) => {
+        console.error('Error al cargar médicos:', error);
+        this.mensajeError = 'Error al cargar la lista de médicos';
+      }
+    });
+  }
+
+  consultarHorasDisponibles() {
+    if (!this.citaForm.value.nueva_fecha || !this.citaForm.value.id_medico) {
+      this.mensajeError = 'Debe seleccionar fecha y médico';
+      return;
+    }
+    
+    this.loading = true;
+    this.mensajeError = '';
+    this.horasDisponibles = [];
+    this.horaSeleccionada = '';
+    
+    this.medicoService.obtenerHorasLibres(this.citaForm.value.id_medico, this.citaForm.value.nueva_fecha)
+      .subscribe({
+        next: (response) => {
+          if (response && response.success && response.data && response.data.horas_disponibles) {
+            this.horasDisponibles = response.data.horas_disponibles;
+            if (this.horasDisponibles.length === 0) {
+              this.mensajeError = 'No hay horas disponibles para la fecha seleccionada';
+            }
+          } else {
+            this.mensajeError = 'No se pudieron obtener las horas disponibles';
+          }
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error al consultar disponibilidad:', error);
+          this.mensajeError = 'Error al consultar horas disponibles';
+          this.loading = false;
+        }
+      });
+  }
+
+  seleccionarHora(hora: string) {
+    this.horaSeleccionada = hora;
+  }
 }
 
 
@@ -140,6 +205,6 @@ interface DatosCita {
   medicamentos: string;
   precio_consulta: number;
   nueva_fecha?: string;
-  nueva_hora?: string;
   id_medico?: string;
+  nueva_hora?: string;
 }

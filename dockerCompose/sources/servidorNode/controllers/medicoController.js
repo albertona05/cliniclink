@@ -81,8 +81,15 @@ async function obtenerCitasDia(req, res) {
 // Generar PDF de receta médica
 async function generarRecetaPDF(datos) {
     return new Promise((resolve, reject) => {
+        // Verificar si el directorio existe, si no, crearlo
+        const dirPath = './recetas';
+        if (!fs.existsSync(dirPath)) {
+            fs.mkdirSync(dirPath, { recursive: true });
+            console.log(`Directorio creado: ${dirPath}`);
+        }
+        
         const doc = new PDFDocument();
-        const filePath = `./recetas/receta_${datos.id_cita}.pdf`;
+        const filePath = `${dirPath}/receta_${datos.id_cita}.pdf`;
         const writeStream = fs.createWriteStream(filePath);
 
         doc.pipe(writeStream);
@@ -107,8 +114,15 @@ async function generarRecetaPDF(datos) {
 // Generar PDF de factura
 async function generarFacturaPDF(datos) {
     return new Promise((resolve, reject) => {
+        // Verificar si el directorio existe, si no, crearlo
+        const dirPath = './facturas';
+        if (!fs.existsSync(dirPath)) {
+            fs.mkdirSync(dirPath, { recursive: true });
+            console.log(`Directorio creado: ${dirPath}`);
+        }
+        
         const doc = new PDFDocument();
-        const filePath = `./facturas/factura_${datos.id_cita}.pdf`;
+        const filePath = `${dirPath}/factura_${datos.id_cita}.pdf`;
         const writeStream = fs.createWriteStream(filePath);
 
         doc.pipe(writeStream);
@@ -139,10 +153,20 @@ async function finalizarCita(req, res) {
         const cita = await Cita.findByPk(id_cita, {
             include: [{
                 model: Paciente,
-                attributes: ['nombre']
+                as: 'paciente',
+                include: [{
+                    model: Usuario,
+                    as: 'usuario',
+                    attributes: ['nombre']
+                }]
             }, {
                 model: Medico,
-                attributes: ['nombre']
+                as: 'medico',
+                include: [{
+                    model: Usuario,
+                    as: 'usuario',
+                    attributes: ['nombre']
+                }]
             }]
         });
 
@@ -166,7 +190,7 @@ async function finalizarCita(req, res) {
         if (medicamentos) {
             const datosReceta = {
                 id_cita,
-                nombre_medico: `${cita.Medico.nombre} ${cita.Medico.apellidos}`,
+                nombre_medico: `${cita.medico.usuario.nombre}`,
                 medicamentos,
                 info
             };
@@ -175,8 +199,8 @@ async function finalizarCita(req, res) {
             // Guardar receta en la base de datos
             await RecetaMedica.create({
                 id_cita,
-                id_medico: cita.Medico.id,
-                id_paciente: cita.Paciente.id,
+                id_medico: cita.id_medico,
+                id_paciente: cita.id_paciente,
                 descripcion: medicamentos
             });
         }
@@ -185,15 +209,15 @@ async function finalizarCita(req, res) {
         if (precio_consulta) {
             const datosFactura = {
                 id_cita,
-                nombre_paciente: `${cita.paciente.nombre} ${cita.paciente.apellidos}`,
-                nombre_medico: `${cita.Medico.nombre} ${cita.Medico.apellidos}`,
+                nombre_paciente: `${cita.paciente.usuario.nombre}`,
+                nombre_medico: `${cita.medico.usuario.nombre}`,
                 precio_consulta
             };
             resultados.factura_path = await generarFacturaPDF(datosFactura);
 
             // Guardar factura en la base de datos
             await Factura.create({
-                id_paciente: cita.Paciente.id,
+                id_paciente: cita.id_paciente,
                 monto: precio_consulta,
                 estado: 'en espera'
             });

@@ -4,8 +4,8 @@ USE clinicLink;
 
 -- Usuarios (3 roles: paciente, medico, recepcion)
 INSERT INTO Usuario (nombre, email, contrasena, rol) VALUES
-('Juan Pérez', 'juan.perez@example.com', '$2a$10$UIaaQ9nuBiXAUcDlTdsRuud6n6iRUjIPIW.toB3eY6.1a8RboljZe', 'paciente'), --contrasena_segura123
-('Dra. Ana Ruiz', 'ana.ruiz@example.com', '$2a$10$UIaaQ9nuBiXAUcDlTdsRuud6n6iRUjIPIW.toB3eY6.1a8RboljZe', 'medico'), --contrasena_segura123
+('Juan Pérez', 'juan.perez@example.com', '$2a$10$UIaaQ9nuBiXAUcDlTdsRuud6n6iRUjIPIW.toB3eY6.1a8RboljZe', 'paciente'),
+('Dra. Ana Ruiz', 'ana.ruiz@example.com', '$2a$10$UIaaQ9nuBiXAUcDlTdsRuud6n6iRUjIPIW.toB3eY6.1a8RboljZe', 'medico'),
 ('Carlos López', 'carlos.lopez@example.com', '$2a$10$UIaaQ9nuBiXAUcDlTdsRuud6n6iRUjIPIW.toB3eY6.1a8RboljZe', 'recepcion'); --contrasena_segura123
 
 -- Paciente (ligado al primer usuario)

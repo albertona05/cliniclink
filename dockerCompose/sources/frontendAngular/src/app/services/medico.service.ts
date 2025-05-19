@@ -18,4 +18,12 @@ export class MedicoService {
   finalizarCita(datos: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/finalizar-cita`, datos);
   }
+
+  obtenerMedicos(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/medicos`);
+  }
+
+  obtenerHorasLibres(id_medico: string, fecha: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/medicos/horas-libres?fecha=${fecha}&id_medico=${id_medico}`);
+  }
 }
