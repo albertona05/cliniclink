@@ -3,7 +3,9 @@
 <div class="container-fluid px-4 mt-3">
   <div class="content-header rounded p-4 mb-4" style="background-color: #009688; color: white;">
     <h2 class="m-0">{{ nombrePaciente }} - {{ dniPaciente }}</h2>
-    <button class="btn btn-light float-end" (click)="volver()">Ver Historial</button>
+    <button class="btn btn-info float-end" (click)="volver()">
+      <i class="fas fa-history"></i> Ver Historial del Paciente
+    </button>
   </div>
 
   <div class="content-body p-4">
@@ -21,7 +23,8 @@
             <div class="col-md-12 mb-3">
               <div class="form-group">
                 <label>Información:</label>
-                <textarea class="form-control" formControlName="info" rows="4" [ngClass]="{ 'is-invalid': submitted && f['info'].errors }"></textarea>
+                <textarea class="form-control" formControlName="info" rows="4"
+                  [ngClass]="{ 'is-invalid': submitted && f['info'].errors }"></textarea>
                 <div *ngIf="submitted && f['info'].errors" class="invalid-feedback">
                   {{ getErrorMessage('info') }}
                 </div>
@@ -38,7 +41,8 @@
             <div class="col-md-6 mb-3">
               <div class="form-group">
                 <label>Precio consulta:</label>
-                <input type="number" class="form-control" formControlName="precio_consulta" [ngClass]="{ 'is-invalid': submitted && f['precio_consulta'].errors }">
+                <input type="number" class="form-control" formControlName="precio_consulta"
+                  [ngClass]="{ 'is-invalid': submitted && f['precio_consulta'].errors }">
                 <div *ngIf="submitted && f['precio_consulta'].errors" class="invalid-feedback">
                   {{ getErrorMessage('precio_consulta') }}
                 </div>
@@ -64,14 +68,16 @@
                 <label>Médico:</label>
                 <select class="form-control" formControlName="id_medico">
                   <option value="">Seleccione un médico</option>
-                  <option *ngFor="let doc of medicos" [value]="doc.id">{{ doc.nombre }} - {{ doc.especialidad }}</option>
+                  <option *ngFor="let doc of medicos" [value]="doc.id">{{ doc.nombre }} - {{ doc.especialidad }}
+                  </option>
                 </select>
               </div>
             </div>
 
             <div class="col-md-12 mb-3">
               <div class="form-group">
-                <button type="button" class="btn btn-primary" (click)="consultarHorasDisponibles()" [disabled]="!citaForm.value.nueva_fecha || !citaForm.value.id_medico">
+                <button type="button" class="btn btn-primary" (click)="consultarHorasDisponibles()"
+                  [disabled]="!citaForm.value.nueva_fecha || !citaForm.value.id_medico">
                   Consultar horas disponibles
                 </button>
               </div>
@@ -80,14 +86,15 @@
             <!-- Horas disponibles -->
             <div class="col-md-12 mb-3" *ngIf="horasDisponibles.length > 0">
               <div class="form-group">
-                <label>Hora:</label>
-                <div class="row">
-                  <div class="col-md-4 mb-2" *ngFor="let hora of horasDisponibles">
-                    <button type="button" class="btn btn-outline-primary w-100" 
-                      [class.active]="horaSeleccionada === hora"
-                      (click)="seleccionarHora(hora)">
-                      {{ hora }}
-                    </button>
+                <div class="card-body px-0">
+                  <div class="row g-2">
+                    <div class="col-6 col-sm-4 col-md-3" *ngFor="let hora of horasDisponibles">
+                      <button class="btn w-100 hora-btn" 
+                        [class.selected]="horaSeleccionada === hora"
+                        (click)="seleccionarHora(hora)">
+                        {{ hora }}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

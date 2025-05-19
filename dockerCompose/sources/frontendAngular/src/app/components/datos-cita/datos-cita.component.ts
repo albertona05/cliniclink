@@ -25,20 +25,20 @@ export class DatosCitaComponent implements OnInit {
   medicos: any[] = [];
   horasDisponibles: string[] = [];
   horaSeleccionada: string = '';
-  
+
   constructor(
     private formBuilder: FormBuilder,
     private medicoService: MedicoService,
     private router: Router,
     private route: ActivatedRoute
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Obtener el ID de la cita de los parámetros de la ruta
     this.route.params.subscribe(params => {
       this.idCita = params['id'];
     });
-    
+
     // Obtener el nombre y DNI del paciente de los query params
     this.route.queryParams.subscribe(params => {
       this.nombrePaciente = params['nombre'] || 'Paciente';
@@ -84,7 +84,7 @@ export class DatosCitaComponent implements OnInit {
     if (this.citaForm.value.nueva_fecha && this.citaForm.value.id_medico) {
       datosCita.nueva_fecha = this.citaForm.value.nueva_fecha;
       datosCita.id_medico = this.citaForm.value.id_medico;
-      
+
       // Añadir la hora seleccionada si existe
       if (this.horaSeleccionada) {
         datosCita.nueva_hora = this.horaSeleccionada;
@@ -108,7 +108,7 @@ export class DatosCitaComponent implements OnInit {
           this.mensajeExito += '. Se ha programado una nueva cita.';
         }
         this.loading = false;
-        
+
         // Redirigir a la agenda después de 2 segundos
         setTimeout(() => {
           this.router.navigate(['/agenda']);
@@ -128,7 +128,7 @@ export class DatosCitaComponent implements OnInit {
 
   getErrorMessage(field: string): string {
     const control = this.citaForm.get(field);
-    
+
     if (control?.errors) {
       if (control.errors['required']) {
         return 'Este campo es requerido';
@@ -141,7 +141,13 @@ export class DatosCitaComponent implements OnInit {
   }
 
   volver() {
-    this.router.navigate(['/agenda']);
+    console.log(this.dniPaciente)
+    // Navegar al historial del paciente usando el DNI
+    if (this.dniPaciente) {
+      this.router.navigate(['/historial-paciente', this.dniPaciente]);
+    } else {
+      this.router.navigate(['/agenda']);
+    }
   }
 
   cargarMedicos() {
@@ -166,12 +172,12 @@ export class DatosCitaComponent implements OnInit {
       this.mensajeError = 'Debe seleccionar fecha y médico';
       return;
     }
-    
+
     this.loading = true;
     this.mensajeError = '';
     this.horasDisponibles = [];
     this.horaSeleccionada = '';
-    
+
     this.medicoService.obtenerHorasLibres(this.citaForm.value.id_medico, this.citaForm.value.nueva_fecha)
       .subscribe({
         next: (response) => {
