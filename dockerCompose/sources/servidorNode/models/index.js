@@ -10,6 +10,8 @@ const Cita = require('./citaModel')(sequelize, Sequelize.DataTypes);
 const RecetaMedica = require('./recetaMedicaModel')(sequelize, Sequelize.DataTypes);
 const Prueba = require('./pruebaModel')(sequelize, Sequelize.DataTypes);
 const Factura = require('./facturaModel')(sequelize, Sequelize.DataTypes);
+const Medicamento = require('./medicamentoModel')(sequelize, Sequelize.DataTypes);
+const RecetaMedicamento = require('./recetaMedicamentoModel')(sequelize, Sequelize.DataTypes);
 
 // Configuración de asociaciones entre los modelos
 // Usuario-Paciente, Medico, Recepcion
@@ -120,6 +122,17 @@ Prueba.belongsTo(Medico, {
     as: 'medico'
 });
 
+// Asociaciones para RecetaMedica y Medicamento
+RecetaMedica.hasMany(RecetaMedicamento, {
+    foreignKey: 'id_receta',
+    as: 'recetaMedicamentos'
+});
+
+Medicamento.hasMany(RecetaMedicamento, {
+    foreignKey: 'id_medicamento',
+    as: 'recetaMedicamentos'
+});
+
 // Exportamos los modelos
 module.exports = {
     sequelize,
@@ -131,5 +144,7 @@ module.exports = {
     Cita,
     RecetaMedica,
     Prueba,
-    Factura
+    Factura,
+    Medicamento,
+    RecetaMedicamento
 };

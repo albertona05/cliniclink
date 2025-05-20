@@ -26,4 +26,8 @@ export class MedicoService {
   obtenerHorasLibres(id_medico: string, fecha: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/medicos/horas-libres?fecha=${fecha}&id_medico=${id_medico}`);
   }
+  
+  obtenerMedicamentos(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/medicamentos`);
+  }
 }

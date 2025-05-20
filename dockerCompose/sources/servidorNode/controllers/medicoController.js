@@ -101,7 +101,23 @@ async function generarRecetaPDF(datos) {
         doc.moveDown();
         doc.text('Medicamentos:');
         doc.moveDown();
-        doc.text(datos.medicamentos);
+        
+        // Mostrar cada medicamento con sus instrucciones
+        if (datos.medicamentos && Array.isArray(datos.medicamentos)) {
+            datos.medicamentos.forEach((med, index) => {
+                doc.text(`${index + 1}. ${med.nombre}`);
+                doc.text(`   Dosis: ${med.dosis}`);
+                doc.text(`   Frecuencia: ${med.frecuencia}`);
+                doc.text(`   Duración: ${med.duracion}`);
+                if (med.instrucciones) {
+                    doc.text(`   Instrucciones: ${med.instrucciones}`);
+                }
+                doc.moveDown();
+            });
+        } else {
+            doc.text('No se especificaron medicamentos');
+        }
+        
         doc.moveDown();
         doc.text(`Información adicional: ${datos.info}`);
         doc.end();
@@ -187,7 +203,7 @@ async function finalizarCita(req, res) {
         };
 
         // Generar receta médica si hay medicamentos
-        if (medicamentos) {
+        if (medicamentos && Array.isArray(medicamentos) && medicamentos.length > 0) {
             const datosReceta = {
                 id_cita,
                 nombre_medico: `${cita.medico.usuario.nombre}`,
@@ -197,12 +213,24 @@ async function finalizarCita(req, res) {
             resultados.receta_path = await generarRecetaPDF(datosReceta);
 
             // Guardar receta en la base de datos
-            await RecetaMedica.create({
+            const recetaCreada = await RecetaMedica.create({
                 id_cita,
                 id_medico: cita.id_medico,
                 id_paciente: cita.id_paciente,
-                descripcion: medicamentos
+                descripcion: 'Ver detalle de medicamentos'
             });
+            
+            // Guardar cada medicamento asociado a la receta
+            for (const med of medicamentos) {
+                await db.RecetaMedicamento.create({
+                    id_receta: recetaCreada.id,
+                    id_medicamento: med.id_medicamento,
+                    frecuencia: med.frecuencia,
+                    duracion: med.duracion,
+                    dosis: med.dosis,
+                    instrucciones: med.instrucciones || ''
+                });
+            }
         }
 
         // Generar factura si hay precio de consulta
@@ -227,19 +255,19 @@ async function finalizarCita(req, res) {
         if (id_medico && nueva_fecha && nueva_hora) {
             try {
                 const nuevaCitaData = {
-                    id_paciente: cita.Paciente.id,
+                    id_paciente: cita.id_paciente,
                     id_medico,
                     fecha: nueva_fecha,
                     hora: nueva_hora
                 };
                 
-                // Crear una nueva cita utilizando la función del controlador global
-                const { crearCita } = require('./globalController');
+                // Crear una nueva cita utilizando la función del controlador de recepción
+                const { crearCita } = require('./recepcionController');
                 await crearCita({ body: nuevaCitaData }, {
                     status: (code) => ({
                         json: (data) => {
                             if (code === 201) {
-                                resultados.nueva_cita = data.data;
+                                resultados.nueva_cita = data.cita;
                                 resultados.mensaje_nueva_cita = 'Nueva cita creada exitosamente';
                             } else {
                                 resultados.error_nueva_cita = data.mensaje;

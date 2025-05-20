@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MedicoService } from '../../services/medico.service';
 import { NavComponent } from '../nav/nav.component';
@@ -25,6 +25,9 @@ export class DatosCitaComponent implements OnInit {
   medicos: any[] = [];
   horasDisponibles: string[] = [];
   horaSeleccionada: string = '';
+  medicamentos: any[] = [];
+  frecuenciasComunes: string[] = ['Cada 8 horas', 'Cada 12 horas', 'Cada 24 horas', 'Dos veces al día', 'Tres veces al día'];
+  duracionesComunes: string[] = ['3 días', '5 días', '7 días', '10 días', '14 días', '30 días'];
   
   constructor(
     private formBuilder: FormBuilder,
@@ -45,12 +48,13 @@ export class DatosCitaComponent implements OnInit {
       this.dniPaciente = params['dni'] || '';
     });
 
-    // Cargar la lista de médicos
+    // Cargar la lista de médicos y medicamentos
     this.cargarMedicos();
+    this.cargarMedicamentos();
 
     this.citaForm = this.formBuilder.group({
       info: ['', Validators.required],
-      medicamentos: [''],
+      medicamentosArray: this.formBuilder.array([]),
       precio_consulta: ['', [Validators.required, Validators.min(0)]],
       nueva_fecha: [''],
       id_medico: [''],
@@ -59,6 +63,62 @@ export class DatosCitaComponent implements OnInit {
 
   get f() {
     return this.citaForm.controls;
+  }
+  
+  get medicamentosArray() {
+    return this.citaForm.get('medicamentosArray') as FormArray;
+  }
+  
+  // Método para obtener un medicamento como FormGroup en lugar de AbstractControl
+  getMedicamentoFormGroup(index: number): FormGroup {
+    return this.medicamentosArray.at(index) as FormGroup;
+  }
+  
+  agregarMedicamento() {
+    this.medicamentosArray.push(this.formBuilder.group({
+      id_medicamento: ['', Validators.required],
+      nombre: [''],
+      dosis: ['1 comprimido', Validators.required],
+      frecuencia: ['Cada 8 horas', Validators.required],
+      duracion: ['7 días', Validators.required],
+      instrucciones: [''] 
+    }));
+  }
+  
+  eliminarMedicamento(index: number) {
+    this.medicamentosArray.removeAt(index);
+  }
+  
+  actualizarNombreMedicamento(index: number) {
+    const medicamentoControl = this.medicamentosArray.at(index);
+    const idMedicamento = medicamentoControl.get('id_medicamento')?.value;
+    
+    if (idMedicamento) {
+      const medicamentoSeleccionado = this.medicamentos.find(m => m.id.toString() === idMedicamento.toString());
+      if (medicamentoSeleccionado) {
+        medicamentoControl.get('nombre')?.setValue(medicamentoSeleccionado.nombre);
+      }
+    }
+  }
+  
+  cargarMedicamentos() {
+    this.loading = true;
+    this.medicoService.obtenerMedicamentos().subscribe({
+      next: (response) => {
+        if (response && response.success && response.data) {
+          this.medicamentos = response.data;
+        } else {
+          this.medicamentos = [];
+          this.mensajeError = 'No se pudieron cargar los medicamentos';
+        }
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error al cargar medicamentos:', error);
+        this.mensajeError = 'Error al cargar la lista de medicamentos';
+        this.loading = false;
+      }
+    });
   }
 
   onSubmit() {
@@ -73,10 +133,19 @@ export class DatosCitaComponent implements OnInit {
     this.mensajeError = '';
 
     // Preparar los datos para enviar al backend
+    const medicamentosFormateados = this.medicamentosArray.value.map((med: any) => ({
+      id_medicamento: med.id_medicamento,
+      nombre: med.nombre,
+      dosis: med.dosis,
+      frecuencia: med.frecuencia,
+      duracion: med.duracion,
+      instrucciones: med.instrucciones
+    }));
+    
     const datosCita: DatosCita = {
       id_cita: this.idCita,
       info: this.citaForm.value.info,
-      medicamentos: this.citaForm.value.medicamentos,
+      medicamentos: medicamentosFormateados,
       precio_consulta: this.citaForm.value.precio_consulta
     };
 

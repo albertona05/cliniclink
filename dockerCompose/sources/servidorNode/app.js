@@ -50,12 +50,14 @@ const globalRoutes = require('./routes/globalRoutes');
 const medicoRoutes = require('./routes/medicoRoutes');
 const pacienteRoutes = require('./routes/pacienteRoutes');
 const recepcionRoutes = require('./routes/recepcionRoutes');
+const medicamentoRoutes = require('./routes/medicamentoRoutes');
 
 app.use(authRoutes);
 app.use(globalRoutes);
 app.use(medicoRoutes);
 app.use(pacienteRoutes);
 app.use(recepcionRoutes);
+app.use(medicamentoRoutes);
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Se ha iniciado correctamente en http://localhost:${PORT}/`);
