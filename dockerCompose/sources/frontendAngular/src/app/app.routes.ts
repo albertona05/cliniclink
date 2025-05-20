@@ -63,7 +63,7 @@ export const routes: Routes = [
     path: 'historial-paciente/:id',
     component: HistorialPacienteComponent,
     canActivate: [AuthGuard],
-    data: { rolesPermitidos: ['recepcion', 'paciente'] }
+    data: { rolesPermitidos: ['medico', 'recepcion', 'paciente'] }
   },
   {
     path: 'agenda',

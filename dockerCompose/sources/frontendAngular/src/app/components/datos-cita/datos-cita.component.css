@@ -98,6 +98,23 @@ textarea.form-control {
   border-color: #009688;
   color: white;
   font-weight: 500;
+}
+
+.hora-btn {
+  border-color: #009688;
+  color: #009688;
+  background-color: transparent;
+  transition: all 0.3s ease;
+}
+
+.hora-btn:hover {
+  background-color: #009688;
+  color: white;
+}
+
+.hora-btn.selected {
+  background-color: #009688;
+  color: white;
   padding: 10px 20px;
   border-radius: 4px;
   transition: all 0.3s;
@@ -174,4 +191,44 @@ textarea.form-control {
 .form-check-input:checked {
   background-color: #009688;
   border-color: #009688;
+}
+
+@media (max-width: 1024px) {
+  :host {
+    margin-left: 280px;
+  }
+  .content-body {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .content-header h2 {
+    font-size: 22px;
+  }
+  :host {
+    margin-left: 0;
+    padding-top: 50px;
+  }
+  .content-body {
+    width: 100%;
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  :host {
+    padding-top: 40px;
+  }
+  .content-header button {
+    position: static;
+    margin-top: 25px;
+    transform: none;
+    width: 100%;
+    display: block;
+  }
+  .content-body {
+    padding: 15px;
+    width: 100%;
+  }
 }

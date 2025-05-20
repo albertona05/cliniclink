@@ -227,9 +227,9 @@ body {
 }
 
 /* === Responsive === */
-@media (max-width: 1200px) {
+@media (max-width: 1024px) {
 :host {
-    margin-left: 250px;
+    margin-left: 280px;
 }
   
 .content-body {
@@ -237,9 +237,10 @@ body {
 }
 }
 
+
 @media (max-width: 992px) {
 :host {
-    margin-left: 0;
+    margin-left: 280px;
 }
   
 .content-body {
@@ -255,5 +256,11 @@ body {
 .cita-actions {
     margin-top: 15px;
     align-self: flex-end;
+}
+}
+
+@media (max-width: 768px) {
+:host {
+    margin-left: 0;
 }
 }

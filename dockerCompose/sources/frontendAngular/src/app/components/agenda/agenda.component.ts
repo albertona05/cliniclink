@@ -63,6 +63,31 @@ export class AgendaComponent implements OnInit {
       .subscribe({
         next: (citas) => {
           this.citas = citas;
+          
+          // Ordenar las citas por hora (de la más temprana a la más tardía)
+          this.citas.sort((a, b) => {
+            try {
+              // Asegurar que la hora tenga el formato correcto (HH:mm)
+              const horaA = a.hora.split(':').slice(0, 2).join(':');
+              const horaB = b.hora.split(':').slice(0, 2).join(':');
+              
+              // Crear objetos Date con las horas para comparar
+              const fechaA = new Date(`1970-01-01T${horaA}`);
+              const fechaB = new Date(`1970-01-01T${horaB}`);
+              
+              // Verificar que las horas sean válidas
+              if (isNaN(fechaA.getTime()) || isNaN(fechaB.getTime())) {
+                console.error('Hora inválida detectada durante ordenamiento');
+                return 0; // Mantener el orden original si hay horas inválidas
+              }
+              
+              return fechaA.getTime() - fechaB.getTime(); // Orden ascendente por hora
+            } catch (error) {
+              console.error('Error al ordenar citas por hora:', error);
+              return 0; // Mantener el orden original en caso de error
+            }
+          });
+          
           this.cargando = false;
           if (citas.length === 0) {
             this.mensajeExito = 'No hay citas programadas para esta fecha';
@@ -78,12 +103,18 @@ export class AgendaComponent implements OnInit {
 
   iniciarCita(idCita: number): void {
     console.log('Iniciando cita:', idCita);
-    // Buscar el nombre del paciente en la lista de citas
+    // Buscar el nombre y DNI del paciente en la lista de citas
     const cita = this.citas.find(c => c.id === idCita);
     const nombrePaciente = cita ? cita.nombre_paciente : 'Paciente';
+    const dniPaciente = cita ? cita.dni_paciente : '';
     
-    // Redirigir al componente datos-cita con el ID de la cita y el nombre del paciente
-    this.router.navigate(['/datos-cita', idCita], { queryParams: { nombre: nombrePaciente } });
+    // Redirigir al componente datos-cita con el ID de la cita, nombre y DNI del paciente
+    this.router.navigate(['/datos-cita', idCita], { 
+      queryParams: { 
+        nombre: nombrePaciente,
+        dni: dniPaciente
+      } 
+    });
   }
 
   anularCita(idCita: string): void {

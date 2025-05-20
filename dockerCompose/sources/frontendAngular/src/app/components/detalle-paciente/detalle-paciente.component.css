@@ -145,14 +145,42 @@ textarea.form-control {
 }
 
 /* Estilos responsivos */
+@media (max-width: 1024px) {
+  :host {
+    margin-left: 280px;
+  }
+
+  .content-body {
+    width: calc(100vw - 310px);
+  }
+}
+
 @media (max-width: 768px) {
+  :host {
+    margin-left: 0;
+  }
+
+  .content-body {
+    width: 100%;
+    padding: 20px;
+  }
+
+  .button-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
   .d-flex.flex-wrap {
     justify-content: center !important;
   }
   
   .btn {
     margin-bottom: 10px;
-    margin-top: 30px;
+    margin-top: 35px;
   }
 
 .btn {
@@ -194,36 +222,6 @@ textarea.form-control {
   width: 3rem;
   height: 3rem;
   color: #00bcd4;
-}
-
-@media (max-width: 1024px) {
-  :host {
-    margin-left: 280px;
-  }
-
-  .content-body {
-    width: calc(100vw - 310px);
-  }
-}
-
-@media (max-width: 768px) {
-  :host {
-    margin-left: 0;
-  }
-
-  .content-body {
-    width: 100%;
-    padding: 20px;
-  }
-
-  .button-group {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .btn {
-    width: 100%;
-  }
 }
 
 @media (max-width: 480px) {

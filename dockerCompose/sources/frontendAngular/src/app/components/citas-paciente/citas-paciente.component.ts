@@ -7,7 +7,6 @@ import { CitaService } from '../../services/cita.service';
 import { catchError, finalize, of } from 'rxjs';
 import { BotonVolverComponent } from '../boton-volver/boton-volver.component';
 
-
 @Component({
   selector: 'app-citas-paciente',
   standalone: true,
@@ -55,36 +54,34 @@ export class CitasPacienteComponent implements OnInit {
       )
       .subscribe(citas => {
         this.citas = citas;
-        // Separar citas en futuras y pasadas
-        const ahora = new Date();
-        const citasFuturas: any[] = [];
-        const citasPasadas: any[] = [];
 
-        this.citas.forEach(cita => {
-          const fechaCita = new Date(cita.fecha + 'T' + cita.hora);
-          if (fechaCita > ahora) {
-            citasFuturas.push(cita);
-          } else {
-            citasPasadas.push(cita);
+        // Ordenar todas las citas de la más temprana a la más tardía
+        this.citas.sort((a, b) => {
+          try {
+            // Asegurar que la fecha tenga el formato correcto (YYYY-MM-DD)
+            const fechaA_str = a.fecha.split('T')[0];
+            const fechaB_str = b.fecha.split('T')[0];
+            
+            // Asegurar que la hora tenga el formato correcto (HH:mm)
+            const horaA = a.hora.split(':').slice(0, 2).join(':');
+            const horaB = b.hora.split(':').slice(0, 2).join(':');
+            
+            // Crear objetos Date con las fechas y horas combinadas
+            const fechaA = new Date(`${fechaA_str}T${horaA}`);
+            const fechaB = new Date(`${fechaB_str}T${horaB}`);
+            
+            // Verificar que las fechas sean válidas
+            if (isNaN(fechaA.getTime()) || isNaN(fechaB.getTime())) {
+              console.error('Fecha inválida detectada durante ordenamiento');
+              return 0; // Mantener el orden original si hay fechas inválidas
+            }
+            
+            return fechaB.getTime() - fechaA.getTime(); // Orden descendente
+          } catch (error) {
+            console.error('Error al ordenar citas:', error);
+            return 0; // Mantener el orden original en caso de error
           }
         });
-
-        // Ordenar citas futuras de la más próxima a la más lejana
-        citasFuturas.sort((a, b) => {
-          const fechaA = new Date(a.fecha + 'T' + a.hora);
-          const fechaB = new Date(b.fecha + 'T' + b.hora);
-          return fechaA.getTime() - fechaB.getTime();
-        });
-
-        // Ordenar citas pasadas de la más reciente a la más antigua
-        citasPasadas.sort((a, b) => {
-          const fechaA = new Date(a.fecha + 'T' + a.hora);
-          const fechaB = new Date(b.fecha + 'T' + b.hora);
-          return fechaB.getTime() - fechaA.getTime();
-        });
-
-        // Combinar las citas ordenadas: primero las futuras, luego las pasadas
-        this.citas = [...citasFuturas, ...citasPasadas];
       });
   }
   
@@ -105,20 +102,17 @@ export class CitasPacienteComponent implements OnInit {
       }
 
       // Crear objeto Date con la fecha y hora combinadas
-      console.log('Fecha:', fecha);
-      console.log('Hora:', horaFormateada);
       const fechaCita = new Date(`${fecha}T${horaFormateada}`);
       const ahora = new Date();
 
       // Comparar las fechas usando getTime() para una comparación más simple y precisa
-      return true;
+      return fechaCita > ahora;
     } catch (error) {
       console.error('Error al procesar la fecha:', error);
       return false;
     }
   }
   
-
   anularCita(idCita: string): void {
     if (confirm('¿Está seguro que desea anular esta cita?')) {
       this.cargando = true;

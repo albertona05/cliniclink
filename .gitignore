@@ -14,18 +14,12 @@ dist/
 out-tsc/
 coverage/
 
-# IDEs y editores
+# IDE
 .vscode/
-.idea/
-*.sublime-project
-*.sublime-workspace
-
-# Sistema operativo
-.DS_Store
-Thumbs.db
 
 # Archivos específicos
 *.png
 *.jpeg
 *.jpg
 *.txt
+*.pdf
