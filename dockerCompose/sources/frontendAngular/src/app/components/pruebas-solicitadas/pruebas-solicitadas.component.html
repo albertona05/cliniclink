@@ -1,0 +1,214 @@
+<app-nav></app-nav>
+
+<div class="container-fluid px-4 mt-3">
+  <div class="content-header rounded p-4 mb-4" style="background-color: #009688; color: white;">
+    <h2 class="m-0">Pruebas Médicas Solicitadas</h2>
+  </div>
+
+  <div class="content-body p-4">
+    <!-- Formulario de programación de prueba -->
+    <div *ngIf="pruebaSeleccionada" class="card shadow-sm mb-4">
+      <div class="card-header bg-light">
+        <h4 class="card-title mb-0">Programar Prueba Médica</h4>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <div class="form-group">
+              <label for="fecha">Fecha:</label>
+              <input type="date" id="fecha" class="form-control" [(ngModel)]="fecha" [min]="fechaMinima">
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <div class="form-group mt-2">
+              <button class="btn btn-primary me-2 mt-4" (click)="consultarHorasDisponibles()">
+                <i class="bi bi-search me-1"></i> Consultar Disponibilidad
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Horas disponibles -->
+        <div *ngIf="horasDisponibles.length > 0" class="row mb-3">
+          <div class="col-12">
+            <h5>Horas Disponibles:</h5>
+            <div class="d-flex flex-wrap gap-2">
+              <button *ngFor="let hora of horasDisponibles" 
+                class="btn" 
+                [class.btn-outline-primary]="horaSeleccionada !== hora"
+                [class.btn-primary]="horaSeleccionada === hora"
+                (click)="seleccionarHora(hora)">
+                {{ hora }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-success" 
+            [disabled]="!fecha || !horaSeleccionada"
+            (click)="programarPrueba()">
+            <i class="bi bi-calendar-check me-1"></i> Confirmar Programación
+          </button>
+          <button class="btn btn-secondary" (click)="cancelarProgramacion()">
+            <i class="bi bi-x-circle me-1"></i> Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Listado de pruebas -->
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-light">
+        <h4 class="card-title mb-0">Listado de Pruebas</h4>
+      </div>
+      <div class="card-body">
+        <div *ngIf="mensajeError" class="alert alert-danger">{{ mensajeError }}</div>
+        <div *ngIf="mensajeExito" class="alert alert-success">{{ mensajeExito }}</div>
+
+        <div *ngIf="loading" class="text-center p-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          <p class="mt-2">Cargando pruebas...</p>
+        </div>
+
+        <div *ngIf="!loading && pruebas.length === 0" class="text-center p-5">
+          <i class="bi bi-clipboard-x" style="font-size: 3rem;"></i>
+          <p class="mt-2">No ha solicitado ninguna prueba</p>
+        </div>
+
+        <div *ngIf="!loading && pruebas.length > 0" class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Paciente</th>
+                <th>Tipo de Prueba</th>
+                <th>Médico Asignado</th>
+                <th>Fecha Solicitud</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let prueba of pruebas">
+                <td>{{ prueba.paciente }}</td>
+                <td>{{ prueba.tipo_prueba }}</td>
+                <td>{{ prueba.medico_asignado }}</td>
+                <td>{{ formatearFecha(prueba.fecha_creacion) }}</td>
+                <td>
+                  <span class="badge" [ngClass]="{
+                    'bg-warning': prueba.estado === 'pendiente',
+                    'bg-info': prueba.estado === 'en_proceso',
+                    'bg-success': prueba.estado === 'finalizado'
+                  }">
+                    {{ prueba.estado }}
+                  </span>
+                </td>
+                <td>
+                  <div *ngIf="prueba.estado === 'finalizado'">
+                    <button class="btn btn-sm btn-info" (click)="mostrarResultado(prueba)">
+                      <i class="bi bi-eye me-1"></i> Ver resultado
+                    </button>
+                  </div>
+                  <span *ngIf="prueba.estado !== 'finalizado'" class="text-muted">{{ prueba.estado }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel lateral deslizante para mostrar resultados -->
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="resultadoOffcanvas" aria-labelledby="resultadoOffcanvasLabel">
+    <div class="offcanvas-header bg-info text-white">
+      <h5 class="offcanvas-title" id="resultadoOffcanvasLabel">{{ pruebaSeleccionadaResultado?.tipo_prueba }}</h5>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+      <div *ngIf="pruebaSeleccionadaResultado" class="p-3">
+        <!-- Información básica de la prueba -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-3 text-muted">Información de la Prueba</h6>
+            <div class="mb-3">
+              <p class="mb-2"><strong>Paciente:</strong> {{ pruebaSeleccionadaResultado.paciente }}</p>
+              <p class="mb-2"><strong>Tipo de Prueba:</strong> {{ pruebaSeleccionadaResultado.tipo_prueba }}</p>
+              <p class="mb-2"><strong>Médico Asignado:</strong> {{ pruebaSeleccionadaResultado.medico_asignado }}</p>
+              <p class="mb-2"><strong>Fecha:</strong> {{ formatearFecha(pruebaSeleccionadaResultado.fecha_creacion) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resultados y archivos adjuntos -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-3 text-muted">Resultados y Archivos Adjuntos</h6>
+            
+            <!-- Texto del resultado -->
+            <div class="mb-4">
+              <p class="mb-2"><strong>Resultado:</strong></p>
+              <p class="text-muted">{{ pruebaSeleccionadaResultado.resultado || 'No hay resultado disponible' }}</p>
+            </div>
+
+            <!-- Archivos adjuntos -->
+            <ng-container *ngIf="pruebaSeleccionadaResultado?.archivos as archivos">
+              <div *ngIf="archivos.length > 0">
+                <h6 class="mb-3">Archivos Adjuntos</h6>
+                
+                <!-- Galería de imágenes -->
+                <div class="row g-3 mb-4">
+                  <ng-container *ngFor="let archivo of archivos">
+                    <div class="col-6 col-md-4" *ngIf="archivo.tipo?.startsWith('image/')">
+                      <div class="card h-100">
+                        <img [src]="archivo.url" class="card-img-top" [alt]="archivo.nombre"
+                             style="height: 150px; object-fit: cover; cursor: pointer;"
+                             (click)="abrirImagen(archivo.url)">
+                        <div class="card-body p-2">
+                          <p class="card-text small text-truncate mb-1">{{ archivo.nombre }}</p>
+                          <a [href]="archivo.url" download class="btn btn-sm btn-outline-primary w-100">
+                            <i class="bi bi-download"></i> Descargar
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </ng-container>
+                </div>
+
+                <!-- Lista de documentos PDF -->
+                <div class="list-group">
+                  <ng-container *ngFor="let archivo of archivos">
+                    <div class="list-group-item" *ngIf="archivo.tipo === 'application/pdf'">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                          <i class="bi bi-file-pdf text-danger me-2"></i>
+                          <span>{{ archivo.nombre }}</span>
+                        </div>
+                        <div class="btn-group">
+                          <a [href]="archivo.url" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i>
+                          </a>
+                          <a [href]="archivo.url" download class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-download"></i>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </ng-container>
+                </div>
+              </div>
+
+              <!-- Mensaje cuando no hay archivos -->
+              <div *ngIf="archivos.length === 0" class="text-center py-4">
+                <i class="bi bi-file-earmark-x" style="font-size: 2rem;"></i>
+                <p class="text-muted mt-2">No hay archivos adjuntos disponibles</p>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

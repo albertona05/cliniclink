@@ -59,13 +59,16 @@ async function obtenerCitasDia(req, res) {
                     attributes: ['nombre']
                 }]
             }],
-            attributes: ['id', 'hora']
+            attributes: ['id', 'hora', 'es_prueba', 'tipo_prueba', 'info']
         });
 
         const citasFormateadas = citas.map(cita => ({
             id: cita.id,
             hora: cita.hora,
-            nombre_paciente: `${cita.paciente.usuario.nombre}`
+            nombre_paciente: `${cita.paciente.usuario.nombre}`,
+            es_prueba: cita.es_prueba || false,
+            tipo_prueba: cita.tipo_prueba || '',
+            info: cita.info || ''
         }));
 
         res.json(citasFormateadas);

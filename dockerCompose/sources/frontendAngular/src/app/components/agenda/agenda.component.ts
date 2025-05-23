@@ -103,18 +103,35 @@ export class AgendaComponent implements OnInit {
 
   iniciarCita(idCita: number): void {
     console.log('Iniciando cita:', idCita);
-    // Buscar el nombre y DNI del paciente en la lista de citas
+    // Buscar la cita en la lista de citas
     const cita = this.citas.find(c => c.id === idCita);
-    const nombrePaciente = cita ? cita.nombre_paciente : 'Paciente';
-    const dniPaciente = cita ? cita.dni_paciente : '';
     
-    // Redirigir al componente datos-cita con el ID de la cita, nombre y DNI del paciente
-    this.router.navigate(['/datos-cita', idCita], { 
-      queryParams: { 
-        nombre: nombrePaciente,
-        dni: dniPaciente
-      } 
-    });
+    if (!cita) {
+      console.error('Cita no encontrada:', idCita);
+      return;
+    }
+    
+    const nombrePaciente = cita.nombre_paciente || 'Paciente';
+    const dniPaciente = cita.dni_paciente || '';
+    
+    if (cita.es_prueba) {
+      // Si es una prueba médica, redirigir al componente realizar-prueba
+      this.router.navigate(['/realizar-prueba', idCita], {
+        queryParams: {
+          nombre: nombrePaciente,
+          dni: dniPaciente,
+          tipo: cita.tipo_prueba
+        }
+      });
+    } else {
+      // Si es una cita regular, redirigir al componente datos-cita
+      this.router.navigate(['/datos-cita', idCita], { 
+        queryParams: { 
+          nombre: nombrePaciente,
+          dni: dniPaciente
+        } 
+      });
+    }
   }
 
   anularCita(idCita: string): void {

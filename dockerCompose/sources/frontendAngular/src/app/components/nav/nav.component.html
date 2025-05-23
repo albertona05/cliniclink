@@ -52,6 +52,11 @@
       <i class="bi bi-calendar-week"></i>
       <span>Agenda</span>
     </a>
+
+    <a *ngIf="isMedico()" class="nav-link" [routerLink]="['/pruebas-solicitadas']" routerLinkActive="active">
+      <i class="bi bi-clipboard-data"></i>
+      <span>Resultados de Pruebas</span>
+    </a>
     
     <!-- Opción de cierre de sesión para todos -->
     <a class="nav-link" (click)="logout()" routerLinkActive="active">

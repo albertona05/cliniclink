@@ -96,6 +96,94 @@
 
 
             <div class="col-md-12 mt-3">
+              <h5>Solicitar prueba médica</h5>
+              <hr>
+              <button type="button" class="btn btn-info mb-3" (click)="toggleFormPrueba()">
+                <i class="bi" [ngClass]="mostrarFormPrueba ? 'bi-dash-circle' : 'bi-plus-circle'"></i>
+                {{ mostrarFormPrueba ? 'Cancelar solicitud' : 'Solicitar prueba' }}
+              </button>
+              
+              <div *ngIf="mostrarFormPrueba" class="card mb-4">
+                <div class="card-body">
+                  <form [formGroup]="pruebaForm" (ngSubmit)="solicitarPrueba()">
+                    <div class="row">
+                      <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                          <label>Médico asignado:</label>
+                          <select class="form-control" formControlName="id_medicoAsignado">
+                            <option value="">Seleccione un médico</option>
+                            <option *ngFor="let doc of medicos" [value]="doc.id">{{ doc.nombre }} - {{ doc.especialidad }}</option>
+                          </select>
+                          <div *ngIf="submitted && pruebaForm.get('id_medicoAsignado')?.errors" class="text-danger">
+                            Este campo es requerido
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                          <label>Tipo de prueba:</label>
+                          <select class="form-control" formControlName="tipo_prueba">
+                            <option value="">Seleccione un tipo</option>
+                            <option *ngFor="let tipo of tiposPrueba" [value]="tipo">{{ tipo }}</option>
+                          </select>
+                          <div *ngIf="submitted && pruebaForm.get('tipo_prueba')?.errors" class="text-danger">
+                            Este campo es requerido
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="col-md-12 mb-3">
+                        <div class="form-group">
+                          <label>Descripción:</label>
+                          <textarea class="form-control" formControlName="descripcion" rows="3"
+                            placeholder="Detalles adicionales sobre la prueba"></textarea>
+                        </div>
+                      </div>
+
+                      <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                          <label>Fecha:</label>
+                          <input type="date" class="form-control" formControlName="fecha_prueba" [min]="fechaMinima">
+                        </div>
+                      </div>
+
+                      <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                          <button type="button" class="btn btn-primary" (click)="consultarHorasDisponiblesPrueba()"
+                            [disabled]="!pruebaForm.get('fecha_prueba')?.value || !pruebaForm.get('id_medicoAsignado')?.value">
+                            <i class="bi bi-search me-1"></i> Consultar horas disponibles
+                          </button>
+                        </div>
+                      </div>
+
+                      <div class="col-md-12 mb-3" *ngIf="horasDisponiblesPrueba.length > 0">
+                        <div class="form-group">
+                          <h5>Horas Disponibles:</h5>
+                          <div class="d-flex flex-wrap gap-2">
+                            <button type="button" *ngFor="let hora of horasDisponiblesPrueba" 
+                              class="btn" 
+                              [class.btn-outline-primary]="horaPruebaSeleccionada !== hora"
+                              [class.btn-primary]="horaPruebaSeleccionada === hora"
+                              (click)="seleccionarHoraPrueba(hora)">
+                              {{ hora }}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                      <button type="submit" class="btn btn-primary" [disabled]="loading || (!horaPruebaSeleccionada && pruebaForm.get('fecha_prueba')?.value)">
+                        <i class="bi bi-send me-1"></i> Solicitar prueba
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-12 mt-3">
               <h5>Programar nueva cita</h5>
               <hr>
             </div>

@@ -10,6 +10,8 @@ import { ReservarCitaComponent } from './components/reservar-cita/reservar-cita.
 import { HistorialPacienteComponent } from './components/historial-paciente/historial-paciente.component';
 import { AgendaComponent } from './components/agenda/agenda.component';
 import { DatosCitaComponent } from './components/datos-cita/datos-cita.component';
+import { PruebasSolicitadasComponent } from './components/pruebas-solicitadas/pruebas-solicitadas.component';
+import { RealizarPruebaComponent } from './components/realizar-prueba/realizar-prueba.component';
 import { inject } from '@angular/core';
 import { AuthGuard } from './guards/auth.guard';
 
@@ -74,6 +76,18 @@ export const routes: Routes = [
   {
     path: 'datos-cita/:id',
     component: DatosCitaComponent,
+    canActivate: [AuthGuard],
+    data: { rolesPermitidos: ['medico'] }
+  },
+  {
+    path: 'pruebas-solicitadas',
+    component: PruebasSolicitadasComponent,
+    canActivate: [AuthGuard],
+    data: { rolesPermitidos: ['medico'] }
+  },
+  {
+    path: 'realizar-prueba/:id',
+    component: RealizarPruebaComponent,
     canActivate: [AuthGuard],
     data: { rolesPermitidos: ['medico'] }
   }

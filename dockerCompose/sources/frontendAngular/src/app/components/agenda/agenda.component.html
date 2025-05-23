@@ -46,18 +46,24 @@
     <div *ngIf="citas.length > 0 && !cargando" class="citas-container">
       <div class="citas-scroll">
         <div *ngFor="let cita of citas" class="cita-card">
-          <div class="card h-100 border-0 shadow-sm rounded-3 hover-shadow transition">
-            <div class="card-header bg-light py-3 border-bottom">
-              <h5 class="card-title mb-0 fw-bold text-primary">{{ formatearHora(cita.hora) }}</h5>
+          <div class="card h-100 border-0 shadow-sm rounded-3 hover-shadow transition" [ngClass]="{'border-info border-2': cita.es_prueba}">
+            <div class="card-header py-3 border-bottom" [ngClass]="{'bg-light': !cita.es_prueba, 'bg-info bg-opacity-25': cita.es_prueba}">
+              <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0 fw-bold" [ngClass]="{'text-primary': !cita.es_prueba, 'text-info': cita.es_prueba}">{{ formatearHora(cita.hora) }}</h5>
+                <span *ngIf="cita.es_prueba" class="badge bg-info text-white">Prueba médica</span>
+              </div>
             </div>
             <div class="card-body p-4">
               <div class="d-flex align-items-center mb-3">
                 <i class="bi bi-person-circle fs-4 me-2 text-secondary"></i>
                 <p class="card-text mb-0 fs-5">{{ cita.nombre_paciente }}</p>
               </div>
+              <div *ngIf="cita.es_prueba" class="mb-3">
+                <span class="badge bg-secondary me-2">{{ cita.tipo_prueba }}</span>
+              </div>
               <div class="d-flex justify-content-between mt-4">
-                <button class="btn btn-success shadow-sm px-3 py-2" (click)="iniciarCita(cita.id)">
-                  <i class="bi bi-play-fill me-2"></i> Iniciar
+                <button class="btn shadow-sm px-3 py-2" [ngClass]="{'btn-success': !cita.es_prueba, 'btn-info': cita.es_prueba}" (click)="iniciarCita(cita.id)">
+                  <i class="bi bi-play-fill me-2"></i> {{ cita.es_prueba ? 'Realizar prueba' : 'Iniciar' }}
                 </button>
                 <button class="btn btn-outline-danger shadow-sm px-3 py-2" (click)="anularCita(cita.id)">
                   <i class="bi bi-x-circle me-2"></i> Anular

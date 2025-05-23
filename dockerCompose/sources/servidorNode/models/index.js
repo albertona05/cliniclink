@@ -119,7 +119,23 @@ Factura.belongsTo(Paciente, {
 // Prueba-Medico
 Prueba.belongsTo(Medico, {
     foreignKey: 'id_medicoManda',
-    as: 'medico'
+    as: 'medicoManda'
+});
+
+Prueba.belongsTo(Medico, {
+    foreignKey: 'id_medicoAsignado',
+    as: 'medicoAsignado'
+});
+
+Prueba.belongsTo(Cita, {
+    foreignKey: 'id_cita',
+    as: 'cita'
+});
+
+// Cita-Prueba
+Cita.belongsTo(Prueba, {
+    foreignKey: 'id_prueba',
+    as: 'prueba'
 });
 
 // Asociaciones para RecetaMedica y Medicamento

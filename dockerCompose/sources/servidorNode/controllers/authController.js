@@ -1,4 +1,4 @@
-const { Usuario, Paciente } = require('../models');
+const { Usuario, Paciente, Medico } = require('../models');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const sequelize = require('../config/database');
@@ -71,20 +71,26 @@ exports.login = async (req, res) => {
             });
         }
 
-        // Generar JWT con DNI incluido solo para pacientes
+        // Generar JWT con datos adicionales según el rol
         let tokenData = {
             id: usuario.id,
             nombre: usuario.nombre,
             email: usuario.email,
             rol: usuario.rol,
-            dni: ''
+            dni: '',
+            medico_id: null
         };
 
-        // Si es paciente, buscar su DNI en la tabla Paciente
+        // Agregar datos específicos según el rol
         if (usuario.rol === 'paciente') {
             const paciente = await Paciente.findOne({ where: { id_usuario: usuario.id } });
             if (paciente) {
                 tokenData.dni = paciente.dni;
+            }
+        } else if (usuario.rol === 'medico') {
+            const medico = await Medico.findOne({ where: { id_usuario: usuario.id } });
+            if (medico) {
+                tokenData.medico_id = medico.id;
             }
         }
 

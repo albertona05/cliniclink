@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { Usuario } = require('../models');
+const { Usuario, Medico } = require('../models');
 
 const JWT_SECRET = process.env.JWT_SECRET || '1234';
 
@@ -19,8 +19,19 @@ exports.verificarToken = async (req, res, next) => {
         // Verificar token
         const decoded = jwt.verify(token, JWT_SECRET);
 
-        // Buscar usuario
-        const usuario = await Usuario.findByPk(decoded.id);
+        // Buscar usuario con sus relaciones según el rol
+        let usuario;
+        if (decoded.rol === 'medico') {
+            usuario = await Usuario.findByPk(decoded.id, {
+                include: [{
+                    model: Medico,
+                    as: 'medico'
+                }]
+            });
+        } else {
+            usuario = await Usuario.findByPk(decoded.id);
+        }
+        
         if (!usuario) {
             return res.status(401).json({
                 success: false,
@@ -49,6 +60,32 @@ exports.verificarToken = async (req, res, next) => {
         res.status(500).json({
             success: false,
             message: 'Error en la autenticación',
+            error: error.message
+        });
+    }
+};
+
+// Middleware para verificar rol de médico
+exports.verificarRolMedico = async (req, res, next) => {
+    try {
+        const token = req.header('Authorization')?.replace('Bearer ', '');
+        const decoded = jwt.verify(token, JWT_SECRET);
+
+        if (!decoded.medico_id || decoded.rol !== 'medico') {
+            return res.status(403).json({
+                success: false,
+                message: 'Acceso denegado. Se requiere rol de médico.'
+            });
+        }
+
+        // Asignar el ID del médico desde el token
+        req.medicoId = decoded.medico_id;
+        next();
+    } catch (error) {
+        console.error('Error en verificación de rol médico:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al verificar el rol de médico',
             error: error.message
         });
     }

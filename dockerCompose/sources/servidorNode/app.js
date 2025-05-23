@@ -3,6 +3,7 @@ const body_parser = require('body-parser');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
+const fs = require('fs').promises;
 
 dotenv.config();
 
@@ -38,7 +39,7 @@ sequelize.authenticate()
 // Sincronizar tablas y asociaciones
 sequelize.sync({ alter: false })
   .then(() => {
-    console.log('Se han creado las tablas correctamente');
+    console.log('Se han creado/actualizado las tablas correctamente');
   })
   .catch((error) => {
     console.error('Error - No se ha podido crear las tablas correctamente', error);
@@ -48,16 +49,23 @@ sequelize.sync({ alter: false })
 const authRoutes = require('./routes/authRoutes');
 const globalRoutes = require('./routes/globalRoutes');
 const medicoRoutes = require('./routes/medicoRoutes');
+const pruebaRoutes = require('./routes/pruebaRoutes');
 const pacienteRoutes = require('./routes/pacienteRoutes');
 const recepcionRoutes = require('./routes/recepcionRoutes');
 const medicamentoRoutes = require('./routes/medicamentoRoutes');
+const fileRoutes = require('./routes/fileRoutes');
 
 app.use(authRoutes);
 app.use(globalRoutes);
 app.use(medicoRoutes);
+app.use(pruebaRoutes);
 app.use(pacienteRoutes);
 app.use(recepcionRoutes);
 app.use(medicamentoRoutes);
+app.use(fileRoutes);
+
+// Crear directorio temporal para uploads si no existe
+fs.mkdir('/tmp/uploads', { recursive: true }).catch(console.error);
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Se ha iniciado correctamente en http://localhost:${PORT}/`);

@@ -55,11 +55,19 @@ services:
       red_backend:
         ipv4_address: 192.168.1.4
     environment:
-      FTP_USER_NAME: user
-      FTP_USER_PASS: password
-      FTP_USER_HOME: /home/user
+      FTP_USER_NAME: cliniclink
+      FTP_USER_PASS: cliniclink123
+      FTP_USER_HOME: /home/cliniclink
+      PUBLICHOST: localhost
+      FTP_MAX_CLIENTS: 50
+      FTP_MAX_CONNECTIONS: 50
     volumes:
-      - ftp_data:/home/user
+      - ./ftp-setup.sh:/etc/pure-ftpd/setup.sh
+      - ftp_data:/home/cliniclink/pruebas
+    ports:
+      - "21:21"
+      - "30000-30009:30000-30009"
+    command: /etc/pure-ftpd/setup.sh
 
 volumes:
   node_modules:

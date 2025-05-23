@@ -10,7 +10,10 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
             defaultValue: 'espera'
         },
-        info: { type: DataTypes.STRING(100), allowNull: true }
+        info: { type: DataTypes.STRING(100), allowNull: true },
+        id_prueba: { type: DataTypes.BIGINT, allowNull: true },
+        es_prueba: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+        tipo_prueba: { type: DataTypes.STRING(100), allowNull: true }
     }, {
         tableName: 'Cita',
         timestamps: false
@@ -20,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
         Cita.belongsTo(models.Paciente, { foreignKey: 'id_paciente', as: 'paciente' });
         Cita.belongsTo(models.Medico, { foreignKey: 'id_medico', as: 'medico' });
         Cita.hasMany(models.RecetaMedica, { foreignKey: 'id_cita', as: 'recetas' });
+        Cita.belongsTo(models.Prueba, { foreignKey: 'id_prueba', as: 'prueba' });
     };
 
     return Cita;

@@ -8,6 +8,7 @@
     "dev": "nodemon app.js"
   },
   "dependencies": {
+    "basic-ftp": "^5.0.5",
     "bcryptjs": "^2.4.3",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
@@ -16,6 +17,7 @@
     "express": "^4.21.2",
     "express-rate-limit": "^6.7.0",
     "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.0",
     "mysql2": "^3.14.0",
     "nodemailer": "^7.0.3",
     "path": "^0.12.7",

@@ -1,0 +1,48 @@
+:host {
+    display: block;
+    margin-left: 350px;
+    min-height: 100vh;
+    background-color: #e0e0e0;
+    padding-top: 0;
+    overflow-y: auto;
+    box-sizing: border-box;
+  }
+  
+.cita-card {
+  margin-bottom: 1rem;
+}
+
+.hover-shadow {
+  transition: all 0.3s ease;
+}
+
+.hover-shadow:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.transition {
+  transition: all 0.3s ease;
+}
+
+.patient-info {
+  border-left: 4px solid #009688;
+}
+
+/* Estilos para la lista de archivos */
+.list-group-item {
+  transition: background-color 0.2s;
+}
+
+.list-group-item:hover {
+  background-color: #f8f9fa;
+}
+
+/* Estilos para la barra de progreso */
+.progress {
+  height: 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.progress-bar {
+  background-color: #009688;
+}
