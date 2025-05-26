@@ -14,15 +14,15 @@ async function crearPrueba(req, res) {
         console.log('Iniciando creación de prueba médica');
         console.log('Datos recibidos:', { ...req.body, usuario: req.usuario?.id });
         
-        const { id_cita, id_medicoAsignado, tipo_prueba, descripcion, fecha_prueba, hora_prueba } = req.body;
+        const { id_prueba, id_medicoAsignado, tipo_prueba, descripcion, fecha_prueba, hora_prueba } = req.body;
         const id_medicoManda = req.usuario.medico?.id;
         
         console.log('ID del médico que solicita:', id_medicoManda);
 
         // Validar datos requeridos
         console.log('Validando datos requeridos...');
-        if (!id_cita || !id_medicoAsignado || !tipo_prueba) {
-            console.log('Error: Datos incompletos', { id_cita, id_medicoAsignado, tipo_prueba });
+        if (!id_prueba || !id_medicoAsignado || !tipo_prueba) {
+            console.log('Error: Datos incompletos', { id_prueba, id_medicoAsignado, tipo_prueba });
             return res.status(400).json({
                 success: false,
                 mensaje: 'Todos los campos son requeridos'
@@ -48,8 +48,8 @@ async function crearPrueba(req, res) {
         }
 
         // Verificar que la cita existe
-        console.log('Buscando cita:', id_cita);
-        const cita = await Cita.findByPk(id_cita, {
+        console.log('Buscando cita:', id_prueba);
+        const cita = await Cita.findByPk(id_prueba, {
             include: [{
                 model: Paciente,
                 as: 'paciente',
@@ -62,7 +62,7 @@ async function crearPrueba(req, res) {
         });
 
         if (!cita) {
-            console.log('Error: Cita no encontrada:', id_cita);
+            console.log('Error: Cita no encontrada:', id_prueba);
             return res.status(404).json({
                 success: false,
                 mensaje: 'Cita no encontrada'
@@ -92,7 +92,7 @@ async function crearPrueba(req, res) {
         const nuevaPrueba = await Prueba.create({
             id_medicoManda,
             id_medicoAsignado,
-            id_cita,
+            id_prueba,
             tipo_prueba: sanitizarInput(tipo_prueba),
             descripcion: sanitizarInput(descripcion || ''),
             estado: 'pendiente',
@@ -283,7 +283,7 @@ async function finalizarPrueba(req, res) {
             console.log('Error: Datos incompletos', { id_prueba, resultado });
             return res.status(400).json({
                 success: false,
-                mensaje: 'El ID de la prueba y el resultado son requeridos'
+                mensaje: 'El ID de la cita y el resultado son requeridos'
             });
         }
 
@@ -297,12 +297,36 @@ async function finalizarPrueba(req, res) {
             });
         }
 
-        // Buscar la prueba
-        console.log('Buscando prueba:', id_prueba);
-        const prueba = await Prueba.findByPk(id_prueba);
+        let prueba;
+        let cita;
 
+        // Buscar la cita para obtener el id_prueba
+        console.log('Buscando cita:', id_prueba);
+        cita = await Cita.findByPk(id_prueba);
+
+        if (!cita) {
+            console.log('Error: Cita no encontrada:', id_prueba);
+            return res.status(404).json({
+                success: false,
+                mensaje: 'Cita no encontrada'
+            });
+        }
+
+        // Verificar que la cita tiene una prueba asociada
+        if (!cita.id_prueba) {
+            console.log('Error: La cita no tiene una prueba asociada');
+            return res.status(404).json({
+                success: false,
+                mensaje: 'La cita no tiene una prueba médica asociada'
+            });
+        }
+
+        // Buscar la prueba usando el id_prueba de la cita
+        console.log('Buscando prueba con ID:', cita.id_prueba);
+        prueba = await Prueba.findByPk(cita.id_prueba);
+        
         if (!prueba) {
-            console.log('Error: Prueba no encontrada:', id_prueba);
+            console.log('Error: Prueba no encontrada:', cita.id_prueba);
             return res.status(404).json({
                 success: false,
                 mensaje: 'Prueba no encontrada'
@@ -335,21 +359,30 @@ async function finalizarPrueba(req, res) {
             fecha_realizacion: new Date()
         });
 
+        // Actualizar el estado de la cita si existe
         if (cita) {
-            // Actualizar el estado de la cita
             console.log('Actualizando estado de la cita asociada...');
             await cita.update({
                 estado: 'finalizado',
-                info: `${cita.info}\nResultado: ${resultado}`
+                info: `${cita.info || ''}\nResultado: ${resultado}`
             });
+        } else {
+            console.log('No hay cita asociada a esta prueba');
         }
 
         console.log('Prueba finalizada exitosamente');
-        res.json({
+        const respuesta = {
             success: true,
             mensaje: 'Prueba finalizada exitosamente',
             prueba
-        });
+        };
+        
+        // Incluir la cita en la respuesta solo si existe
+        if (cita) {
+            respuesta.cita = cita;
+        }
+        
+        res.json(respuesta);
     } catch (error) {
         console.error('Error al finalizar prueba:', error);
         console.error('Detalles adicionales:', {
