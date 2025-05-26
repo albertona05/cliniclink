@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { NavComponent } from '../nav/nav.component';
 import { PruebaService } from '../../services/prueba.service';
 import { catchError, finalize, of } from 'rxjs';
@@ -14,6 +15,7 @@ import { catchError, finalize, of } from 'rxjs';
   styleUrls: ['./realizar-prueba.component.css']
 })
 export class RealizarPruebaComponent implements OnInit {
+  private apiUrl = 'http://localhost:3000';
   pruebaForm!: FormGroup;
   loading = false;
   submitted = false;
@@ -31,7 +33,8 @@ export class RealizarPruebaComponent implements OnInit {
     private formBuilder: FormBuilder,
     private pruebaService: PruebaService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private http: HttpClient
   ) { }
 
   ngOnInit(): void {
@@ -89,24 +92,38 @@ export class RealizarPruebaComponent implements OnInit {
     if (this.selectedFiles.length === 0) return;
     
     this.uploadProgress = 0;
-    const interval = setInterval(() => {
-      this.uploadProgress += 10;
-      if (this.uploadProgress >= 100) {
-        clearInterval(interval);
-        // Simular finalización de carga
-        this.selectedFiles.forEach(file => {
-          this.uploadedFiles.push({
-            name: file.name,
-            size: file.size,
-            type: file.type,
-            url: URL.createObjectURL(file) // Para previsualización
-          });
-        });
-        this.selectedFiles = [];
-        this.mensajeExito = 'Archivos subidos correctamente';
-        setTimeout(() => this.mensajeExito = '', 3000);
-      }
-    }, 200);
+    this.loading = true;
+    this.mensajeError = '';
+  
+    const formData = new FormData();
+    this.selectedFiles.forEach(file => {
+      formData.append('files', file);
+    });
+  
+    // Enviar archivos al servidor
+    this.http.post<any>(`${this.apiUrl}/pruebas/${this.idPrueba}/files`, formData)
+      .pipe(
+        catchError(error => {
+          console.error('Error al subir archivos:', error);
+          this.mensajeError = 'Error al subir los archivos';
+          return of(null);
+        }),
+        finalize(() => {
+          this.loading = false;
+        })
+      )
+      .subscribe(response => {
+        if (response && response.files) {
+          this.uploadedFiles = response.files.map((file: any) => ({
+            nombre: file.originalName,
+            tipo: file.type,
+            url: `${this.apiUrl}/pruebas/${this.idPrueba}/files/${file.storedName}`
+          }));
+          this.selectedFiles = [];
+          this.mensajeExito = 'Archivos subidos correctamente';
+          setTimeout(() => this.mensajeExito = '', 3000);
+        }
+      });
   }
 
   removeFile(index: number): void {
@@ -129,22 +146,22 @@ export class RealizarPruebaComponent implements OnInit {
     if (this.pruebaForm.invalid) {
       return;
     }
-
+  
     this.loading = true;
     this.mensajeError = '';
     this.mensajeExito = '';
-
+  
     // Preparar datos para enviar
     const datosPrueba = {
       id_prueba: this.idPrueba,
       resultado: this.pruebaForm.value.resultado,
       archivos: this.uploadedFiles.map(file => ({
-        nombre: file.name,
-        tipo: file.type,
+        nombre: file.nombre,
+        tipo: file.tipo,
         url: file.url
       }))
     };
-
+  
     // Enviar datos al servicio
     this.pruebaService.finalizarPrueba(datosPrueba)
       .pipe(
