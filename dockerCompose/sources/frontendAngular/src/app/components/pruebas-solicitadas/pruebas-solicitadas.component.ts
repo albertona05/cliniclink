@@ -174,13 +174,63 @@ export class PruebasSolicitadasComponent implements OnInit {
   }
 
   mostrarResultado(prueba: Prueba) {
-    this.pruebaSeleccionadaResultado = prueba;
+    // Inicializar con un array vacío para evitar errores de undefined
+    this.pruebaSeleccionadaResultado = {
+      ...prueba,
+      archivos: []
+    };
+    this.loading = true;
+    
+    // Cargar los archivos de la prueba
+    console.log('Solicitando archivos para ID de cita asociada a la prueba:', prueba.id_cita || prueba.id);
+    // Usar id_cita si existe, de lo contrario usar id de la prueba
+    const idArchivos = prueba.id_cita || prueba.id;
+    this.pruebaService.obtenerArchivosPrueba(idArchivos).subscribe({
+      next: (response) => {
+        console.log('Respuesta de archivos recibida:', response);
+        if (response && Array.isArray(response)) {
+          // Mapear los archivos para incluir URLs completas
+          const archivos = response.map((archivo: any) => ({
+            nombre: archivo.name,
+            tipo: this.determinarTipoArchivo(archivo.name),
+            url: `${this.pruebaService['apiUrl']}/pruebas/${idArchivos}/files/${archivo.name}`
+          }));
+          
+          console.log('Archivos procesados:', archivos);
+          
+          // Actualizar la prueba con los archivos
+          this.pruebaSeleccionadaResultado = {
+            ...prueba,
+            archivos: archivos
+          };
+          console.log('Prueba actualizada con archivos:', this.pruebaSeleccionadaResultado);
+        } else {
+          console.log('Respuesta no es un array o está vacía');
+        }
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error al cargar archivos:', error);
+        this.loading = false;
+      }
+    });
+    
     // Inicializar el offcanvas de Bootstrap
     const offcanvasElement = document.getElementById('resultadoOffcanvas');
     if (offcanvasElement) {
       const bsOffcanvas = new bootstrap.Offcanvas(offcanvasElement);
       bsOffcanvas.show();
     }
+  }
+  
+  determinarTipoArchivo(nombreArchivo: string): string {
+    const extension = nombreArchivo.split('.').pop()?.toLowerCase();
+    if (['jpg', 'jpeg', 'png', 'gif'].includes(extension || '')) {
+      return 'image/jpeg';
+    } else if (extension === 'pdf') {
+      return 'application/pdf';
+    }
+    return 'application/octet-stream';
   }
 
   abrirImagen(url: string) {

@@ -18,6 +18,7 @@ export interface Prueba {
   fecha_creacion: string;
   estado: string;
   resultado?: string;
+  id_cita?: number; // Añadir campo id_cita
   archivos?: Array<{
     nombre: string;
     tipo: string;
@@ -38,7 +39,7 @@ export class PruebaService {
     return this.http.get<PruebaResponse>(`${this.apiUrl}/pruebas/solicitadas`);
   }
 
-  // Crear una nueva prueba médica (ahora se crea como una cita con es_prueba=true)
+  // Crear una nueva prueba médica
   crearPrueba(datosPrueba: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/pruebas`, datosPrueba);
   }
@@ -46,5 +47,10 @@ export class PruebaService {
   // Finalizar una prueba y registrar su resultado
   finalizarPrueba(datosPrueba: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/pruebas/finalizar`, datosPrueba);
+  }
+
+  // Obtener archivos de una prueba específica
+  obtenerArchivosPrueba(pruebaId: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/pruebas/${pruebaId}/files`);
   }
 }
