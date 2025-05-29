@@ -99,8 +99,8 @@ export class RealizarPruebaComponent implements OnInit {
     this.selectedFiles.forEach(file => {
       formData.append('files', file);
     });
-  
-    // Enviar archivos al servidor
+      
+    // Enviar archivos al servidor FTP a través del endpoint de archivos
     this.http.post<any>(`${this.apiUrl}/pruebas/${this.idPrueba}/files`, formData)
       .pipe(
         catchError(error => {

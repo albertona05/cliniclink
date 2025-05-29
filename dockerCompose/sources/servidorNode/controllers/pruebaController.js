@@ -14,15 +14,15 @@ async function crearPrueba(req, res) {
         console.log('Iniciando creación de prueba médica');
         console.log('Datos recibidos:', { ...req.body, usuario: req.usuario?.id });
         
-        const { id_prueba, id_medicoAsignado, tipo_prueba, descripcion, fecha_prueba, hora_prueba } = req.body;
+        const { id_cita, id_medicoAsignado, tipo_prueba, descripcion, fecha_prueba, hora_prueba } = req.body;
         const id_medicoManda = req.usuario.medico?.id;
         
         console.log('ID del médico que solicita:', id_medicoManda);
 
         // Validar datos requeridos
         console.log('Validando datos requeridos...');
-        if (!id_prueba || !id_medicoAsignado || !tipo_prueba) {
-            console.log('Error: Datos incompletos', { id_prueba, id_medicoAsignado, tipo_prueba });
+        if (!id_cita || !id_medicoAsignado || !tipo_prueba) {
+            console.log('Error: Datos incompletos', { id_cita, id_medicoAsignado, tipo_prueba });
             return res.status(400).json({
                 success: false,
                 mensaje: 'Todos los campos son requeridos'
@@ -48,8 +48,8 @@ async function crearPrueba(req, res) {
         }
 
         // Verificar que la cita existe
-        console.log('Buscando cita:', id_prueba);
-        const cita = await Cita.findByPk(id_prueba, {
+        console.log('Buscando cita:', id_cita);
+        const cita = await Cita.findByPk(id_cita, {
             include: [{
                 model: Paciente,
                 as: 'paciente',
@@ -62,7 +62,7 @@ async function crearPrueba(req, res) {
         });
 
         if (!cita) {
-            console.log('Error: Cita no encontrada:', id_prueba);
+            console.log('Error: Cita no encontrada:', id_cita);
             return res.status(404).json({
                 success: false,
                 mensaje: 'Cita no encontrada'
@@ -92,7 +92,7 @@ async function crearPrueba(req, res) {
         const nuevaPrueba = await Prueba.create({
             id_medicoManda,
             id_medicoAsignado,
-            id_prueba,
+            id_cita,
             tipo_prueba: sanitizarInput(tipo_prueba),
             descripcion: sanitizarInput(descripcion || ''),
             estado: 'pendiente',

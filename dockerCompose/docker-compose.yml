@@ -62,12 +62,12 @@ services:
       FTP_MAX_CLIENTS: 50
       FTP_MAX_CONNECTIONS: 50
     volumes:
-      - ./ftp-setup.sh:/etc/pure-ftpd/setup.sh
+      - ./ftp-setup.sh:/etc/pure-ftpd/setup.sh:ro
       - ftp_data:/home/cliniclink/pruebas
     ports:
       - "21:21"
       - "30000-30009:30000-30009"
-    command: /etc/pure-ftpd/setup.sh
+    entrypoint: ["sh", "/etc/pure-ftpd/setup.sh"]
 
 volumes:
   node_modules:
