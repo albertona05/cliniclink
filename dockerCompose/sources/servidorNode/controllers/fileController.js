@@ -2,7 +2,7 @@ const ftpService = require('../services/ftpService');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
-const { Cita, DataTypes } = require('../models'); 
+const { Cita, Prueba, DataTypes } = require('../models'); 
 
 // Configuración de multer para almacenamiento temporal
 const storage = multer.diskStorage({
@@ -101,66 +101,55 @@ class FileController {
 
     async getPruebaFiles(req, res) {
         try {
-            const pruebaId = parseInt(req.params.pruebaId);
-            console.log(`Buscando archivos para prueba ID: ${pruebaId}`);
-
-            // Obtener id de la cita
-            const cita = await Cita.findOne({
-                where: {
-                    id_prueba: pruebaId
-                }
+            const citaId = parseInt(req.params.pruebaId);
+            console.log(`Buscando archivos para cita ID: ${citaId}`);
+    
+            // Buscar la prueba asociada a esta cita
+            const prueba = await Prueba.findOne({
+                where: { id_cita: citaId }
             });
 
-            console.log('Cita encontrada:', JSON.stringify(cita, null, 2));
-            const citaId = cita ? cita.id : null;
-            console.log(`ID de la cita encontrada: ${citaId}`);
-
-            // Verificar si se encontró alguna cita
-            if (!cita) {
-                console.log(`No se encontró ninguna cita para la prueba ID: ${pruebaId}`);
-                // Si no hay cita, usar el ID de la prueba directamente
-                const allFiles = await ftpService.listFiles('pruebas');
-                
-                // Filtrar archivos por el ID de la prueba
-                const pruebaFiles = allFiles
-                    .filter(file => file.name.startsWith(`prueba_${pruebaId}_`))
-                    .map(file => ({
-                        name: file.name,
-                        size: file.size,
-                        date: file.modifiedAt,
-                        url: `/api/pruebas/${pruebaId}/files/${file.name}`
-                    }));
-                
-                return res.json(pruebaFiles);
+            if (!prueba) {
+                console.log(`No se encontró ninguna prueba asociada a la cita ID: ${citaId}`);
+                await ftpService.closeConnection();
+                return res.status(404).json({ error: 'No se encontró ninguna prueba asociada a esta cita' });
             }
-            
+    
+            const pruebaId = prueba.id;
+            console.log(`ID de la prueba encontrada: ${pruebaId}`);
 
-            // Buscar archivos en el directorio pruebas
+            const citaPrueba = await Cita.findOne({
+                where: { id_prueba: pruebaId }
+            });
+            const citaIdPrueba = citaPrueba.id;
+            console.log(`ID de la cita de la prueba encontrada: ${citaIdPrueba}`);
+
+    
+            // Buscar archivos en el directorio "pruebas"
             const allFiles = await ftpService.listFiles('pruebas');
-            
-            // Filtrar archivos por el ID de la prueba (no por el ID de la cita)
-            // Ya que los archivos se suben usando el ID de la prueba
+    
             const pruebaFiles = allFiles
-                .filter(file => file.name.startsWith(`prueba_${pruebaId}_`))
+                .filter(file => file.name.startsWith(`prueba_${citaIdPrueba}_`))
                 .map(file => ({
                     name: file.name,
                     size: file.size,
                     date: file.modifiedAt,
-                    url: `/api/pruebas/${pruebaId}/files/${file.name}`
+                    url: `/api/pruebas/${citaIdPrueba}/files/${file.name}`
                 }));
-            
-            console.log(`Se encontraron ${pruebaFiles.length} archivos para la prueba ID: ${pruebaId}`);
-            // Cerrar la conexión FTP después de completar todas las operaciones
+    
+            console.log(`Se encontraron ${pruebaFiles.length} archivos para la prueba ID: ${citaIdPrueba}`);
+    
             await ftpService.closeConnection();
-            
-            res.json(pruebaFiles);
+            return res.json(pruebaFiles);
+    
         } catch (error) {
             console.error('Error al obtener archivos de la prueba:', error);
-            // Asegurarse de cerrar la conexión FTP en caso de error
             await ftpService.closeConnection();
-            res.status(500).json({ error: 'Error al obtener archivos de la prueba' });
+            return res.status(500).json({ error: 'Error al obtener archivos de la prueba' });
         }
     }
+    
+    
 
     async downloadPruebaFile(req, res) {
         try {

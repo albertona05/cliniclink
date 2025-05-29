@@ -19,9 +19,15 @@ declare var bootstrap: any;
 })
 export class PruebasSolicitadasComponent implements OnInit {
   pruebas: Prueba[] = [];
+  pruebasFiltradas: Prueba[] = [];
   loading = false;
   mensajeError: string = '';
   mensajeExito: string = '';
+  
+  // Variables para búsqueda y filtrado
+  busquedaPaciente: string = '';
+  fechaInicio: string = '';
+  fechaFin: string = '';
   
   // Variables para la programación de la prueba
   fechaMinima: string = '';
@@ -44,6 +50,12 @@ export class PruebasSolicitadasComponent implements OnInit {
     manana.setDate(manana.getDate() + 1);
     this.fechaMinima = manana.toISOString().split('T')[0];
     this.fecha = this.fechaMinima;
+    
+    // Inicializar fechas para el filtro
+    const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
+    this.fechaInicio = inicioMes.toISOString().split('T')[0];
+    this.fechaFin = finMes.toISOString().split('T')[0];
   }
 
   ngOnInit(): void {
@@ -58,8 +70,10 @@ export class PruebasSolicitadasComponent implements OnInit {
       next: (response: PruebaResponse) => {
         if (response && response.success && response.data) {
           this.pruebas = response.data;
+          this.aplicarFiltros();
         } else {
           this.pruebas = [];
+          this.pruebasFiltradas = [];
           this.mensajeError = 'No se pudieron cargar las pruebas';
         }
         this.loading = false;
@@ -70,6 +84,38 @@ export class PruebasSolicitadasComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+  
+  aplicarFiltros(): void {
+    this.pruebasFiltradas = this.pruebas.filter(prueba => {
+      // Filtro por nombre de paciente
+      const coincideNombre = this.busquedaPaciente === '' || 
+        prueba.paciente.toLowerCase().includes(this.busquedaPaciente.toLowerCase());
+      
+      // Filtro por rango de fechas
+      let coincideFecha = true;
+      if (this.fechaInicio && this.fechaFin) {
+        const fechaPrueba = new Date(prueba.fecha_creacion);
+        const inicio = new Date(this.fechaInicio);
+        const fin = new Date(this.fechaFin);
+        // Ajustar fin para incluir todo el día
+        fin.setHours(23, 59, 59, 999);
+        
+        coincideFecha = fechaPrueba >= inicio && fechaPrueba <= fin;
+      }
+      
+      return coincideNombre && coincideFecha;
+    });
+  }
+  
+  limpiarFiltros(): void {
+    this.busquedaPaciente = '';
+    const hoy = new Date();
+    const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
+    this.fechaInicio = inicioMes.toISOString().split('T')[0];
+    this.fechaFin = finMes.toISOString().split('T')[0];
+    this.aplicarFiltros();
   }
   
   formatearFecha(fecha: string): string {

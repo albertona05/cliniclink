@@ -66,6 +66,55 @@
         <div *ngIf="mensajeError" class="alert alert-danger">{{ mensajeError }}</div>
         <div *ngIf="mensajeExito" class="alert alert-success">{{ mensajeExito }}</div>
 
+        <!-- Buscador y filtros -->
+        <div class="card mb-3 border-light">
+          <div class="card-body bg-light">
+            <h5 class="card-title mb-3">Buscar y Filtrar</h5>
+            <div class="row g-3">
+              <!-- Buscador por nombre de paciente -->
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label for="busquedaPaciente" class="form-label">Nombre del Paciente:</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" id="busquedaPaciente" class="form-control" 
+                      [(ngModel)]="busquedaPaciente" 
+                      placeholder="Buscar por nombre..."
+                      (input)="aplicarFiltros()">
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Filtro por fecha inicio -->
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="fechaInicio" class="form-label">Fecha Desde:</label>
+                  <input type="date" id="fechaInicio" class="form-control" 
+                    [(ngModel)]="fechaInicio"
+                    (change)="aplicarFiltros()">
+                </div>
+              </div>
+              
+              <!-- Filtro por fecha fin -->
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="fechaFin" class="form-label">Fecha Hasta:</label>
+                  <input type="date" id="fechaFin" class="form-control" 
+                    [(ngModel)]="fechaFin"
+                    (change)="aplicarFiltros()">
+                </div>
+              </div>
+              
+              <!-- Botón para limpiar filtros -->
+              <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-outline-secondary w-100" (click)="limpiarFiltros()">
+                  <i class="bi bi-x-circle me-1"></i> Limpiar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div *ngIf="loading" class="text-center p-5">
           <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Cargando...</span>
@@ -78,7 +127,15 @@
           <p class="mt-2">No ha solicitado ninguna prueba</p>
         </div>
 
-        <div *ngIf="!loading && pruebas.length > 0" class="table-responsive">
+        <div *ngIf="!loading && pruebasFiltradas.length === 0 && pruebas.length > 0" class="text-center p-5">
+          <i class="bi bi-filter-circle" style="font-size: 3rem;"></i>
+          <p class="mt-2">No se encontraron pruebas con los filtros aplicados</p>
+          <button class="btn btn-outline-primary mt-2" (click)="limpiarFiltros()">
+            <i class="bi bi-arrow-counterclockwise me-1"></i> Restablecer filtros
+          </button>
+        </div>
+
+        <div *ngIf="!loading && pruebasFiltradas.length > 0" class="table-responsive">
           <table class="table table-hover">
             <thead>
               <tr>
@@ -91,7 +148,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let prueba of pruebas">
+              <tr *ngFor="let prueba of pruebasFiltradas">
                 <td>{{ prueba.paciente }}</td>
                 <td>{{ prueba.tipo_prueba }}</td>
                 <td>{{ prueba.medico_asignado }}</td>
