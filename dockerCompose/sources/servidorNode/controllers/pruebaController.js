@@ -87,6 +87,7 @@ async function crearPrueba(req, res) {
             });
         }
 
+        
         // Crear la prueba
         console.log('Creando nueva prueba médica...');
         const nuevaPrueba = await Prueba.create({
@@ -250,7 +251,8 @@ async function obtenerPruebasSolicitadas(req, res) {
             fecha_creacion: prueba.fecha_creacion,
             fecha_realizacion: prueba.fecha_realizacion,
             paciente: prueba.cita?.paciente?.usuario?.nombre || 'No especificado',
-            medico_asignado: prueba.medicoAsignado?.usuario?.nombre || 'No especificado'
+            medico_asignado: prueba.medicoAsignado?.usuario?.nombre || 'No especificado',
+            id_cita: prueba.id_cita // Incluir el id_cita
         }));
 
         res.json({

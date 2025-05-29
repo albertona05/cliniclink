@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpEventType } from '@angular/common/http';
 import { NavComponent } from '../nav/nav.component';
 import { PruebaService } from '../../services/prueba.service';
 import { catchError, finalize, of } from 'rxjs';
@@ -99,9 +99,12 @@ export class RealizarPruebaComponent implements OnInit {
     this.selectedFiles.forEach(file => {
       formData.append('files', file);
     });
-      
-    // Enviar archivos al servidor FTP a través del endpoint de archivos
-    this.http.post<any>(`${this.apiUrl}/pruebas/${this.idPrueba}/files`, formData)
+  
+    // Enviar archivos al servidor
+    this.http.post<any>(`${this.apiUrl}/pruebas/${this.idPrueba}/files`, formData, {
+      reportProgress: true,
+      observe: 'events'
+    })
       .pipe(
         catchError(error => {
           console.error('Error al subir archivos:', error);
@@ -112,16 +115,24 @@ export class RealizarPruebaComponent implements OnInit {
           this.loading = false;
         })
       )
-      .subscribe(response => {
-        if (response && response.files) {
-          this.uploadedFiles = response.files.map((file: any) => ({
-            nombre: file.originalName,
-            tipo: file.type,
-            url: `${this.apiUrl}/pruebas/${this.idPrueba}/files/${file.storedName}`
-          }));
-          this.selectedFiles = [];
-          this.mensajeExito = 'Archivos subidos correctamente';
-          setTimeout(() => this.mensajeExito = '', 3000);
+      .subscribe(event => {
+        if (event && event.type === 4) { // HttpEventType.Response
+          const response = event.body;
+          if (response && response.files) {
+            this.uploadedFiles = response.files.map((file: any) => ({
+              nombre: file.originalName,
+              tipo: file.type,
+              url: `${this.apiUrl}/pruebas/${this.idPrueba}/files/${file.storedName.split('/').pop()}`,
+              name: file.originalName
+            }));
+            this.selectedFiles = [];
+            this.mensajeExito = 'Archivos subidos correctamente';
+            setTimeout(() => this.mensajeExito = '', 3000);
+          }
+        } else if (event && event.type === 1) { // HttpEventType.UploadProgress
+          if (event.total) {
+            this.uploadProgress = Math.round(100 * event.loaded / event.total);
+          }
         }
       });
   }

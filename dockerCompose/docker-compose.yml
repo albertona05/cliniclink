@@ -49,25 +49,18 @@ services:
       - "4200:4200"
 
   ftp:
-    image: stilliard/pure-ftpd
+    build:
+      context: ./ftp
+      dockerfile: Dockerfile
     container_name: ftp
     networks:
       red_backend:
         ipv4_address: 192.168.1.4
-    environment:
-      FTP_USER_NAME: cliniclink
-      FTP_USER_PASS: cliniclink123
-      FTP_USER_HOME: /home/cliniclink
-      PUBLICHOST: localhost
-      FTP_MAX_CLIENTS: 50
-      FTP_MAX_CONNECTIONS: 50
     volumes:
-      - ./ftp-setup.sh:/etc/pure-ftpd/setup.sh:ro
       - ftp_data:/home/cliniclink/pruebas
     ports:
       - "21:21"
       - "30000-30009:30000-30009"
-    entrypoint: ["sh", "/etc/pure-ftpd/setup.sh"]
 
 volumes:
   node_modules:
