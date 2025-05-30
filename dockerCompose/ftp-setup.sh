@@ -3,6 +3,9 @@
 # Crear directorio principal si no existe
 mkdir -p /home/cliniclink
 
+# Crear directorio principal si no existe
+mkdir -p /home/cliniclink
+
 # Crear directorio para archivos de pruebas médicas
 mkdir -p /home/cliniclink/pruebas
 
@@ -17,8 +20,5 @@ ${FTP_USER_PASS}
 ${FTP_USER_PASS}
 EOF
 
-# Crear la base de datos de contraseñas
-pure-pw mkdb
-
-# Iniciar el servidor FTP con las opciones adecuadas
-exec /usr/sbin/pure-ftpd -c 50 -C 50 -l puredb:/etc/pure-ftpd/pureftpd.pdb -E -j -R -P $PUBLICHOST -p 30000:30009
+# Iniciar el servidor FTP
+/usr/sbin/pure-ftpd
