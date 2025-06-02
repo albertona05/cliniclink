@@ -85,46 +85,31 @@ export class DatosCitaComponent implements OnInit {
       this.idCita = params['id'];
     });
     
-    // Inicializar formulario para solicitar pruebas
-    this.pruebaForm = this.formBuilder.group({
-      id_medicoAsignado: ['', Validators.required],
-      tipo_prueba: ['', Validators.required],
-      descripcion: [''],
-      fecha_prueba: ['', Validators.required]
-    });
-
     // Obtener el nombre y DNI del paciente de los query params
     this.route.queryParams.subscribe(params => {
       this.nombrePaciente = params['nombre'] || 'Paciente';
       this.dniPaciente = params['dni'] || '';
+      console.log('DNI obtenido de queryParams:', this.dniPaciente);
     });
     
-    // Inicializar formulario para solicitar pruebas
+    // Inicializar formulario para solicitar pruebas (solo una vez)
     this.pruebaForm = this.formBuilder.group({
       id_medicoAsignado: ['', Validators.required],
       tipo_prueba: ['', Validators.required],
       descripcion: [''],
       fecha_prueba: ['', Validators.required]
     });
-
+  
     // Cargar la lista de médicos y medicamentos
     this.cargarMedicos();
     this.cargarMedicamentos();
-
+  
     this.citaForm = this.formBuilder.group({
       info: ['', Validators.required],
       medicamentosArray: this.formBuilder.array([]),
       precio_consulta: ['', [Validators.required, Validators.min(0)]],
       nueva_fecha: [''],
       id_medico: [''],
-    });
-    
-    // Inicializar formulario para solicitar pruebas
-    this.pruebaForm = this.formBuilder.group({
-      id_medicoAsignado: ['', Validators.required],
-      tipo_prueba: ['', Validators.required],
-      descripcion: [''],
-      fecha_prueba: ['', Validators.required]
     });
   }
 
@@ -185,14 +170,6 @@ export class DatosCitaComponent implements OnInit {
         this.mensajeError = 'Error al cargar la lista de medicamentos';
         this.loading = false;
       }
-    });
-    
-    // Inicializar formulario para solicitar pruebas
-    this.pruebaForm = this.formBuilder.group({
-      id_medicoAsignado: ['', Validators.required],
-      tipo_prueba: ['', Validators.required],
-      descripcion: [''],
-      fecha_prueba: ['', Validators.required]
     });
   }
 
@@ -268,14 +245,6 @@ export class DatosCitaComponent implements OnInit {
         this.loading = false;
       }
     });
-    
-    // Inicializar formulario para solicitar pruebas
-    this.pruebaForm = this.formBuilder.group({
-      id_medicoAsignado: ['', Validators.required],
-      tipo_prueba: ['', Validators.required],
-      descripcion: [''],
-      fecha_prueba: ['', Validators.required]
-    });
   }
 
   getErrorMessage(field: string): string {
@@ -293,11 +262,18 @@ export class DatosCitaComponent implements OnInit {
   }
 
   volver() {
-    console.log(this.dniPaciente)
-    // Navegar al historial del paciente usando el DNI
+    console.log('DNI del paciente en volver():', this.dniPaciente);
+    console.log('Nombre del paciente en volver():', this.nombrePaciente);
+    
+    // Navegar al historial del paciente usando el DNI y pasando información adicional
     if (this.dniPaciente) {
-      this.router.navigate(['/historial-paciente', this.dniPaciente]);
+      this.router.navigate(['/historial-paciente', this.dniPaciente], {
+        queryParams: {
+          nombre: this.nombrePaciente
+        }
+      });
     } else {
+      console.log('No se encontró el DNI del paciente, redirigiendo a agenda');
       this.router.navigate(['/agenda']);
     }
   }
@@ -316,14 +292,6 @@ export class DatosCitaComponent implements OnInit {
         console.error('Error al cargar médicos:', error);
         this.mensajeError = 'Error al cargar la lista de médicos';
       }
-    });
-    
-    // Inicializar formulario para solicitar pruebas
-    this.pruebaForm = this.formBuilder.group({
-      id_medicoAsignado: ['', Validators.required],
-      tipo_prueba: ['', Validators.required],
-      descripcion: [''],
-      fecha_prueba: ['', Validators.required]
     });
   }
 
@@ -357,14 +325,6 @@ export class DatosCitaComponent implements OnInit {
           this.loading = false;
         }
       });
-    
-    // Inicializar formulario para solicitar pruebas
-    this.pruebaForm = this.formBuilder.group({
-      id_medicoAsignado: ['', Validators.required],
-      tipo_prueba: ['', Validators.required],
-      descripcion: [''],
-      fecha_prueba: ['', Validators.required]
-    });
   }
 
   seleccionarHora(hora: string) {

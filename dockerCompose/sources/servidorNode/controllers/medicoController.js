@@ -66,6 +66,7 @@ async function obtenerCitasDia(req, res) {
             id: cita.id,
             hora: cita.hora,
             nombre_paciente: `${cita.paciente.usuario.nombre}`,
+            dni_paciente: cita.paciente.dni || '',
             es_prueba: cita.es_prueba || false,
             tipo_prueba: cita.tipo_prueba || '',
             info: cita.info || ''
@@ -257,27 +258,34 @@ async function finalizarCita(req, res) {
         // Si se proporcionan datos para una nueva cita, crearla
         if (id_medico && nueva_fecha && nueva_hora) {
             try {
-                const nuevaCitaData = {
-                    id_paciente: cita.id_paciente,
-                    id_medico,
-                    fecha: nueva_fecha,
-                    hora: nueva_hora
-                };
+                // Obtener el DNI del paciente
+                const paciente = await Paciente.findByPk(cita.id_paciente);
                 
-                // Crear una nueva cita utilizando la función del controlador de recepción
-                const { crearCita } = require('./recepcionController');
-                await crearCita({ body: nuevaCitaData }, {
-                    status: (code) => ({
-                        json: (data) => {
-                            if (code === 201) {
-                                resultados.nueva_cita = data.cita;
-                                resultados.mensaje_nueva_cita = 'Nueva cita creada exitosamente';
-                            } else {
-                                resultados.error_nueva_cita = data.mensaje;
+                if (!paciente) {
+                    resultados.error_nueva_cita = 'No se pudo encontrar el paciente para crear la nueva cita';
+                } else {
+                    const nuevaCitaData = {
+                        fecha: nueva_fecha,
+                        hora: nueva_hora,
+                        id_medico,
+                        dni_paciente: paciente.dni
+                    };
+                    
+                    // Crear una nueva cita utilizando la función del controlador de recepción
+                    const { crearCita } = require('./recepcionController');
+                    await crearCita({ body: nuevaCitaData }, {
+                        status: (code) => ({
+                            json: (data) => {
+                                if (code === 201) {
+                                    resultados.nueva_cita = data.cita;
+                                    resultados.mensaje_nueva_cita = 'Nueva cita creada exitosamente';
+                                } else {
+                                    resultados.error_nueva_cita = data.mensaje;
+                                }
                             }
-                        }
-                    })
-                });
+                        })
+                    });
+                }
             } catch (error) {
                 resultados.error_nueva_cita = 'Error al crear la nueva cita';
                 console.error('Error al crear nueva cita:', error);

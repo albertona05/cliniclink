@@ -19,9 +19,15 @@ declare var bootstrap: any;
 })
 export class PruebasSolicitadasComponent implements OnInit {
   pruebas: Prueba[] = [];
+  pruebasFiltradas: Prueba[] = [];
   loading = false;
   mensajeError: string = '';
   mensajeExito: string = '';
+  
+  // Variables para búsqueda y filtrado
+  terminoBusqueda: string = '';
+  fechaInicio: string = '';
+  fechaFin: string = '';
   
   // Variables para la programación de la prueba
   fechaMinima: string = '';
@@ -29,7 +35,6 @@ export class PruebasSolicitadasComponent implements OnInit {
   horasDisponibles: string[] = [];
   horaSeleccionada: string = '';
   pruebaSeleccionada: Prueba | null = null;
-  // Variables para mostrar resultados
   pruebaSeleccionadaResultado: Prueba | null = null;
   
   constructor(
@@ -58,8 +63,10 @@ export class PruebasSolicitadasComponent implements OnInit {
       next: (response: PruebaResponse) => {
         if (response && response.success && response.data) {
           this.pruebas = response.data;
+          this.pruebasFiltradas = [...this.pruebas];
         } else {
           this.pruebas = [];
+          this.pruebasFiltradas = [];
           this.mensajeError = 'No se pudieron cargar las pruebas';
         }
         this.loading = false;
@@ -190,5 +197,85 @@ export class PruebasSolicitadasComponent implements OnInit {
 
   getSafeUrl(url: string): SafeUrl {
     return this.sanitizer.bypassSecurityTrustUrl(url);
+  }
+
+  // Métodos para búsqueda y filtrado
+  buscarPruebas() {
+    this.aplicarFiltros();
+  }
+
+  limpiarFiltros() {
+    this.terminoBusqueda = '';
+    this.fechaInicio = '';
+    this.fechaFin = '';
+    this.pruebasFiltradas = [...this.pruebas];
+  }
+
+  // Método para eliminar un filtro específico
+  eliminarFiltro(filtro: 'nombre' | 'fechaInicio' | 'fechaFin') {
+    switch(filtro) {
+      case 'nombre':
+        this.terminoBusqueda = '';
+        break;
+      case 'fechaInicio':
+        this.fechaInicio = '';
+        break;
+      case 'fechaFin':
+        this.fechaFin = '';
+        break;
+    }
+    this.aplicarFiltros();
+  }
+
+  // Verificar si hay filtros activos
+  hayFiltrosActivos(): boolean {
+    return !!(this.terminoBusqueda || this.fechaInicio || this.fechaFin);
+  }
+
+  // Método para buscar en tiempo real cuando se escribe en el campo de búsqueda
+  buscarEnTiempoReal(event: any) {
+    // Implementar debounce para evitar múltiples búsquedas
+    clearTimeout(this.timeoutId);
+    this.timeoutId = setTimeout(() => {
+      this.aplicarFiltros();
+    }, 300); // Esperar 300ms después de que el usuario deje de escribir
+  }
+
+  private timeoutId: any;
+
+  aplicarFiltros() {
+    // Mostrar indicador de carga durante la búsqueda
+    const busquedaAnterior = this.pruebasFiltradas.length;
+    
+    this.pruebasFiltradas = this.pruebas.filter(prueba => {
+      // Filtrar por término de búsqueda (nombre del paciente)
+      const coincideNombre = !this.terminoBusqueda || 
+        prueba.paciente.toLowerCase().includes(this.terminoBusqueda.toLowerCase());
+      
+      // Filtrar por fecha de inicio
+      let coincideFechaInicio = true;
+      if (this.fechaInicio) {
+        const fechaPrueba = new Date(prueba.fecha_creacion);
+        const fechaInicioObj = new Date(this.fechaInicio);
+        coincideFechaInicio = fechaPrueba >= fechaInicioObj;
+      }
+      
+      // Filtrar por fecha de fin
+      let coincideFechaFin = true;
+      if (this.fechaFin) {
+        const fechaPrueba = new Date(prueba.fecha_creacion);
+        const fechaFinObj = new Date(this.fechaFin);
+        // Ajustar la fecha de fin para incluir todo el día
+        fechaFinObj.setHours(23, 59, 59, 999);
+        coincideFechaFin = fechaPrueba <= fechaFinObj;
+      }
+      
+      return coincideNombre && coincideFechaInicio && coincideFechaFin;
+    });
+    
+    // Mostrar mensaje si los resultados cambiaron significativamente
+    if (busquedaAnterior > 0 && this.pruebasFiltradas.length === 0) {
+      console.log('No se encontraron resultados con los filtros aplicados');
+    }
   }
 }

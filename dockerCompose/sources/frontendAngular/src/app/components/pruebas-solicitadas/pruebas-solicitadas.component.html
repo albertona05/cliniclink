@@ -57,6 +57,109 @@
       </div>
     </div>
 
+    <!-- Buscador y filtros -->
+    <div class="card shadow-sm mb-4 search-card">
+      <div class="card-header bg-gradient">
+        <h4 class="card-title mb-0"><i class="bi bi-search me-2"></i>Buscar Pruebas</h4>
+      </div>
+      <div class="card-body p-4">
+        <div class="row g-3">
+          <!-- Buscador por nombre -->
+          <div class="col-md-4">
+            <div class="form-group">
+              <label for="busqueda" class="form-label"><i class="bi bi-person-badge me-1"></i>Nombre del Paciente:</label>
+              <div class="input-group search-input-group">
+                <input type="text" id="busqueda" class="form-control search-input" 
+                  [(ngModel)]="terminoBusqueda" 
+                  placeholder="Buscar por nombre..."
+                  (input)="buscarEnTiempoReal($event)">
+                <button *ngIf="terminoBusqueda" class="btn btn-outline-secondary" type="button" 
+                  (click)="eliminarFiltro('nombre')" title="Limpiar búsqueda">
+                  <i class="bi bi-x"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Filtro por fecha inicio -->
+          <div class="col-md-3">
+            <div class="form-group">
+              <label for="fechaInicio" class="form-label"><i class="bi bi-calendar-minus me-1"></i>Fecha Desde:</label>
+              <div class="input-group search-input-group">
+                <input type="date" id="fechaInicio" class="form-control search-input" 
+                  [(ngModel)]="fechaInicio"
+                  (change)="aplicarFiltros()">
+                <button *ngIf="fechaInicio" class="btn btn-outline-secondary" type="button" 
+                  (click)="eliminarFiltro('fechaInicio')" title="Limpiar fecha inicio">
+                  <i class="bi bi-x"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Filtro por fecha fin -->
+          <div class="col-md-3">
+            <div class="form-group">
+              <label for="fechaFin" class="form-label"><i class="bi bi-calendar-plus me-1"></i>Fecha Hasta:</label>
+              <div class="input-group search-input-group">
+                <input type="date" id="fechaFin" class="form-control search-input" 
+                  [(ngModel)]="fechaFin"
+                  (change)="aplicarFiltros()">
+                <button *ngIf="fechaFin" class="btn btn-outline-secondary" type="button" 
+                  (click)="eliminarFiltro('fechaFin')" title="Limpiar fecha fin">
+                  <i class="bi bi-x"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Botones de acción -->
+          <div class="col-md-2 d-flex align-items-end">
+            <div class="d-grid gap-2 w-100">
+              <button class="btn btn-primary btn-filter" (click)="buscarPruebas()">
+                <i class="bi bi-filter me-1"></i> Filtrar
+              </button>
+              <button class="btn btn-outline-secondary btn-clear" (click)="limpiarFiltros()">
+                <i class="bi bi-x-circle me-1"></i> Limpiar
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Indicador de filtros activos -->
+        <div *ngIf="hayFiltrosActivos()" class="mt-3 pt-2 border-top">
+          <div class="d-flex align-items-center">
+            <span class="text-muted me-2"><i class="bi bi-funnel-fill me-1"></i>Filtros activos:</span>
+            <div class="d-flex flex-wrap gap-2">
+              <span *ngIf="terminoBusqueda" class="badge bg-info text-dark">
+                Paciente: {{terminoBusqueda}}
+                <i class="bi bi-x-circle-fill ms-1 cursor-pointer" (click)="eliminarFiltro('nombre')"></i>
+              </span>
+              <span *ngIf="fechaInicio" class="badge bg-info text-dark">
+                Desde: {{fechaInicio | date:'dd/MM/yyyy'}}
+                <i class="bi bi-x-circle-fill ms-1 cursor-pointer" (click)="eliminarFiltro('fechaInicio')"></i>
+              </span>
+              <span *ngIf="fechaFin" class="badge bg-info text-dark">
+                Hasta: {{fechaFin | date:'dd/MM/yyyy'}}
+                <i class="bi bi-x-circle-fill ms-1 cursor-pointer" (click)="eliminarFiltro('fechaFin')"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Contador de resultados -->
+        <div *ngIf="pruebasFiltradas.length > 0 && hayFiltrosActivos()" class="mt-2 text-muted small">
+          <i class="bi bi-info-circle me-1"></i> Se encontraron {{pruebasFiltradas.length}} resultados
+        </div>
+        
+        <!-- Mensaje cuando no hay resultados -->
+        <div *ngIf="pruebasFiltradas.length === 0 && hayFiltrosActivos()" class="mt-3 alert alert-info">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          No se encontraron pruebas con los filtros aplicados. Intente con otros criterios de búsqueda.
+        </div>
+      </div>
+    </div>
+
     <!-- Listado de pruebas -->
     <div class="card shadow-sm h-100">
       <div class="card-header bg-light">
@@ -73,12 +176,12 @@
           <p class="mt-2">Cargando pruebas...</p>
         </div>
 
-        <div *ngIf="!loading && pruebas.length === 0" class="text-center p-5">
+        <div *ngIf="!loading && pruebasFiltradas.length === 0" class="text-center p-5">
           <i class="bi bi-clipboard-x" style="font-size: 3rem;"></i>
-          <p class="mt-2">No ha solicitado ninguna prueba</p>
+          <p class="mt-2">No se encontraron pruebas con los criterios seleccionados</p>
         </div>
 
-        <div *ngIf="!loading && pruebas.length > 0" class="table-responsive">
+        <div *ngIf="!loading && pruebasFiltradas.length > 0" class="table-responsive">
           <table class="table table-hover">
             <thead>
               <tr>
@@ -91,7 +194,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let prueba of pruebas">
+              <tr *ngFor="let prueba of pruebasFiltradas">
                 <td>{{ prueba.paciente }}</td>
                 <td>{{ prueba.tipo_prueba }}</td>
                 <td>{{ prueba.medico_asignado }}</td>
@@ -199,16 +302,20 @@
                   </ng-container>
                 </div>
               </div>
-
-              <!-- Mensaje cuando no hay archivos -->
-              <div *ngIf="archivos.length === 0" class="text-center py-4">
-                <i class="bi bi-file-earmark-x" style="font-size: 2rem;"></i>
-                <p class="text-muted mt-2">No hay archivos adjuntos disponibles</p>
-              </div>
             </ng-container>
+
+            <!-- Mensaje cuando no hay archivos -->
+            <div *ngIf="pruebaSeleccionadaResultado?.archivos?.length === 0" class="empty-state py-5 text-center">
+              <div class="empty-state-icon mb-3">
+                <i class="bi bi-file-earmark-x"></i>
+              </div>
+              <h6 class="empty-state-title">No hay archivos adjuntos</h6>
+              <p class="empty-state-description">No se han subido archivos para esta prueba médica</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
