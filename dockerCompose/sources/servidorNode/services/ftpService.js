@@ -57,8 +57,6 @@ class FtpService {
             return false;
         } finally {
             this.client.close();
-        } finally {
-            this.client.close();
         }
     }
 
@@ -75,8 +73,6 @@ class FtpService {
         } catch (err) {
             console.error('Error al listar archivos:', err);
             return [];
-        } finally {
-            this.client.close();
         } finally {
             this.client.close();
         }
