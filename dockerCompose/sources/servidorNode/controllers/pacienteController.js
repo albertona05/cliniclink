@@ -17,10 +17,39 @@ const validarFecha = (fecha) => {
 // Obtener citas de un paciente
 const obtenerCitasPaciente = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id } = req.params; // Este id es el id_usuario, no el id_paciente
+        const usuarioAutenticado = req.usuario;
+        
+        // Verificar si el usuario tiene permiso para ver estas citas
+        // Si es paciente, solo puede ver sus propias citas
+        // Si es médico o recepcionista, puede ver las citas de cualquier paciente
+        if (usuarioAutenticado.rol === 'paciente' && usuarioAutenticado.id !== parseInt(id)) {
+            console.log('Intento de acceso no autorizado: Usuario', usuarioAutenticado.id, 'intentó acceder a citas del paciente con id_usuario', id);
+            return res.status(403).json({ 
+                success: false,
+                mensaje: 'No tiene permiso para ver las citas de este paciente' 
+            });
+        }
 
+        // Primero buscar el paciente por id_usuario
+        console.log(`Buscando paciente con id_usuario ${id}`);
+        const paciente = await Paciente.findOne({
+            where: { id_usuario: id }
+        });
+
+        if (!paciente) {
+            console.log(`No se encontró paciente con id_usuario ${id}`);
+            return res.status(404).json({
+                success: false,
+                mensaje: 'No se encontró el paciente'
+            });
+        }
+
+        console.log(`Paciente encontrado con id ${paciente.id}, buscando sus citas`);
+
+        // Ahora buscar las citas usando el id del paciente
         const citas = await Cita.findAll({
-            where: { id_paciente: id },
+            where: { id_paciente: paciente.id },
             include: [{
                 model: Medico,
                 as: 'medico',
@@ -29,6 +58,8 @@ const obtenerCitasPaciente = async (req, res) => {
             attributes: ['id', 'fecha', 'hora', 'estado']
         });
 
+        console.log(`Citas encontradas para el paciente ${paciente.id}:`, citas.length);
+        
         res.json(citas.map(cita => ({
             id: cita.id,
             fecha: cita.fecha,
@@ -48,13 +79,41 @@ const obtenerCitasPaciente = async (req, res) => {
 // Obtener facturas de un paciente
 const obtenerFacturasPaciente = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id } = req.params; 
+        const usuarioAutenticado = req.usuario;
+        
+        if (usuarioAutenticado.rol === 'paciente' && usuarioAutenticado.id !== parseInt(id)) {
+            console.log('Intento de acceso no autorizado: Usuario', usuarioAutenticado.id, 'intentó acceder a facturas del paciente con id_usuario', id);
+            return res.status(403).json({ 
+                success: false,
+                mensaje: 'No tiene permiso para ver las facturas de este paciente' 
+            });
+        }
 
+        // Primero buscar el paciente por id_usuario
+        console.log(`Buscando paciente con id_usuario ${id}`);
+        const paciente = await Paciente.findOne({
+            where: { id_usuario: id }
+        });
+
+        if (!paciente) {
+            console.log(`No se encontró paciente con id_usuario ${id}`);
+            return res.status(404).json({
+                success: false,
+                mensaje: 'No se encontró el paciente'
+            });
+        }
+
+        console.log(`Paciente encontrado con id ${paciente.id}, buscando sus facturas`);
+
+        // Ahora buscar las facturas usando el id del paciente
         const facturas = await Factura.findAll({
-            where: { id_paciente: id },
+            where: { id_paciente: paciente.id },
             attributes: ['id', 'fecha', 'monto', 'estado']
         });
 
+        console.log(`Facturas encontradas para el paciente ${paciente.id}:`, facturas.length);
+        
         res.json(facturas);
     } catch (error) {
         console.error('Error al obtener facturas:', error);

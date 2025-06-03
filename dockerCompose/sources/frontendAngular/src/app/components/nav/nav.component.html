@@ -20,6 +20,11 @@
       <span>Registrar Paciente</span>
     </a>
     
+    <a *ngIf="isRecepcionista()" class="nav-link" [routerLink]="['/registrar-medico']" routerLinkActive="active">
+      <i class="bi bi-person-plus-fill"></i>
+      <span>Registrar Médico</span>
+    </a>
+    
     <!-- Opciones para médicos -->
     <a *ngIf="isRecepcionista()" class="nav-link" [routerLink]="['/gestionar-cita']" routerLinkActive="active">
       <i class="bi bi-calendar-check"></i>

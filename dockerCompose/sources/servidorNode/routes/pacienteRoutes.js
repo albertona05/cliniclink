@@ -5,7 +5,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 router.get('/historial/:id', pacienteController.obtenerHistorialPaciente);
 
 // Aplicar middleware de autenticación a todas las rutas
-//router.use(authMiddleware.verificarToken);
+router.use(authMiddleware.verificarToken);
 
 // Rutas para gestión de citas
 router.get('/citas/:id', pacienteController.obtenerCitasPaciente);
@@ -15,6 +15,5 @@ router.post('/citasPaciente', pacienteController.crearCita);
 // Rutas para gestión de facturas
 router.get('/facturas/:id', pacienteController.obtenerFacturasPaciente);
 
-// Rutas para gestión de facturas
 
 module.exports = router;

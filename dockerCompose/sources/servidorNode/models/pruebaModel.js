@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
         id: { type: DataTypes.BIGINT, autoIncrement: true, primaryKey: true },
         id_medicoManda: { type: DataTypes.BIGINT, allowNull: false },
         id_medicoAsignado: { type: DataTypes.BIGINT, allowNull: true },
-        id_cita: { type: DataTypes.BIGINT, allowNull: false },
+        id_cita: { type: DataTypes.BIGINT, allowNull: true },
         tipo_prueba: { type: DataTypes.STRING(100), allowNull: false },
         descripcion: { type: DataTypes.TEXT, allowNull: true },
         estado: { 

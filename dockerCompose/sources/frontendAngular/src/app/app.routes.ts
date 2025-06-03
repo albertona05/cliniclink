@@ -3,6 +3,7 @@ import { LoginComponent } from './components/login/login.component';
 import { BuscarPacienteComponent } from './components/buscar-paciente/buscar-paciente.component';
 import { DetallePacienteComponent } from './components/detalle-paciente/detalle-paciente.component';
 import { RegistrarPacienteComponent } from './components/registrar-paciente/registrar-paciente.component';
+import { RegistrarMedicoComponent } from './components/registrar-medico/registrar-medico.component';
 import { CitasPacienteComponent } from './components/citas-paciente/citas-paciente.component';
 import { FacturasComponent } from './components/facturas/facturas.component';
 import { GestionarCitaComponent } from './components/gestionar-cita/gestionar-cita.component';
@@ -33,6 +34,12 @@ export const routes: Routes = [
   {
     path: 'registrar-paciente',
     component: RegistrarPacienteComponent,
+    canActivate: [AuthGuard],
+    data: { rolesPermitidos: ['recepcion'] }
+  },
+  {
+    path: 'registrar-medico',
+    component: RegistrarMedicoComponent,
     canActivate: [AuthGuard],
     data: { rolesPermitidos: ['recepcion'] }
   },

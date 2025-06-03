@@ -5,7 +5,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { MedicoService } from '../../services/medico.service';
 import { PruebaService } from '../../services/prueba.service';
 import { NavComponent } from '../nav/nav.component';
-import { catchError, finalize, of } from 'rxjs';
+import { catchError, finalize, of, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-datos-cita',
@@ -31,6 +32,9 @@ export class DatosCitaComponent implements OnInit {
   horasDisponiblesPrueba: string[] = [];
   horaPruebaSeleccionada: string = '';
   medicamentos: any[] = [];
+  medicamentosResultados: any[] = [];
+  medicamentoSeleccionadoIndex: number = -1;
+  busquedaTermino = new Subject<{termino: string, index: number}>();
   frecuenciasComunes: string[] = ['Cada 8 horas', 'Cada 12 horas', 'Cada 24 horas', 'Dos veces al día', 'Tres veces al día'];
   duracionesComunes: string[] = ['3 días', '5 días', '7 días', '10 días', '14 días', '30 días'];
   mostrarFormPrueba: boolean = false;
@@ -80,51 +84,48 @@ export class DatosCitaComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Configurar el observable para la búsqueda de medicamentos con debounce
+    this.busquedaTermino.pipe(
+      debounceTime(300),
+      distinctUntilChanged((prev, curr) => prev.termino === curr.termino)
+    ).subscribe(({termino, index}) => {
+      if (termino.length > 2) {
+        this.realizarBusquedaMedicamentos(termino, index);
+      } else {
+        this.medicamentosResultados = [];
+      }
+    });
+
     // Obtener el ID de la cita de los parámetros de la ruta
     this.route.params.subscribe(params => {
       this.idCita = params['id'];
     });
     
-    // Inicializar formulario para solicitar pruebas
-    this.pruebaForm = this.formBuilder.group({
-      id_medicoAsignado: ['', Validators.required],
-      tipo_prueba: ['', Validators.required],
-      descripcion: [''],
-      fecha_prueba: ['', Validators.required]
-    });
-
     // Obtener el nombre y DNI del paciente de los query params
     this.route.queryParams.subscribe(params => {
       this.nombrePaciente = params['nombre'] || 'Paciente';
       this.dniPaciente = params['dni'] || '';
+      console.log('DNI obtenido de queryParams:', this.dniPaciente);
     });
     
-    // Inicializar formulario para solicitar pruebas
+    // Inicializar formulario para solicitar pruebas (solo una vez)
     this.pruebaForm = this.formBuilder.group({
       id_medicoAsignado: ['', Validators.required],
       tipo_prueba: ['', Validators.required],
       descripcion: [''],
       fecha_prueba: ['', Validators.required]
     });
-
+  
     // Cargar la lista de médicos y medicamentos
     this.cargarMedicos();
     this.cargarMedicamentos();
-
+  
     this.citaForm = this.formBuilder.group({
       info: ['', Validators.required],
       medicamentosArray: this.formBuilder.array([]),
       precio_consulta: ['', [Validators.required, Validators.min(0)]],
       nueva_fecha: [''],
       id_medico: [''],
-    });
-    
-    // Inicializar formulario para solicitar pruebas
-    this.pruebaForm = this.formBuilder.group({
-      id_medicoAsignado: ['', Validators.required],
-      tipo_prueba: ['', Validators.required],
-      descripcion: [''],
-      fecha_prueba: ['', Validators.required]
     });
   }
 
@@ -144,6 +145,7 @@ export class DatosCitaComponent implements OnInit {
   agregarMedicamento() {
     this.medicamentosArray.push(this.formBuilder.group({
       id_medicamento: ['', Validators.required],
+      nombre_medicamento: ['', Validators.required],
       nombre: [''],
       dosis: ['1 comprimido', Validators.required],
       frecuencia: ['Cada 8 horas', Validators.required],
@@ -156,16 +158,76 @@ export class DatosCitaComponent implements OnInit {
     this.medicamentosArray.removeAt(index);
   }
   
-  actualizarNombreMedicamento(index: number) {
-    const medicamentoControl = this.medicamentosArray.at(index);
-    const idMedicamento = medicamentoControl.get('id_medicamento')?.value;
+  buscarMedicamentos(index: number) {
+    const medicamentoControl = this.getMedicamentoFormGroup(index);
+    const termino = medicamentoControl.get('nombre_medicamento')?.value;
     
-    if (idMedicamento) {
-      const medicamentoSeleccionado = this.medicamentos.find(m => m.id.toString() === idMedicamento.toString());
-      if (medicamentoSeleccionado) {
-        medicamentoControl.get('nombre')?.setValue(medicamentoSeleccionado.nombre);
-      }
+    if (termino) {
+      this.medicamentoSeleccionadoIndex = index;
+      this.busquedaTermino.next({termino, index});
+    } else {
+      this.medicamentosResultados = [];
     }
+  }
+
+  realizarBusquedaMedicamentos(termino: string, index: number) {
+    this.medicoService.buscarMedicamentos(termino).subscribe({
+      next: (response: any) => {
+        if (response && response.success && response.data) {
+          this.medicamentosResultados = response.data;
+        } else {
+          this.medicamentosResultados = [];
+        }
+      },
+      error: (error: any) => {
+        console.error('Error al buscar medicamentos:', error);
+        this.medicamentosResultados = [];
+      }
+    });
+  }
+
+  seleccionarMedicamento(index: number, medicamento: any) {
+    const medicamentoControl = this.getMedicamentoFormGroup(index);
+    medicamentoControl.patchValue({
+      id_medicamento: medicamento.id,
+      nombre_medicamento: medicamento.nombre,
+      nombre: medicamento.nombre
+    });
+    this.medicamentosResultados = [];
+  }
+
+  crearNuevoMedicamento(index: number) {
+    const medicamentoControl = this.getMedicamentoFormGroup(index);
+    const nombreMedicamento = medicamentoControl.get('nombre_medicamento')?.value;
+    
+    if (!nombreMedicamento) {
+      this.mensajeError = 'Debe ingresar un nombre para el medicamento';
+      return;
+    }
+
+    this.loading = true;
+    this.medicoService.crearMedicamento({nombre: nombreMedicamento}).subscribe({
+      next: (response: any) => {
+        if (response && response.success && response.data) {
+          const nuevoMedicamento = response.data;
+          this.medicamentos.push(nuevoMedicamento);
+          this.seleccionarMedicamento(index, nuevoMedicamento);
+          this.mensajeExito = 'Medicamento creado exitosamente';
+        } else {
+          this.mensajeError = 'No se pudo crear el medicamento';
+        }
+        this.loading = false;
+      },
+      error: (error: any) => {
+        console.error('Error al crear medicamento:', error);
+        if (error.error && error.error.mensaje) {
+          this.mensajeError = error.error.mensaje;
+        } else {
+          this.mensajeError = 'Error al crear el medicamento';
+        }
+        this.loading = false;
+      }
+    });
   }
   
   cargarMedicamentos() {
@@ -185,14 +247,6 @@ export class DatosCitaComponent implements OnInit {
         this.mensajeError = 'Error al cargar la lista de medicamentos';
         this.loading = false;
       }
-    });
-    
-    // Inicializar formulario para solicitar pruebas
-    this.pruebaForm = this.formBuilder.group({
-      id_medicoAsignado: ['', Validators.required],
-      tipo_prueba: ['', Validators.required],
-      descripcion: [''],
-      fecha_prueba: ['', Validators.required]
     });
   }
 
@@ -268,14 +322,6 @@ export class DatosCitaComponent implements OnInit {
         this.loading = false;
       }
     });
-    
-    // Inicializar formulario para solicitar pruebas
-    this.pruebaForm = this.formBuilder.group({
-      id_medicoAsignado: ['', Validators.required],
-      tipo_prueba: ['', Validators.required],
-      descripcion: [''],
-      fecha_prueba: ['', Validators.required]
-    });
   }
 
   getErrorMessage(field: string): string {
@@ -293,11 +339,18 @@ export class DatosCitaComponent implements OnInit {
   }
 
   volver() {
-    console.log(this.dniPaciente)
-    // Navegar al historial del paciente usando el DNI
+    console.log('DNI del paciente en volver():', this.dniPaciente);
+    console.log('Nombre del paciente en volver():', this.nombrePaciente);
+    
+    // Navegar al historial del paciente usando el DNI y pasando información adicional
     if (this.dniPaciente) {
-      this.router.navigate(['/historial-paciente', this.dniPaciente]);
+      this.router.navigate(['/historial-paciente', this.dniPaciente], {
+        queryParams: {
+          nombre: this.nombrePaciente
+        }
+      });
     } else {
+      console.log('No se encontró el DNI del paciente, redirigiendo a agenda');
       this.router.navigate(['/agenda']);
     }
   }
@@ -316,14 +369,6 @@ export class DatosCitaComponent implements OnInit {
         console.error('Error al cargar médicos:', error);
         this.mensajeError = 'Error al cargar la lista de médicos';
       }
-    });
-    
-    // Inicializar formulario para solicitar pruebas
-    this.pruebaForm = this.formBuilder.group({
-      id_medicoAsignado: ['', Validators.required],
-      tipo_prueba: ['', Validators.required],
-      descripcion: [''],
-      fecha_prueba: ['', Validators.required]
     });
   }
 
@@ -357,14 +402,6 @@ export class DatosCitaComponent implements OnInit {
           this.loading = false;
         }
       });
-    
-    // Inicializar formulario para solicitar pruebas
-    this.pruebaForm = this.formBuilder.group({
-      id_medicoAsignado: ['', Validators.required],
-      tipo_prueba: ['', Validators.required],
-      descripcion: [''],
-      fecha_prueba: ['', Validators.required]
-    });
   }
 
   seleccionarHora(hora: string) {

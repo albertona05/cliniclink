@@ -4,7 +4,7 @@ services:
     container_name: db
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: Centro
+      MYSQL_DATABASE: clinicLink
     volumes:
       - db_datos:/var/lib/mysql
     networks:
@@ -21,6 +21,7 @@ services:
     volumes:
       - ./sources/servidorNode:/app
       - /app/node_modules
+      - ./bbdd.sql:/app/bbdd.sql
     networks:
       red_backend:
         ipv4_address: 192.168.1.2
@@ -62,7 +63,7 @@ services:
       FTP_MAX_CLIENTS: 50
       FTP_MAX_CONNECTIONS: 50
     volumes:
-      - ./ftp-setup.sh:/etc/pure-ftpd/setup.sh:ro
+      - ./ftp/setup.sh:/etc/pure-ftpd/setup.sh:ro
       - ftp_data:/home/cliniclink/pruebas
     ports:
       - "21:21"

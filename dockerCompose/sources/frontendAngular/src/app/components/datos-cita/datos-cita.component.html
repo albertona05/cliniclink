@@ -41,33 +41,56 @@
                         <div class="row">
                           <div class="col-md-6 mb-2">
                             <label>Medicamento:</label>
-                            <select class="form-control" formControlName="id_medicamento" (change)="actualizarNombreMedicamento(i)">
-                              <option value="">Seleccione un medicamento</option>
-                              <option *ngFor="let med of medicamentos" [value]="med.id">{{ med.nombre }}</option>
-                            </select>
-                          </div>
-                          <div class="col-md-6 mb-2">
-                            <label>Dosis:</label>
-                            <input type="text" class="form-control" formControlName="dosis" placeholder="Ej: 1 comprimido">
-                          </div>
-                          <div class="col-md-6 mb-2">
-                            <label>Frecuencia:</label>
-                            <select class="form-control" formControlName="frecuencia">
-                              <option *ngFor="let frec of frecuenciasComunes" [value]="frec">{{ frec }}</option>
-                            </select>
-                          </div>
-                          <div class="col-md-6 mb-2">
-                            <label>Duración:</label>
-                            <select class="form-control" formControlName="duracion">
-                              <option *ngFor="let dur of duracionesComunes" [value]="dur">{{ dur }}</option>
-                            </select>
-                          </div>
-                          <div class="col-md-12 mb-2">
-                            <label>Instrucciones adicionales:</label>
-                            <textarea class="form-control" formControlName="instrucciones" rows="2"></textarea>
-                          </div>
-                        </div>
-                      </div>
+                            <div class="medicamento-item" *ngFor="let medicamento of medicamentosArray.controls; let i = index">
+                              <div [formGroup]="medicamento" class="row mb-3">
+                                <div class="col-md-3">
+                                  <label for="nombre_medicamento_{{i}}">Medicamento</label>
+                                  <div class="input-group">
+                                    <input type="text" class="form-control" id="nombre_medicamento_{{i}}" formControlName="nombre_medicamento" 
+                                           placeholder="Buscar medicamento" (input)="buscarMedicamentos(i)">
+                                    <button type="button" class="btn btn-primary" (click)="crearNuevoMedicamento(i)">Crear</button>
+                                  </div>
+                                  <div *ngIf="medicamentosResultados.length > 0 && medicamentoSeleccionadoIndex === i" class="medicamentos-resultados">
+                                    <ul class="list-group">
+                                      <li *ngFor="let med of medicamentosResultados" class="list-group-item" 
+                                          (click)="seleccionarMedicamento(i, med)">
+                                        {{ med.nombre }}
+                                      </li>
+                                    </ul>
+                                  </div>
+                                </div>
+                                
+                                <div class="col-md-2">
+                                  <label for="dosis_{{i}}">Dosis</label>
+                                  <input type="text" class="form-control" id="dosis_{{i}}" formControlName="dosis">
+                                </div>
+                                
+                                <div class="col-md-2">
+                                  <label for="frecuencia_{{i}}">Frecuencia</label>
+                                  <select class="form-control" id="frecuencia_{{i}}" formControlName="frecuencia">
+                                    <option *ngFor="let frecuencia of frecuenciasComunes" [value]="frecuencia">{{ frecuencia }}</option>
+                                  </select>
+                                </div>
+                                
+                                <div class="col-md-2">
+                                  <label for="duracion_{{i}}">Duración</label>
+                                  <select class="form-control" id="duracion_{{i}}" formControlName="duracion">
+                                    <option *ngFor="let duracion of duracionesComunes" [value]="duracion">{{ duracion }}</option>
+                                  </select>
+                                </div>
+                                
+                                <div class="col-md-2">
+                                  <label for="instrucciones_{{i}}">Instrucciones</label>
+                                  <input type="text" class="form-control" id="instrucciones_{{i}}" formControlName="instrucciones" placeholder="Opcional">
+                                </div>
+                                
+                                <div class="col-md-1">
+                                  <button type="button" class="btn btn-danger btn-sm mt-4" (click)="eliminarMedicamento(i)">
+                                    <i class="fas fa-trash"></i>
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
                       <div class="col-md-2 text-end">
                         <button type="button" class="btn btn-danger" (click)="eliminarMedicamento(i)">
                           <i class="bi bi-trash"></i>

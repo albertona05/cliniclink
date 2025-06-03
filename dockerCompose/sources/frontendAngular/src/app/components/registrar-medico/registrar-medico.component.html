@@ -1,0 +1,100 @@
+<app-nav></app-nav>
+
+<div class="container-fluid px-4 mt-3">
+  <div class="content-header rounded p-4 mb-4" style="background-color: #009688; color: white;">
+    <h2 class="m-0">Registro de Nuevo Médico</h2>
+  </div>
+
+  <div class="content-body p-4">
+    <div class="card shadow-sm h-100">
+
+      <div class="card-header bg-light">
+        <h4 class="card-title mb-0">Información Personal y Profesional</h4>
+      </div>
+      <div class="card-body">
+        <form [formGroup]="registroForm" (ngSubmit)="onSubmit()">
+          <div *ngIf="mensajeExito" class="alert alert-success">{{ mensajeExito }}</div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <div class="form-group">
+                <label>Nombre Completo:</label>
+                <input type="text" class="form-control" formControlName="nombre" [ngClass]="{ 'is-invalid': submitted && f['nombre'].errors }">
+                <div *ngIf="submitted && f['nombre'].errors" class="invalid-feedback">
+                  {{ getErrorMessage('nombre') }}
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="form-group">
+                <label>Email:</label>
+                <input type="email" class="form-control" formControlName="email" [ngClass]="{ 'is-invalid': submitted && f['email'].errors }">
+                <div *ngIf="submitted && f['email'].errors" class="invalid-feedback">
+                  {{ getErrorMessage('email') }}
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="form-group">
+                <label>Especialidad:</label>
+                <select class="form-control" formControlName="especialidad" [ngClass]="{ 'is-invalid': submitted && f['especialidad'].errors }">
+                  <option value="">Seleccione una especialidad</option>
+                  <option value="Medicina General">Medicina General</option>
+                  <option value="Cardiología">Cardiología</option>
+                  <option value="Dermatología">Dermatología</option>
+                  <option value="Endocrinología">Endocrinología</option>
+                  <option value="Gastroenterología">Gastroenterología</option>
+                  <option value="Ginecología">Ginecología</option>
+                  <option value="Neurología">Neurología</option>
+                  <option value="Oftalmología">Oftalmología</option>
+                  <option value="Ortopedia">Ortopedia</option>
+                  <option value="Pediatría">Pediatría</option>
+                  <option value="Psiquiatría">Psiquiatría</option>
+                  <option value="Traumatología">Traumatología</option>
+                  <option value="Urología">Urología</option>
+                </select>
+                <div *ngIf="submitted && f['especialidad'].errors" class="invalid-feedback">
+                  {{ getErrorMessage('especialidad') }}
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="form-group">
+                <label>Contraseña:</label>
+                <input type="password" class="form-control" formControlName="contrasena" [ngClass]="{ 'is-invalid': submitted && f['contrasena'].errors }">
+                <div *ngIf="submitted && f['contrasena'].errors" class="invalid-feedback">
+                  {{ getErrorMessage('contrasena') }}
+                </div>
+                <small class="form-text text-muted">Mínimo 8 caracteres</small>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="form-group">
+                <label>Confirmar Contraseña:</label>
+                <input type="password" class="form-control" formControlName="confirmarContrasena" [ngClass]="{ 'is-invalid': submitted && f['confirmarContrasena'].errors }">
+                <div *ngIf="submitted && f['confirmarContrasena'].errors" class="invalid-feedback">
+                  {{ getErrorMessage('confirmarContrasena') }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mensajes de error justo encima del botón -->
+          <div *ngIf="mensajeError" class="alert alert-danger mb-3">{{ mensajeError }}</div>
+          
+          <!-- Botón de registro -->
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+            <button type="submit" class="btn btn-primary" [disabled]="loading">
+              <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+              Registrar Médico
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

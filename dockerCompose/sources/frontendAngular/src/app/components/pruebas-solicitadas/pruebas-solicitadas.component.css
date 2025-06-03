@@ -205,3 +205,24 @@
       margin-bottom: 8px;
     }
   }
+
+.btn-clear {
+  background-color: #f8f9fa;
+  color: #dc3545;
+  border: 1px solid #dc3545;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-clear:hover {
+  background-color: #dc3545;
+  color: white;
+  transform: scale(1.03);
+}
+
+.btn-clear i {
+  font-size: 1.1rem;
+  margin-right: 5px;
+}

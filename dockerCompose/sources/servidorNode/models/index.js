@@ -129,13 +129,16 @@ Prueba.belongsTo(Medico, {
 
 Prueba.belongsTo(Cita, {
     foreignKey: 'id_cita',
-    as: 'cita'
+    as: 'cita',
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE'
 });
 
-// Cita-Prueba
 Cita.belongsTo(Prueba, {
     foreignKey: 'id_prueba',
-    as: 'prueba'
+    as: 'prueba',
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE'
 });
 
 // Asociaciones para RecetaMedica y Medicamento

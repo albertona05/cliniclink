@@ -1,8 +1,8 @@
 # Usa Node LTS
 FROM node:20
 
-# Instala el script wait-for-it
-RUN apt update && apt install -y curl && \
+# Instala el script wait-for-it y el cliente MySQL
+RUN apt update && apt install -y curl default-mysql-client && \
     curl -o /usr/local/bin/wait-for-it.sh https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh && \
     chmod +x /usr/local/bin/wait-for-it.sh && \
     npm install -g nodemon@3.0.2

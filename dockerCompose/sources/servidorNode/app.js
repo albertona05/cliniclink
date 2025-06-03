@@ -37,9 +37,20 @@ sequelize.authenticate()
   });
 
 // Sincronizar tablas y asociaciones
-sequelize.sync({ alter: false })
+sequelize.sync({ alter: true })
   .then(() => {
     console.log('Se han creado/actualizado las tablas correctamente');
+    
+    // Ejecutar el script SQL con datos de ejemplo
+    const { exec } = require('child_process');
+    console.log('Cargando datos de ejemplo desde bbdd.sql...');
+    exec('mysql -h db -u root -proot clinicLink < /app/bbdd.sql', (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Error al ejecutar el script SQL: ${error}`);
+        return;
+      }
+      console.log('Datos de ejemplo cargados correctamente');
+    });
   })
   .catch((error) => {
     console.error('Error - No se ha podido crear las tablas correctamente', error);

@@ -202,25 +202,28 @@ const registrarPaciente = async (req, res) => {
             return res.status(400).json({ mensaje: 'El DNI ya está registrado' });
         }
 
-        // Generar contraseña automática: primera letra del nombre + primera letra del primer apellido + primera letra del segundo apellido + año de nacimiento
+        // Generar contraseña automática: dos primeras letras del nombre + año de nacimiento
         try {
             // Dividir el nombre completo en partes
             const nombrePartes = nombre.split(' ');
             let contrasena = '';
             
-            // Obtener primera letra del nombre
+            // Obtener las dos primeras letras del nombre
             if (nombrePartes.length > 0) {
-                contrasena += nombrePartes[0].charAt(0).toLowerCase();
-            }
-            
-            // Obtener primera letra del primer apellido
-            if (nombrePartes.length > 1) {
-                contrasena += nombrePartes[1].charAt(0).toLowerCase();
-            }
-            
-            // Obtener primera letra del segundo apellido
-            if (nombrePartes.length > 2) {
-                contrasena += nombrePartes[2].charAt(0).toLowerCase();
+                // Si el nombre tiene al menos 2 caracteres, tomar los 2 primeros
+                if (nombrePartes[0].length >= 2) {
+                    contrasena += nombrePartes[0].substring(0, 2).toLowerCase();
+                } 
+                // Si el nombre tiene solo 1 carácter, tomar ese y añadir la primera letra del siguiente nombre/apellido si existe
+                else if (nombrePartes[0].length === 1) {
+                    contrasena += nombrePartes[0].charAt(0).toLowerCase();
+                    if (nombrePartes.length > 1) {
+                        contrasena += nombrePartes[1].charAt(0).toLowerCase();
+                    } else {
+                        // Si no hay más partes del nombre, duplicar la única letra
+                        contrasena += nombrePartes[0].charAt(0).toLowerCase();
+                    }
+                }
             }
             
             // Obtener año de nacimiento
@@ -406,10 +409,91 @@ const crearCita = async (req, res) => {
     }
 };
 
+// Registrar nuevo médico
+const registrarMedico = async (req, res) => {
+    let t;
+    try {
+        t = await sequelize.transaction();
+        
+        let { nombre, email, especialidad, contrasena } = req.body;
+
+        // Validar y sanitizar inputs
+        nombre = sanitizarInput(nombre);
+        email = sanitizarInput(email);
+        especialidad = sanitizarInput(especialidad);
+
+        // Validacion campos vacios
+        if (!nombre || !email || !especialidad || !contrasena) {
+            await t.rollback();
+            return res.status(400).json({ mensaje: 'Todos los campos son obligatorios' });
+        }
+
+        // Verificar email duplicado
+        const emailExistente = await Usuario.findOne({ where: { email }, transaction: t });
+        if (emailExistente) {
+            await t.rollback();
+            return res.status(400).json({ mensaje: 'El email ya está registrado' });
+        }
+
+        // Validar longitud de contraseña
+        if (contrasena.length < 8) {
+            await t.rollback();
+            return res.status(400).json({ mensaje: 'La contraseña debe tener al menos 8 caracteres' });
+        }
+
+        // Encriptar contraseña
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(contrasena, salt);
+        
+        // Crear usuario
+        const usuario = await Usuario.create({
+            nombre,
+            email,
+            contrasena: hashedPassword,
+            rol: 'medico'
+        }, { transaction: t });
+
+        // Crear médico
+        const medicoCreado = await Medico.create({
+            id_usuario: usuario.id,
+            especialidad
+        }, { transaction: t });
+
+        await t.commit();
+        res.status(201).json({ 
+            mensaje: 'Médico registrado correctamente'
+        });
+    } catch (error) {
+        if (t) await t.rollback();
+        console.error('=== ERROR: Registro de médico fallido ===');
+        console.error('Error al registrar médico:', error);
+        console.error('Mensaje de error:', error.message);
+        console.error('Stack de error:', error.stack);
+        
+        if (error.name === 'SequelizeValidationError') {
+            console.error('Error de validación de Sequelize:', error.errors.map(e => e.message));
+            return res.status(400).json({ 
+                mensaje: 'Error de validación', 
+                errores: error.errors.map(e => e.message) 
+            });
+        }
+        
+        if (error.name === 'SequelizeDatabaseError') {
+            console.error('Error de base de datos:', error.parent?.sqlMessage || error.message);
+        }
+        
+        res.status(500).json({ 
+            mensaje: 'Error al registrar médico', 
+            error: error.message 
+        });
+    }
+};
+
 module.exports = {
     buscarPaciente,
     obtenerPaciente,
     actualizarPaciente,
     registrarPaciente,
+    registrarMedico,
     crearCita
 };

@@ -21,6 +21,9 @@ router.get('/pacientes/:id', recepcionController.obtenerPaciente);
 router.put('/pacientes/:id', recepcionController.actualizarPaciente);
 router.post('/pacientes', recepcionController.registrarPaciente);
 
+// Registrar nuevo médico
+router.post('/registrar-medico', recepcionController.registrarMedico);
+
 // Rutas para gestión de citas
 router.post('/citas', recepcionController.crearCita);
 

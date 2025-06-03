@@ -1,84 +1,96 @@
-const db = require('../models');
-const { Medicamento } = db;
-const xss = require('xss');
+const { Medicamento } = require('../models');
+const { Op } = require('sequelize');
+const sanitizeHtml = require('sanitize-html');
 
-// Función para sanitizar input
-const sanitizarInput = (input) => {
-    if (typeof input !== 'string') return input;
-    return xss(input.trim());
+// Obtener todos los medicamentos o buscar por término
+exports.obtenerMedicamentos = async (req, res) => {
+  try {
+    const { termino } = req.query;
+    let condicion = {};
+    
+    // Si hay un término de búsqueda, filtrar por nombre
+    if (termino) {
+      condicion = {
+        nombre: {
+          [Op.like]: `%${termino}%`
+        }
+      };
+    }
+    
+    const medicamentos = await Medicamento.findAll({
+      where: condicion,
+      attributes: ['id', 'nombre', 'descripcion'],
+      order: [['nombre', 'ASC']]
+    });
+    
+    res.json({
+      success: true,
+      data: medicamentos
+    });
+  } catch (error) {
+    console.error('Error al obtener medicamentos:', error);
+    res.status(500).json({
+      success: false,
+      mensaje: 'Error al obtener los medicamentos'
+    });
+  }
 };
 
-// Obtener todos los medicamentos
-async function obtenerMedicamentos(req, res) {
-    try {
-        const medicamentos = await Medicamento.findAll({
-            attributes: ['id', 'nombre', 'descripcion'],
-            order: [['nombre', 'ASC']]
-        });
-
-        res.json({
-            success: true,
-            data: medicamentos
-        });
-    } catch (error) {
-        console.error('Error al obtener medicamentos:', error);
-        res.status(500).json({
-            success: false,
-            mensaje: 'Error al obtener los medicamentos'
-        });
-    }
-}
-
 // Crear un nuevo medicamento
-async function crearMedicamento(req, res) {
-    try {
-        const { nombre, descripcion } = req.body;
-        
-        // Validar datos requeridos
-        if (!nombre) {
-            return res.status(400).json({
-                success: false,
-                mensaje: 'El nombre del medicamento es requerido'
-            });
-        }
-
-        // Sanitizar inputs
-        const nombreSanitizado = sanitizarInput(nombre);
-        const descripcionSanitizada = descripcion ? sanitizarInput(descripcion) : null;
-
-        // Verificar si ya existe un medicamento con el mismo nombre
-        const medicamentoExistente = await Medicamento.findOne({
-            where: { nombre: nombreSanitizado }
-        });
-
-        if (medicamentoExistente) {
-            return res.status(400).json({
-                success: false,
-                mensaje: 'Ya existe un medicamento con ese nombre'
-            });
-        }
-
-        // Crear el medicamento
-        const nuevoMedicamento = await Medicamento.create({
-            nombre: nombreSanitizado,
-            descripcion: descripcionSanitizada
-        });
-
-        res.status(201).json({
-            success: true,
-            mensaje: 'Medicamento creado exitosamente',
-            data: nuevoMedicamento
-        });
-    } catch (error) {
-        console.error('Error al crear medicamento:', error);
-        res.status(500).json({
-            success: false,
-            mensaje: 'Error al crear el medicamento'
-        });
+exports.crearMedicamento = async (req, res) => {
+  try {
+    // Sanitizar los datos de entrada
+    const nombre = sanitizeHtml(req.body.nombre?.trim() || '', {
+      allowedTags: [],
+      allowedAttributes: {}
+    });
+    
+    const descripcion = sanitizeHtml(req.body.descripcion?.trim() || '', {
+      allowedTags: [],
+      allowedAttributes: {}
+    });
+    
+    // Validar que el nombre no esté vacío
+    if (!nombre) {
+      return res.status(400).json({
+        success: false,
+        mensaje: 'El nombre del medicamento es obligatorio'
+      });
     }
-}
-
-module.exports = {
-    obtenerMedicamentos,
-    crearMedicamento
+    
+    // Verificar si ya existe un medicamento con el mismo nombre
+    const medicamentoExistente = await Medicamento.findOne({
+      where: {
+        nombre: {
+          [Op.like]: nombre
+        }
+      }
+    });
+    
+    if (medicamentoExistente) {
+      return res.status(400).json({
+        success: false,
+        mensaje: 'Ya existe un medicamento con ese nombre',
+        data: medicamentoExistente
+      });
+    }
+    
+    // Crear el nuevo medicamento
+    const nuevoMedicamento = await Medicamento.create({
+      nombre,
+      descripcion: descripcion || null
+    });
+    
+    res.status(201).json({
+      success: true,
+      mensaje: 'Medicamento creado exitosamente',
+      data: nuevoMedicamento
+    });
+  } catch (error) {
+    console.error('Error al crear medicamento:', error);
+    res.status(500).json({
+      success: false,
+      mensaje: 'Error al crear el medicamento'
+    });
+  }
 };

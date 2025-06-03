@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { catchError, finalize, of } from 'rxjs';
@@ -25,7 +24,7 @@ export class PruebasSolicitadasComponent implements OnInit {
   mensajeExito: string = '';
   
   // Variables para búsqueda y filtrado
-  busquedaPaciente: string = '';
+  terminoBusqueda: string = '';
   fechaInicio: string = '';
   fechaFin: string = '';
   
@@ -35,12 +34,11 @@ export class PruebasSolicitadasComponent implements OnInit {
   horasDisponibles: string[] = [];
   horaSeleccionada: string = '';
   pruebaSeleccionada: Prueba | null = null;
-  // Variables para mostrar resultados
   pruebaSeleccionadaResultado: Prueba | null = null;
+  private timeoutId: any;
   
   constructor(
     private pruebaService: PruebaService,
-    private router: Router,
     private http: HttpClient,
     private sanitizer: DomSanitizer
   ) {
@@ -50,12 +48,6 @@ export class PruebasSolicitadasComponent implements OnInit {
     manana.setDate(manana.getDate() + 1);
     this.fechaMinima = manana.toISOString().split('T')[0];
     this.fecha = this.fechaMinima;
-    
-    // Inicializar fechas para el filtro
-    const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-    const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
-    this.fechaInicio = inicioMes.toISOString().split('T')[0];
-    this.fechaFin = finMes.toISOString().split('T')[0];
   }
 
   ngOnInit(): void {
@@ -70,7 +62,7 @@ export class PruebasSolicitadasComponent implements OnInit {
       next: (response: PruebaResponse) => {
         if (response && response.success && response.data) {
           this.pruebas = response.data;
-          this.aplicarFiltros();
+          this.pruebasFiltradas = [...this.pruebas];
         } else {
           this.pruebas = [];
           this.pruebasFiltradas = [];
@@ -84,38 +76,6 @@ export class PruebasSolicitadasComponent implements OnInit {
         this.loading = false;
       }
     });
-  }
-  
-  aplicarFiltros(): void {
-    this.pruebasFiltradas = this.pruebas.filter(prueba => {
-      // Filtro por nombre de paciente
-      const coincideNombre = this.busquedaPaciente === '' || 
-        prueba.paciente.toLowerCase().includes(this.busquedaPaciente.toLowerCase());
-      
-      // Filtro por rango de fechas
-      let coincideFecha = true;
-      if (this.fechaInicio && this.fechaFin) {
-        const fechaPrueba = new Date(prueba.fecha_creacion);
-        const inicio = new Date(this.fechaInicio);
-        const fin = new Date(this.fechaFin);
-        // Ajustar fin para incluir todo el día
-        fin.setHours(23, 59, 59, 999);
-        
-        coincideFecha = fechaPrueba >= inicio && fechaPrueba <= fin;
-      }
-      
-      return coincideNombre && coincideFecha;
-    });
-  }
-  
-  limpiarFiltros(): void {
-    this.busquedaPaciente = '';
-    const hoy = new Date();
-    const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-    const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
-    this.fechaInicio = inicioMes.toISOString().split('T')[0];
-    this.fechaFin = finMes.toISOString().split('T')[0];
-    this.aplicarFiltros();
   }
   
   formatearFecha(fecha: string): string {
@@ -188,7 +148,7 @@ export class PruebasSolicitadasComponent implements OnInit {
       hora: this.horaSeleccionada
     };
 
-    this.http.post<any>('http://localhost:3000/pruebas/programar', datosPrueba)
+    this.http.post<any>('http://localhost:3000/pruebas', datosPrueba)
       .pipe(
         catchError(error => {
           console.error('Error al programar prueba:', error);
@@ -220,46 +180,40 @@ export class PruebasSolicitadasComponent implements OnInit {
   }
 
   mostrarResultado(prueba: Prueba) {
-    // Inicializar con un array vacío para evitar errores de undefined
-    this.pruebaSeleccionadaResultado = {
-      ...prueba,
-      archivos: []
-    };
-    this.loading = true;
+    this.pruebaSeleccionadaResultado = prueba;
     
     // Cargar los archivos de la prueba
-    console.log('Solicitando archivos para ID de cita asociada a la prueba:', prueba.id_cita || prueba.id);
-    // Usar id_cita si existe, de lo contrario usar id de la prueba
-    const idArchivos = prueba.id_cita || prueba.id;
-    this.pruebaService.obtenerArchivosPrueba(idArchivos).subscribe({
-      next: (response) => {
+    console.log(`Cargando archivos para la prueba ID: ${prueba.id}`);
+    this.http.get<any>(`http://localhost:3000/api/pruebas/${prueba.id}/files`)
+      .pipe(
+        catchError(error => {
+          console.error('Error al cargar archivos de la prueba:', error);
+          return of({ files: [] });
+        })
+      )
+      .subscribe(response => {
         console.log('Respuesta de archivos recibida:', response);
-        if (response && Array.isArray(response)) {
-          // Mapear los archivos para incluir URLs completas
-          const archivos = response.map((archivo: any) => ({
-            nombre: archivo.name,
-            tipo: this.determinarTipoArchivo(archivo.name),
-            url: `${this.pruebaService['apiUrl']}/pruebas/${idArchivos}/files/${archivo.name}`
+        if (response && response.files && this.pruebaSeleccionadaResultado) {
+          // Transformar los archivos recibidos al formato esperado por el componente
+          const archivos = response.files.map((file: any) => ({
+            nombre: file.name,
+            tipo: this.getMimeType(file.type),
+            url: `http://localhost:3000/api/pruebas/${prueba.id}/files/${file.name}`
           }));
           
           console.log('Archivos procesados:', archivos);
-          
-          // Actualizar la prueba con los archivos
-          this.pruebaSeleccionadaResultado = {
-            ...prueba,
-            archivos: archivos
-          };
-          console.log('Prueba actualizada con archivos:', this.pruebaSeleccionadaResultado);
-        } else {
-          console.log('Respuesta no es un array o está vacía');
+          // Asignar los archivos a la prueba seleccionada
+          if (this.pruebaSeleccionadaResultado) {
+            if (!this.pruebaSeleccionadaResultado.archivos) {
+              this.pruebaSeleccionadaResultado.archivos = [];
+            }
+            this.pruebaSeleccionadaResultado.archivos = archivos;
+          }
+        } else if (this.pruebaSeleccionadaResultado) {
+          console.log('No se encontraron archivos para esta prueba');
+          this.pruebaSeleccionadaResultado.archivos = [];
         }
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error al cargar archivos:', error);
-        this.loading = false;
-      }
-    });
+      });
     
     // Inicializar el offcanvas de Bootstrap
     const offcanvasElement = document.getElementById('resultadoOffcanvas');
@@ -267,16 +221,6 @@ export class PruebasSolicitadasComponent implements OnInit {
       const bsOffcanvas = new bootstrap.Offcanvas(offcanvasElement);
       bsOffcanvas.show();
     }
-  }
-  
-  determinarTipoArchivo(nombreArchivo: string): string {
-    const extension = nombreArchivo.split('.').pop()?.toLowerCase();
-    if (['jpg', 'jpeg', 'png', 'gif'].includes(extension || '')) {
-      return 'image/jpeg';
-    } else if (extension === 'pdf') {
-      return 'application/pdf';
-    }
-    return 'application/octet-stream';
   }
 
   abrirImagen(url: string) {
@@ -286,5 +230,109 @@ export class PruebasSolicitadasComponent implements OnInit {
 
   getSafeUrl(url: string): SafeUrl {
     return this.sanitizer.bypassSecurityTrustUrl(url);
+  }
+
+  // Métodos para búsqueda y filtrado
+  buscarPruebas() {
+    this.aplicarFiltros();
+  }
+
+  limpiarFiltros() {
+    this.terminoBusqueda = '';
+    this.fechaInicio = '';
+    this.fechaFin = '';
+    this.pruebasFiltradas = [...this.pruebas];
+  }
+
+  // Método para eliminar un filtro específico
+  eliminarFiltro(filtro: 'nombre' | 'fechaInicio' | 'fechaFin') {
+    switch(filtro) {
+      case 'nombre':
+        this.terminoBusqueda = '';
+        break;
+      case 'fechaInicio':
+        this.fechaInicio = '';
+        break;
+      case 'fechaFin':
+        this.fechaFin = '';
+        break;
+    }
+    this.aplicarFiltros();
+  }
+
+  // Verificar si hay filtros activos
+  hayFiltrosActivos(): boolean {
+    return !!(this.terminoBusqueda || this.fechaInicio || this.fechaFin);
+  }
+
+  // Método para buscar en tiempo real cuando se escribe en el campo de búsqueda
+  buscarEnTiempoReal(event: any) {
+    // Implementar debounce para evitar múltiples búsquedas
+    clearTimeout(this.timeoutId);
+    this.timeoutId = setTimeout(() => {
+      this.aplicarFiltros();
+    }, 300); // Esperar 300ms después de que el usuario deje de escribir
+  }
+
+  aplicarFiltros() {
+    // Mostrar indicador de carga durante la búsqueda
+    const busquedaAnterior = this.pruebasFiltradas.length;
+    
+    this.pruebasFiltradas = this.pruebas.filter(prueba => {
+      // Filtrar por término de búsqueda (nombre del paciente)
+      const coincideNombre = !this.terminoBusqueda || 
+        prueba.paciente.toLowerCase().includes(this.terminoBusqueda.toLowerCase());
+      
+      // Filtrar por fecha de inicio
+      let coincideFechaInicio = true;
+      if (this.fechaInicio) {
+        const fechaPrueba = new Date(prueba.fecha_creacion);
+        const fechaInicioObj = new Date(this.fechaInicio);
+        coincideFechaInicio = fechaPrueba >= fechaInicioObj;
+      }
+      
+      // Filtrar por fecha de fin
+      let coincideFechaFin = true;
+      if (this.fechaFin) {
+        const fechaPrueba = new Date(prueba.fecha_creacion);
+        const fechaFinObj = new Date(this.fechaFin);
+        // Ajustar la fecha de fin para incluir todo el día
+        fechaFinObj.setHours(23, 59, 59, 999);
+        coincideFechaFin = fechaPrueba <= fechaFinObj;
+      }
+      
+      return coincideNombre && coincideFechaInicio && coincideFechaFin;
+    });
+    
+    // Mostrar mensaje si los resultados cambiaron significativamente
+    if (busquedaAnterior > 0 && this.pruebasFiltradas.length === 0) {
+      console.log('No se encontraron resultados con los filtros aplicados');
+    }
+  }
+
+  // Método para determinar el tipo MIME basado en la extensión del archivo
+  getMimeType(fileType: string): string {
+    if (!fileType) return 'application/octet-stream';
+    
+    // Si ya viene con formato MIME, devolverlo directamente
+    if (fileType.includes('/')) return fileType;
+    
+    // Mapeo de extensiones comunes a tipos MIME
+    const mimeTypes: {[key: string]: string} = {
+      'pdf': 'application/pdf',
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png',
+      'gif': 'image/gif',
+      'bmp': 'image/bmp',
+      'doc': 'application/msword',
+      'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'xls': 'application/vnd.ms-excel',
+      'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'txt': 'text/plain'
+    };
+    
+    const extension = fileType.toLowerCase();
+    return mimeTypes[extension] || 'application/octet-stream';
   }
 }
