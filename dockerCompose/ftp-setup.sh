@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Crear directorio principal si no existe
 mkdir -p /home/cliniclink
@@ -10,17 +10,15 @@ mkdir -p /home/cliniclink/pruebas
 chown -R ftpuser:ftpgroup /home/cliniclink
 chmod -R 755 /home/cliniclink
 
-# Crear directorio para passwd si no existe
-mkdir -p /etc/pure-ftpd/passwd
-
-# Crear usuario FTP si no existe
-if ! pure-pw show cliniclink > /dev/null 2>&1; then
-  pure-pw useradd cliniclink -u 1000 -g 1000 -d /home/cliniclink -m <<EOF
-cliniclink123
-cliniclink123
+# Crear usuario FTP
+# El formato es: pure-pw useradd [nombre_usuario] -u [uid_usuario] -g [gid_grupo] -d [directorio_home] -m
+pure-pw useradd ${FTP_USER_NAME} -u ftpuser -g ftpgroup -d ${FTP_USER_HOME} -m <<EOF
+${FTP_USER_PASS}
+${FTP_USER_PASS}
 EOF
-  pure-pw mkdb /etc/pure-ftpd/pureftpd.pdb -f /etc/pure-ftpd/passwd/pureftpd.passwd
-fi
 
-# Iniciar el servidor FTP
-/usr/sbin/pure-ftpd
+# Crear la base de datos de contraseñas
+pure-pw mkdb
+
+# Iniciar el servidor FTP con las opciones adecuadas
+exec /usr/sbin/pure-ftpd -c 50 -C 50 -l puredb:/etc/pure-ftpd/pureftpd.pdb -E -j -R -P $PUBLICHOST -p 30000:30009
