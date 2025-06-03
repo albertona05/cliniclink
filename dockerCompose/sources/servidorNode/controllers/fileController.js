@@ -17,6 +17,7 @@ const upload = multer({ storage: storage });
 class FileController {
     constructor() {
         // Bind methods to instance
+        // Bind methods to instance
         this.uploadPruebaFiles = this.uploadPruebaFiles.bind(this);
         this.getPruebaFiles = this.getPruebaFiles.bind(this);
         this.downloadPruebaFile = this.downloadPruebaFile.bind(this);
@@ -152,6 +153,7 @@ class FileController {
             }
         } catch (error) {
             console.error('Error al descargar archivo:', error);
+            console.error('Error al descargar archivo:', error);
             res.status(500).json({ error: 'Error al descargar el archivo' });
         }
     }
@@ -167,8 +169,10 @@ class FileController {
                 res.json({ message: 'Archivo eliminado correctamente' });
             } else {
                 res.status(404).json({ error: 'Archivo no encontrado' });
+                res.status(404).json({ error: 'Archivo no encontrado' });
             }
         } catch (error) {
+            console.error('Error al eliminar archivo:', error);
             console.error('Error al eliminar archivo:', error);
             res.status(500).json({ error: 'Error al eliminar el archivo' });
         }

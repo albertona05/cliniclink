@@ -25,6 +25,7 @@ export class PruebasSolicitadasComponent implements OnInit {
   
   // Variables para búsqueda y filtrado
   terminoBusqueda: string = '';
+  terminoBusqueda: string = '';
   fechaInicio: string = '';
   fechaFin: string = '';
   
@@ -62,6 +63,7 @@ export class PruebasSolicitadasComponent implements OnInit {
       next: (response: PruebaResponse) => {
         if (response && response.success && response.data) {
           this.pruebas = response.data;
+          this.pruebasFiltradas = [...this.pruebas];
           this.pruebasFiltradas = [...this.pruebas];
         } else {
           this.pruebas = [];
