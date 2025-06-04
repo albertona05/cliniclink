@@ -374,7 +374,7 @@ const descargarReceta = async (req, res) => {
         
         try {
             // Descargar el archivo desde el servidor FTP
-            await ftpService.downloadFile(receta.ruta, tempFilePath, 'recetas');
+            await ftpService.downloadFile(receta.ruta, tempFilePath);
             
             // Enviar el archivo como respuesta
             res.download(tempFilePath, `receta_${idCita}.pdf`, (err) => {

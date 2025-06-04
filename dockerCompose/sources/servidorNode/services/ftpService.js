@@ -20,12 +20,11 @@ class FtpService {
         while (retryCount < maxRetries) {
             try {
                 await this.client.access(this.config);
-                
-                // Create base directories if they don't exist
+
                 try {
-                    await this.client.ensureDir('/pruebas');
+                    await this.client.ensureDir('/recetas');
                 } catch (err) {
-                    console.error('Error al crear directorio pruebas:', err);
+                    console.error('Error al crear directorio recetas:', err);
                 }
                 
                 try {
@@ -42,8 +41,7 @@ class FtpService {
                 if (retryCount === maxRetries) {
                     return false;
                 }
-                
-                // Wait before retrying with exponential backoff
+
                 await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retryCount - 1)));
             }
         }
@@ -55,7 +53,7 @@ class FtpService {
     async downloadFile(remoteFileName, localFilePath) {
         try {
             await this.connect();
-            await this.client.cd('/pruebas');
+            await this.client.cd('/recetas');
             await this.client.downloadTo(localFilePath, remoteFileName);
             return true;
         } catch (err) {
@@ -70,8 +68,8 @@ class FtpService {
         try {
             console.log(`Conectando al FTP para listar archivos en directorio: ${directory}`);
             await this.connect();
-            console.log('Conexión FTP establecida, navegando a /pruebas');
-            await this.client.cd('/pruebas');
+            console.log('Conexión FTP establecida, navegando a /recetas');
+            await this.client.cd('/recetas');
             console.log(`Listando archivos en: ${directory === '/' ? '.' : directory}`);
             const list = await this.client.list(directory === '/' ? '.' : directory);
             console.log(`Archivos encontrados en FTP: ${list.length}`, list.map(f => f.name));
@@ -87,7 +85,7 @@ class FtpService {
     async deleteFile(remoteFileName) {
         try {
             await this.connect();
-            await this.client.cd('/pruebas');
+            await this.client.cd('/recetas');
             await this.client.remove(remoteFileName);
             return true;
         } catch (err) {
@@ -104,19 +102,15 @@ class FtpService {
 
         while (retryCount < maxRetries) {
             try {
-                // Ensure connection is active
                 if (!await this.connect()) {
                     throw new Error('No se pudo establecer conexión FTP');
                 }
 
-                // Navigate to pruebas directory
-                await this.client.cd('/pruebas');
-                console.log('Navegando a directorio: /pruebas');
+                await this.client.cd('/recetas');
+                console.log('Navegando a directorio: /recetas');
                 
-                // Extract just the filename from remotePath (remove 'pruebas/' prefix if present)
                 const fileName = remotePath.includes('/') ? remotePath.split('/').pop() : remotePath;
                 
-                // Upload the file with just the filename
                 await this.client.uploadFrom(localPath, fileName);
                 console.log(`Archivo subido exitosamente: ${fileName}`);
                 return true;
@@ -128,7 +122,6 @@ class FtpService {
                     return false;
                 }
                 
-                // Wait before retrying
                 await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
             } finally {
                 this.client.close();
@@ -143,19 +136,15 @@ class FtpService {
 
         while (retryCount < maxRetries) {
             try {
-                // Ensure connection is active
                 if (!await this.connect()) {
                     throw new Error('No se pudo establecer conexión FTP');
                 }
 
-                // Navigate to facturas directory
                 await this.client.cd('/facturas');
                 console.log('Navegando a directorio: /facturas');
-                
-                // Extract just the filename from remotePath
+
                 const fileName = remotePath.includes('/') ? remotePath.split('/').pop() : remotePath;
-                
-                // Upload the file with just the filename
+
                 await this.client.uploadFrom(localPath, fileName);
                 console.log(`Factura subida exitosamente: ${fileName}`);
                 return true;
@@ -166,8 +155,7 @@ class FtpService {
                 if (retryCount === maxRetries) {
                     return false;
                 }
-                
-                // Wait before retrying
+
                 await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
             } finally {
                 this.client.close();
