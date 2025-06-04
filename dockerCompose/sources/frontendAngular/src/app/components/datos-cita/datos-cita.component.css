@@ -233,6 +233,64 @@ textarea.form-control {
   }
 }
 
+/* Estilos para los medicamentos */
+.medicamentos-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.medicamento-card {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  background-color: #fff;
+  transition: all 0.3s ease;
+}
+
+.medicamento-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.medicamento-form {
+  padding: 0;
+}
+
+.medicamento-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 15px 15px 5px 15px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #eee;
+}
+
+.medicamento-title {
+  flex-grow: 1;
+  margin-right: 15px;
+}
+
+.medicamento-details {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 15px;
+  gap: 15px;
+}
+
+.detail-item {
+  flex: 1 1 200px;
+}
+
+.detail-item label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #495057;
+}
+
 .medicamentos-resultados {
   position: absolute;
   z-index: 1000;

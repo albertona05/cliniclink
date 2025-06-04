@@ -92,41 +92,162 @@ async function generarRecetaPDF(datos) {
             console.log(`Directorio creado: ${dirPath}`);
         }
         
-        const doc = new PDFDocument();
-        const filePath = `${dirPath}/receta_${datos.id_cita}.pdf`;
+        const doc = new PDFDocument({
+            size: 'A4',
+            margin: 50,
+            bufferPages: true
+        });
+        const fileName = `receta_${datos.id_cita}.pdf`;
+        const filePath = `${dirPath}/${fileName}`;
         const writeStream = fs.createWriteStream(filePath);
 
+        // Fecha actual formateada
+        const fechaActual = new Date().toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+
+        // Colores
+        const colorPrimario = '#009688';
+        const colorSecundario = '#333333';
+        const colorTexto = '#555555';
+
         doc.pipe(writeStream);
-        doc.fontSize(16).text('RECETA MÉDICA', { align: 'center' });
-        doc.moveDown();
-        doc.fontSize(12).text(`Fecha: ${new Date().toLocaleDateString()}`);
-        doc.moveDown();
-        doc.text(`Doctor: ${datos.nombre_medico}`);
-        doc.moveDown();
-        doc.text('Medicamentos:');
-        doc.moveDown();
-        
+
+        // Encabezado
+        doc.rect(50, 50, 495, 100)
+           .fillAndStroke('#f8f9fa', '#e9ecef');
+
+        // Logo o nombre de la clínica
+        doc.fontSize(24)
+           .fillColor(colorPrimario)
+           .text('ClinicLink', 70, 65, { width: 250 });
+
+        doc.fontSize(10)
+           .fillColor(colorSecundario)
+           .text('Centro Médico Especializado', 70, 95, { width: 250 });
+
+        doc.fontSize(10)
+           .fillColor(colorTexto)
+           .text('C/ Principal 123, 28001 Madrid', 70, 110, { width: 250 })
+           .text('Tel: +34 91 123 45 67', 70, 125, { width: 250 })
+           .text('info@cliniclink.com', 70, 140, { width: 250 });
+
+        // Título del documento
+        doc.fontSize(18)
+           .fillColor(colorPrimario)
+           .text('RECETA MÉDICA', 350, 65, { width: 170, align: 'right' });
+
+        doc.fontSize(10)
+           .fillColor(colorSecundario)
+           .text(`Fecha: ${fechaActual}`, 350, 95, { width: 170, align: 'right' });
+
+        // Información del médico
+        doc.rect(50, 170, 495, 60)
+           .fillAndStroke('white', '#e9ecef');
+
+        doc.fontSize(12)
+           .fillColor(colorPrimario)
+           .text('MÉDICO', 70, 185);
+
+        doc.fontSize(10)
+           .fillColor(colorTexto)
+           .text(`Dr./Dra.: ${datos.nombre_medico}`, 70, 205);
+
+        // Medicamentos
+        doc.rect(50, 250, 495, 30)
+           .fillAndStroke(colorPrimario, colorPrimario);
+
+        doc.fontSize(12)
+           .fillColor('white')
+           .text('MEDICAMENTOS RECETADOS', 70, 260);
+
+        let yPosition = 300;
+
         // Mostrar cada medicamento con sus instrucciones
         if (datos.medicamentos && Array.isArray(datos.medicamentos)) {
             datos.medicamentos.forEach((med, index) => {
-                doc.text(`${index + 1}. ${med.nombre}`);
-                doc.text(`   Dosis: ${med.dosis}`);
-                doc.text(`   Frecuencia: ${med.frecuencia}`);
-                doc.text(`   Duración: ${med.duracion}`);
+                doc.rect(50, yPosition, 495, 100)
+                   .fillAndStroke('#f8f9fa', '#e9ecef');
+
+                doc.fontSize(11)
+                   .fillColor(colorPrimario)
+                   .text(`${index + 1}. ${med.nombre}`, 70, yPosition + 10);
+
+                doc.fontSize(10)
+                   .fillColor(colorTexto)
+                   .text(`Dosis: ${med.dosis}`, 90, yPosition + 30)
+                   .text(`Frecuencia: ${med.frecuencia}`, 90, yPosition + 45)
+                   .text(`Duración: ${med.duracion}`, 90, yPosition + 60);
+
                 if (med.instrucciones) {
-                    doc.text(`   Instrucciones: ${med.instrucciones}`);
+                    doc.text(`Instrucciones: ${med.instrucciones}`, 90, yPosition + 75);
                 }
-                doc.moveDown();
+
+                yPosition += 110;
             });
         } else {
-            doc.text('No se especificaron medicamentos');
+            doc.rect(50, yPosition, 495, 40)
+               .fillAndStroke('#f8f9fa', '#e9ecef');
+
+            doc.fontSize(10)
+               .fillColor(colorTexto)
+               .text('No se especificaron medicamentos', 70, yPosition + 15);
+
+            yPosition += 50;
         }
-        
-        doc.moveDown();
-        doc.text(`Información adicional: ${datos.info}`);
+
+        // Información adicional
+        if (datos.info) {
+            doc.rect(50, yPosition, 495, 80)
+               .fillAndStroke('#f8f9fa', '#e9ecef');
+
+            doc.fontSize(11)
+               .fillColor(colorPrimario)
+               .text('INFORMACIÓN ADICIONAL', 70, yPosition + 10);
+
+            doc.fontSize(10)
+               .fillColor(colorTexto)
+               .text(datos.info, 70, yPosition + 30, { width: 455 });
+
+            yPosition += 90;
+        }
+
+        // Firma digital o sello
+        doc.fontSize(10)
+           .fillColor(colorPrimario)
+           .text('ClinicLink - Documento generado electrónicamente', 50, 720, { align: 'center', width: 495 });
+
         doc.end();
 
-        writeStream.on('finish', () => resolve(filePath));
+        writeStream.on('finish', async () => {
+            try {
+                // Importar el servicio FTP
+                const ftpService = require('../services/ftpService');
+                
+                // Subir el archivo al FTP en la carpeta recetas
+                const uploaded = await ftpService.uploadFile(filePath, fileName, 'recetas');
+                
+                if (uploaded) {
+                    console.log(`Receta subida exitosamente al FTP: ${fileName}`);
+                } else {
+                    console.error(`Error al subir la receta al FTP: ${fileName}`);
+                }
+                
+                resolve({
+                    localPath: filePath,
+                    ftpPath: `/recetas/${fileName}`,
+                    fileName: fileName
+                });
+            } catch (err) {
+                console.error('Error al subir la receta al FTP:', err);
+                resolve({
+                    localPath: filePath,
+                    error: err.message
+                }); // Resolvemos con la ruta local aunque falle la subida al FTP
+            }
+        });
         writeStream.on('error', reject);
     });
 }
@@ -141,22 +262,130 @@ async function generarFacturaPDF(datos) {
             console.log(`Directorio creado: ${dirPath}`);
         }
         
-        const doc = new PDFDocument();
-        const filePath = `${dirPath}/factura_${datos.id_cita}.pdf`;
+        const doc = new PDFDocument({
+            size: 'A4',
+            margin: 50,
+            bufferPages: true // Permite ajustar el contenido dinámicamente
+        });
+        const fileName = `factura_${datos.id_cita}.pdf`;
+        const filePath = `${dirPath}/${fileName}`;
         const writeStream = fs.createWriteStream(filePath);
 
+        // Fecha actual formateada
+        const fechaActual = new Date().toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+
+        // Número de factura formateado
+        const numeroFactura = `F-${datos.id_cita.toString().padStart(6, '0')}`;
+
+        // Colores
+        const colorPrimario = '#009688';
+        const colorSecundario = '#333333';
+        const colorTexto = '#555555';
+
         doc.pipe(writeStream);
-        doc.fontSize(16).text('FACTURA', { align: 'center' });
-        doc.moveDown();
-        doc.fontSize(12).text(`Fecha: ${new Date().toLocaleDateString()}`);
-        doc.moveDown();
-        doc.text(`Paciente: ${datos.nombre_paciente}`);
-        doc.text(`Doctor: ${datos.nombre_medico}`);
-        doc.moveDown();
-        doc.text(`Precio de consulta: $${datos.precio_consulta}`);
+
+        // Encabezado - Aumentado el tamaño del rectángulo para evitar desbordamiento
+        doc.rect(50, 50, 495, 100)
+           .fillAndStroke('#f8f9fa', '#e9ecef');
+
+        // Logo o nombre de la clínica
+        doc.fontSize(24)
+           .fillColor(colorPrimario)
+           .text('ClinicLink', 70, 65, { width: 250 });
+
+        doc.fontSize(10)
+           .fillColor(colorSecundario)
+           .text('Centro Médico Especializado', 70, 95, { width: 250 });
+
+        doc.fontSize(10)
+           .fillColor(colorTexto)
+           .text('C/ Principal 123, 28001 Madrid', 70, 110, { width: 250 })
+           .text('Tel: +34 91 123 45 67', 70, 125, { width: 250 })
+           .text('info@cliniclink.com', 70, 140, { width: 250 });
+
+        // Información de factura
+        doc.fontSize(14)
+           .fillColor(colorPrimario)
+           .text('FACTURA', 350, 65, { width: 170, align: 'right' });
+
+        doc.fontSize(10)
+           .fillColor(colorSecundario)
+           .text(`Nº: ${numeroFactura}`, 350, 85, { width: 170, align: 'right' })
+           .text(`Fecha: ${fechaActual}`, 350, 105, { width: 170, align: 'right' });
+
+        // Información del cliente y aumentado tamaño
+        doc.rect(50, 170, 495, 100)
+           .fillAndStroke('white', '#e9ecef');
+
+        doc.fontSize(12)
+           .fillColor(colorPrimario)
+           .text('DATOS DEL PACIENTE', 70, 185);
+
+        doc.fontSize(10)
+           .fillColor(colorTexto)
+           .text(`Nombre: ${datos.nombre_paciente}`, 70, 205)
+           .text(`Doctor: ${datos.nombre_medico}`, 70, 225)
+           .text(`Nº de Cita: ${datos.id_cita}`, 70, 245);
+
+        // Detalles de facturación
+        doc.rect(50, 290, 495, 30)
+           .fillAndStroke(colorPrimario, colorPrimario);
+
+        doc.fontSize(10)
+           .fillColor('white')
+           .text('DESCRIPCIÓN', 70, 300, { width: 280 })
+           .text('IMPORTE', 450, 300, { width: 75, align: 'right' });
+
+        // Contenido de la factura
+        doc.rect(50, 320, 495, 30)
+           .fillAndStroke('#f8f9fa', '#e9ecef');
+
+        doc.fontSize(10)
+           .fillColor(colorTexto)
+           .text('Consulta médica', 70, 330, { width: 280 })
+           .text(`${datos.precio_consulta}€`, 450, 330, { width: 75, align: 'right' });
+
+        // Total
+        doc.rect(350, 370, 195, 30)
+           .fillAndStroke('#f8f9fa', '#e9ecef');
+
+        doc.fontSize(12)
+           .fillColor(colorPrimario)
+           .text('TOTAL', 370, 380, { width: 75 })
+           .text(`${datos.precio_consulta}€`, 450, 380, { width: 75, align: 'right' });
+
+        
+        // Firma digital o sello
+        doc.fontSize(10)
+           .fillColor(colorPrimario)
+           .text('ClinicLink - Documento generado electrónicamente', 50, 720, { align: 'center', width: 495 });
+
         doc.end();
 
-        writeStream.on('finish', () => resolve(filePath));
+        writeStream.on('finish', async () => {
+            try {
+                // Importar el servicio FTP
+                const ftpService = require('../services/ftpService');
+                
+                // Subir el archivo al FTP en la carpeta facturas
+                const uploaded = await ftpService.uploadFacturaFile(filePath, fileName);
+                
+                if (uploaded) {
+                    console.log(`Factura subida exitosamente al FTP: ${fileName}`);
+                } else {
+                    console.error(`Error al subir la factura al FTP: ${fileName}`);
+                }
+                
+                resolve(filePath);
+            } catch (err) {
+                console.error('Error al subir la factura al FTP:', err);
+                resolve(filePath); // Resolvemos con la ruta local aunque falle la subida al FTP
+            }
+        });
         writeStream.on('error', reject);
     });
 }
@@ -203,7 +432,8 @@ async function finalizarCita(req, res) {
         const resultados = {
             mensaje: 'Cita finalizada exitosamente',
             receta_path: null,
-            factura_path: null
+            factura_path: null,
+            documentos_generados: []
         };
 
         // Generar receta médica si hay medicamentos
@@ -214,14 +444,23 @@ async function finalizarCita(req, res) {
                 medicamentos,
                 info
             };
-            resultados.receta_path = await generarRecetaPDF(datosReceta);
+            const recetaResult = await generarRecetaPDF(datosReceta);
+            resultados.receta_path = recetaResult.ftpPath;
+            
+            // Agregar información de la receta a los documentos generados
+            resultados.documentos_generados.push({
+                tipo: 'receta',
+                nombre: recetaResult.fileName,
+                url: `/api/recetas/descargar/${id_cita}`
+            });
 
             // Guardar receta en la base de datos
             const recetaCreada = await RecetaMedica.create({
                 id_cita,
                 id_medico: cita.id_medico,
                 id_paciente: cita.id_paciente,
-                descripcion: 'Ver detalle de medicamentos'
+                descripcion: 'Ver detalle de medicamentos',
+                ruta: recetaResult.ftpPath
             });
             
             // Guardar cada medicamento asociado a la receta
@@ -245,13 +484,22 @@ async function finalizarCita(req, res) {
                 nombre_medico: `${cita.medico.usuario.nombre}`,
                 precio_consulta
             };
-            resultados.factura_path = await generarFacturaPDF(datosFactura);
+            const facturaPath = await generarFacturaPDF(datosFactura);
+            resultados.factura_path = `/facturas/factura_${id_cita}.pdf`;
+            
+            // Agregar información de la factura a los documentos generados
+            resultados.documentos_generados.push({
+                tipo: 'factura',
+                nombre: `factura_${id_cita}.pdf`,
+                url: `/api/pacientes/facturas/descargar/${id_cita}`
+            });
 
             // Guardar factura en la base de datos
             await Factura.create({
                 id_paciente: cita.id_paciente,
                 monto: precio_consulta,
-                estado: 'en espera'
+                estado: 'en espera',
+                ruta: `/facturas/factura_${id_cita}.pdf` // Ruta en el FTP
             });
         }
 

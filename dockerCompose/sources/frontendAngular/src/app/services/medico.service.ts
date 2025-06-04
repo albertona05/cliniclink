@@ -16,7 +16,7 @@ export class MedicoService {
   }
 
   obtenerHorasLibres(idMedico: string, fecha: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/medicos/${idMedico}/horas-disponibles?fecha=${fecha}`);
+    return this.http.get(`${this.apiUrl}/medicos/horas-libres?id_medico=${idMedico}&fecha=${fecha}`);
   }
 
   obtenerMedicamentos(): Observable<any> {
@@ -32,7 +32,7 @@ export class MedicoService {
   }
 
   finalizarCita(datosCita: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/citas/${datosCita.id_cita}/finalizar`, datosCita);
+    return this.http.post(`${this.apiUrl}/medicos/finalizar-cita`, datosCita);
   }
 
   obtenerCitasPendientes(): Observable<any> {
@@ -53,5 +53,13 @@ export class MedicoService {
 
   obtenerCita(idCita: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/citas/${idCita}`);
+  }
+
+  obtenerCitasDia(idMedico: string, fecha: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/medicos/citas-dia`, { fecha });
+  }
+
+  registrarMedico(medico: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/medicos/registro`, medico);
   }
 }

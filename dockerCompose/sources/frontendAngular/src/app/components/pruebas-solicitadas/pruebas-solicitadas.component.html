@@ -258,6 +258,7 @@
 
             <!-- Archivos adjuntos -->
             <ng-container *ngIf="pruebaSeleccionadaResultado?.archivos as archivos">
+              
               <div *ngIf="archivos.length > 0">
                 <h6 class="mb-3">Archivos Adjuntos</h6>
                 
@@ -271,9 +272,14 @@
                              (click)="abrirImagen(archivo.url)">
                         <div class="card-body p-2">
                           <p class="card-text small text-truncate mb-1">{{ archivo.nombre }}</p>
-                          <a [href]="archivo.url" download class="btn btn-sm btn-outline-primary w-100">
-                            <i class="bi bi-download"></i> Descargar
-                          </a>
+                          <div class="d-flex gap-1">
+                            <button (click)="previsualizarArchivo(archivo.url, archivo.tipo, archivo.nombre)" class="btn btn-sm btn-info text-white flex-grow-1">
+                              <i class="bi bi-eye"></i> Ver
+                            </button>
+                            <button (click)="descargarArchivo(archivo.url, archivo.nombre)" class="btn btn-sm btn-outline-primary flex-grow-1">
+                              <i class="bi bi-download"></i> Descargar
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -290,12 +296,34 @@
                           <span>{{ archivo.nombre }}</span>
                         </div>
                         <div class="btn-group">
-                          <a [href]="archivo.url" target="_blank" class="btn btn-sm btn-outline-primary">
+                          <button (click)="previsualizarArchivo(archivo.url, archivo.tipo, archivo.nombre)" class="btn btn-sm btn-info text-white">
                             <i class="bi bi-eye"></i>
-                          </a>
-                          <a [href]="archivo.url" download class="btn btn-sm btn-outline-primary">
+                          </button>
+                          <button (click)="descargarArchivo(archivo.url, archivo.nombre)" class="btn btn-sm btn-outline-primary">
                             <i class="bi bi-download"></i>
-                          </a>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </ng-container>
+                </div>
+                
+                <!-- Otros tipos de archivos -->
+                <div class="list-group mt-3">
+                  <ng-container *ngFor="let archivo of archivos">
+                    <div class="list-group-item" *ngIf="!archivo.tipo?.startsWith('image/') && archivo.tipo !== 'application/pdf'">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                          <i class="bi bi-file-earmark me-2"></i>
+                          <span>{{ archivo.nombre }}</span>
+                        </div>
+                        <div class="btn-group">
+                          <button (click)="previsualizarArchivo(archivo.url, archivo.tipo, archivo.nombre)" class="btn btn-sm btn-info text-white">
+                            <i class="bi bi-eye"></i>
+                          </button>
+                          <button (click)="descargarArchivo(archivo.url, archivo.nombre)" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-download"></i>
+                          </button>
                         </div>
                       </div>
                     </div>

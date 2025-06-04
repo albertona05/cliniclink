@@ -65,6 +65,7 @@ const pacienteRoutes = require('./routes/pacienteRoutes');
 const recepcionRoutes = require('./routes/recepcionRoutes');
 const medicamentoRoutes = require('./routes/medicamentoRoutes');
 const fileRoutes = require('./routes/fileRoutes');
+const recetaRoutes = require('./routes/recetaRoutes');
 
 app.use(authRoutes);
 app.use(globalRoutes);
@@ -74,6 +75,7 @@ app.use(pacienteRoutes);
 app.use(recepcionRoutes);
 app.use(medicamentoRoutes);
 app.use(fileRoutes);
+app.use(recetaRoutes);
 
 // Crear directorio temporal para uploads si no existe
 fs.mkdir('/tmp/uploads', { recursive: true }).catch(console.error);

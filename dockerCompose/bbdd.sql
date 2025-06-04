@@ -4,18 +4,18 @@ USE clinicLink;
 -- Usuarios
 INSERT INTO Usuario (nombre, email, contrasena, rol) VALUES
 ('Admin', 'admin@cliniclink.com', '$2a$10$eoW14Fq.d9m1sBssQnwQ4u9fv4q77iBmN9nl6iIv5lvIRUZ5l4ljC', 'recepcion'),
-('Dr. Juan Pérez', 'juan.perez@cliniclink.com', '$2a$10$eoW14Fq.d9m1sBssQnwQ4u9fv4q77iBmN9nl6iIv5lvIRUZ5l4ljC', 'medico'),
-('Dra. María López', 'maria.lopez@cliniclink.com', '$2a$10$eoW14Fq.d9m1sBssQnwQ4u9fv4q77iBmN9nl6iIv5lvIRUZ5l4ljC', 'medico'),
-('Carlos Rodríguez', 'carlos@example.com', '$2a$10$eoW14Fq.d9m1sBssQnwQ4u9fv4q77iBmN9nl6iIv5lvIRUZ5l4ljC', 'paciente'),
-('Ana Martínez', 'ana@example.com', '$2a$10$eoW14Fq.d9m1sBssQnwQ4u9fv4q77iBmN9nl6iIv5lvIRUZ5l4ljC', 'paciente');
+('Dr. Juan Perez', 'juan.perez@cliniclink.com', '$2a$10$eoW14Fq.d9m1sBssQnwQ4u9fv4q77iBmN9nl6iIv5lvIRUZ5l4ljC', 'medico'),
+('Dra. Maria Lopez', 'maria.lopez@cliniclink.com', '$2a$10$eoW14Fq.d9m1sBssQnwQ4u9fv4q77iBmN9nl6iIv5lvIRUZ5l4ljC', 'medico'),
+('Carlos Rodriguez', 'carlos@example.com', '$2a$10$eoW14Fq.d9m1sBssQnwQ4u9fv4q77iBmN9nl6iIv5lvIRUZ5l4ljC', 'paciente'),
+('Ana Martinez', 'ana@example.com', '$2a$10$eoW14Fq.d9m1sBssQnwQ4u9fv4q77iBmN9nl6iIv5lvIRUZ5l4ljC', 'paciente');
 
--- Recepción
+-- Recepcion
 INSERT INTO Recepcion (id_usuario) VALUES (1);
 
--- Médicos
+-- Medicos
 INSERT INTO Medico (id_usuario, especialidad) VALUES
-(2, 'Cardiología'),
-(3, 'Dermatología');
+(2, 'Cardiologia'),
+(3, 'Dermatologia');
 
 -- Pacientes
 INSERT INTO Paciente (id_usuario, dni, telefono, fechaNacimiento, direccion) VALUES
@@ -24,19 +24,19 @@ INSERT INTO Paciente (id_usuario, dni, telefono, fechaNacimiento, direccion) VAL
 
 -- Medicamentos
 INSERT INTO Medicamento (nombre, descripcion) VALUES
-('Paracetamol', 'Analgésico y antipirético'),
+('Paracetamol', 'Analgesico y antipiretico'),
 ('Ibuprofeno', 'Antiinflamatorio no esteroideo'),
-('Amoxicilina', 'Antibiótico de amplio espectro');
+('Amoxicilina', 'Antibiotico de amplio espectro');
 
 -- Citas
 INSERT INTO Cita (id_paciente, id_medico, fecha, hora, estado, info) VALUES
 (1, 1, '2023-12-01', '10:00:00', 'espera', 'Consulta rutinaria'),
-(2, 2, '2023-12-02', '11:30:00', 'espera', 'Revisión dermatológica'),
+(2, 2, '2023-12-02', '11:30:00', 'espera', 'Revision dermatologica'),
 (1, 2, '2023-12-05', '09:15:00', 'espera', 'Seguimiento');
 
 -- Pruebas
 INSERT INTO Prueba (id_medicoManda, tipo_prueba, descripcion, estado) VALUES
-(1, 'Electrocardiograma', 'Evaluación de la actividad eléctrica del corazón', 'pendiente'),
+(1, 'Electrocardiograma', 'Evaluacion de la actividad electrica del corazon', 'pendiente'),
 (2, 'Análisis de sangre', 'Hemograma completo', 'pendiente');
 
 -- Actualizar citas con pruebas
@@ -45,16 +45,16 @@ UPDATE Cita SET id_prueba = 1, es_prueba = TRUE, tipo_prueba = 'Electrocardiogra
 -- Actualizar pruebas con citas
 UPDATE Prueba SET id_cita = 3 WHERE id = 1;
 
--- Recetas médicas
+-- Recetas medicas
 INSERT INTO RecetaMedica (id_cita, id_medico, id_paciente, descripcion, fecha) VALUES
-(1, 1, 1, 'Tratamiento para hipertensión', NOW()),
+(1, 1, 1, 'Tratamiento para hipertension', NOW()),
 (2, 2, 2, 'Tratamiento para dermatitis', NOW());
 
 -- Recetas con medicamentos
 INSERT INTO RecetaMedicamento (id_receta, id_medicamento, frecuencia, duracion, dosis, instrucciones) VALUES
-(1, 1, 'Cada 8 horas', '7 días', '1 comprimido', 'Tomar después de las comidas'),
-(1, 2, 'Cada 12 horas', '5 días', '1 comprimido', 'Tomar con alimentos'),
-(2, 3, 'Cada 8 horas', '10 días', '1 cápsula', 'Completar todo el tratamiento');
+(1, 1, 'Cada 8 horas', '7 dias', '1 comprimido', 'Tomar despues de las comidas'),
+(1, 2, 'Cada 12 horas', '5 dias', '1 comprimido', 'Tomar con alimentos'),
+(2, 3, 'Cada 8 horas', '10 dias', '1 cápsula', 'Completar todo el tratamiento');
 
 -- Facturas
 INSERT INTO Factura (id_paciente, monto, estado, fecha) VALUES

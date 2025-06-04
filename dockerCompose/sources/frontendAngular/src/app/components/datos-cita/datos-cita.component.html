@@ -34,72 +34,62 @@
             <div class="col-md-12 mb-3">
               <div class="form-group">
                 <label>Medicamentos:</label>
-                <div class="card mb-2" *ngFor="let medicamentoForm of medicamentosArray.controls; let i = index" [formGroup]="getMedicamentoFormGroup(i)">
-                  <div class="card-body">
-                    <div class="row">
-                      <div class="col-md-10">
-                        <div class="row">
-                          <div class="col-md-6 mb-2">
-                            <label>Medicamento:</label>
-                            <div class="medicamento-item" *ngFor="let medicamento of medicamentosArray.controls; let i = index">
-                              <div [formGroup]="medicamento" class="row mb-3">
-                                <div class="col-md-3">
-                                  <label for="nombre_medicamento_{{i}}">Medicamento</label>
-                                  <div class="input-group">
-                                    <input type="text" class="form-control" id="nombre_medicamento_{{i}}" formControlName="nombre_medicamento" 
-                                           placeholder="Buscar medicamento" (input)="buscarMedicamentos(i)">
-                                    <button type="button" class="btn btn-primary" (click)="crearNuevoMedicamento(i)">Crear</button>
-                                  </div>
-                                  <div *ngIf="medicamentosResultados.length > 0 && medicamentoSeleccionadoIndex === i" class="medicamentos-resultados">
-                                    <ul class="list-group">
-                                      <li *ngFor="let med of medicamentosResultados" class="list-group-item" 
-                                          (click)="seleccionarMedicamento(i, med)">
-                                        {{ med.nombre }}
-                                      </li>
-                                    </ul>
-                                  </div>
-                                </div>
-                                
-                                <div class="col-md-2">
-                                  <label for="dosis_{{i}}">Dosis</label>
-                                  <input type="text" class="form-control" id="dosis_{{i}}" formControlName="dosis">
-                                </div>
-                                
-                                <div class="col-md-2">
-                                  <label for="frecuencia_{{i}}">Frecuencia</label>
-                                  <select class="form-control" id="frecuencia_{{i}}" formControlName="frecuencia">
-                                    <option *ngFor="let frecuencia of frecuenciasComunes" [value]="frecuencia">{{ frecuencia }}</option>
-                                  </select>
-                                </div>
-                                
-                                <div class="col-md-2">
-                                  <label for="duracion_{{i}}">Duración</label>
-                                  <select class="form-control" id="duracion_{{i}}" formControlName="duracion">
-                                    <option *ngFor="let duracion of duracionesComunes" [value]="duracion">{{ duracion }}</option>
-                                  </select>
-                                </div>
-                                
-                                <div class="col-md-2">
-                                  <label for="instrucciones_{{i}}">Instrucciones</label>
-                                  <input type="text" class="form-control" id="instrucciones_{{i}}" formControlName="instrucciones" placeholder="Opcional">
-                                </div>
-                                
-                                <div class="col-md-1">
-                                  <button type="button" class="btn btn-danger btn-sm mt-4" (click)="eliminarMedicamento(i)">
-                                    <i class="fas fa-trash"></i>
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                      <div class="col-md-2 text-end">
-                        <button type="button" class="btn btn-danger" (click)="eliminarMedicamento(i)">
+                <div class="medicamentos-container">
+                  <div class="medicamento-card" *ngFor="let medicamentoForm of medicamentosArray.controls; let i = index">
+                    <div [formGroup]="getMedicamentoFormGroup(i)" class="medicamento-form">
+                      <div class="medicamento-header">
+                        <div class="medicamento-title">
+                          <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label for="nombre_medicamento_{{i}}">Medicamento</label>
+                            <button type="button" class="btn btn-success btn-sm" (click)="crearNuevoMedicamento(i)">Crear</button>
+                          </div>
+                          <div class="input-group">
+                            <input type="text" class="form-control" id="nombre_medicamento_{{i}}" formControlName="nombre_medicamento" 
+                                  placeholder="Buscar medicamento" (input)="buscarMedicamentos(i)">
+                          </div>
+                          <div *ngIf="medicamentosResultados.length > 0 && medicamentoSeleccionadoIndex === i" class="medicamentos-resultados">
+                            <ul class="list-group">
+                              <li *ngFor="let med of medicamentosResultados" class="list-group-item" 
+                                  (click)="seleccionarMedicamento(i, med)">
+                                {{ med.nombre }}
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                        <button type="button" class="btn btn-danger btn-sm" (click)="eliminarMedicamento(i)">
                           <i class="bi bi-trash"></i>
                         </button>
+                      </div>
+                      
+                      <div class="medicamento-details">
+                        <div class="detail-item">
+                          <label for="dosis_{{i}}">Dosis</label>
+                          <input type="text" class="form-control" id="dosis_{{i}}" formControlName="dosis">
+                        </div>
+                        
+                        <div class="detail-item">
+                          <label for="frecuencia_{{i}}">Frecuencia</label>
+                          <select class="form-control" id="frecuencia_{{i}}" formControlName="frecuencia">
+                            <option *ngFor="let frecuencia of frecuenciasComunes" [value]="frecuencia">{{ frecuencia }}</option>
+                          </select>
+                        </div>
+                        
+                        <div class="detail-item">
+                          <label for="duracion_{{i}}">Duración</label>
+                          <select class="form-control" id="duracion_{{i}}" formControlName="duracion">
+                            <option *ngFor="let duracion of duracionesComunes" [value]="duracion">{{ duracion }}</option>
+                          </select>
+                        </div>
+                        
+                        <div class="detail-item">
+                          <label for="instrucciones_{{i}}">Instrucciones</label>
+                          <input type="text" class="form-control" id="instrucciones_{{i}}" formControlName="instrucciones" placeholder="Opcional">
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                <button type="button" class="btn btn-primary mt-2" (click)="agregarMedicamento()">
+                <button type="button" class="btn btn-primary mt-3" (click)="agregarMedicamento()">
                   <i class="bi bi-plus-circle me-1"></i> Agregar medicamento
                 </button>
               </div>
@@ -128,7 +118,7 @@
               
               <div *ngIf="mostrarFormPrueba" class="card mb-4">
                 <div class="card-body">
-                  <form [formGroup]="pruebaForm" (ngSubmit)="solicitarPrueba()">
+                  <div [formGroup]="pruebaForm">
                     <div class="row">
                       <div class="col-md-6 mb-3">
                         <div class="form-group">
@@ -197,11 +187,11 @@
                     </div>
                     
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                      <button type="submit" class="btn btn-primary" [disabled]="loading || (!horaPruebaSeleccionada && pruebaForm.get('fecha_prueba')?.value)">
+                      <button type="button" class="btn btn-primary" [disabled]="loading || (!horaPruebaSeleccionada && pruebaForm.get('fecha_prueba')?.value)" (click)="solicitarPrueba()">
                         <i class="bi bi-send me-1"></i> Solicitar prueba
                       </button>
                     </div>
-                  </form>
+                  </div>
                 </div>
               </div>
             </div>

@@ -8,6 +8,11 @@ mkdir -p /home/cliniclink/pruebas
 chown -R cliniclink:cliniclink /home/cliniclink/pruebas
 chmod -R 755 /home/cliniclink/pruebas
 
+# Crear directorio para archivos de facturas
+mkdir -p /home/cliniclink/facturas
+chown -R cliniclink:cliniclink /home/cliniclink/facturas
+chmod -R 755 /home/cliniclink/facturas
+
 # Configurar permisos del directorio principal
 chown -R cliniclink:cliniclink /home/cliniclink
 chmod -R 755 /home/cliniclink

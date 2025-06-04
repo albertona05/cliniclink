@@ -22,6 +22,7 @@
     "nodemailer": "^7.0.3",
     "path": "^0.12.7",
     "pdfkit": "^0.13.0",
+    "sanitize-html": "^2.17.0",
     "sequelize": "^6.37.7",
     "xss": "^1.0.14"
   },

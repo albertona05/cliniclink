@@ -61,7 +61,7 @@ export class AgendaComponent implements OnInit {
 
     this.medicoService.obtenerCitasDia(this.idMedico, this.fecha)
       .subscribe({
-        next: (citas) => {
+        next: (citas: any[]) => {
           this.citas = citas;
           
           // Ordenar las citas por hora (de la más temprana a la más tardía)
@@ -93,7 +93,7 @@ export class AgendaComponent implements OnInit {
             this.mensajeExito = 'No hay citas programadas para esta fecha';
           }
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error al obtener citas:', error);
           this.mensajeError = 'Error al obtener las citas del día';
           this.cargando = false;

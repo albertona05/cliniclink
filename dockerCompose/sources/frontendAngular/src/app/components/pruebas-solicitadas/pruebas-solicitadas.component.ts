@@ -25,7 +25,6 @@ export class PruebasSolicitadasComponent implements OnInit {
   
   // Variables para búsqueda y filtrado
   terminoBusqueda: string = '';
-  terminoBusqueda: string = '';
   fechaInicio: string = '';
   fechaFin: string = '';
   
@@ -63,7 +62,6 @@ export class PruebasSolicitadasComponent implements OnInit {
       next: (response: PruebaResponse) => {
         if (response && response.success && response.data) {
           this.pruebas = response.data;
-          this.pruebasFiltradas = [...this.pruebas];
           this.pruebasFiltradas = [...this.pruebas];
         } else {
           this.pruebas = [];
@@ -186,7 +184,7 @@ export class PruebasSolicitadasComponent implements OnInit {
     
     // Cargar los archivos de la prueba
     console.log(`Cargando archivos para la prueba ID: ${prueba.id}`);
-    this.http.get<any>(`http://localhost:3000/api/pruebas/${prueba.id}/files`)
+    this.http.get<any>(`http://localhost:3000/pruebas/${prueba.id}/files`)
       .pipe(
         catchError(error => {
           console.error('Error al cargar archivos de la prueba:', error);
@@ -197,11 +195,17 @@ export class PruebasSolicitadasComponent implements OnInit {
         console.log('Respuesta de archivos recibida:', response);
         if (response && response.files && this.pruebaSeleccionadaResultado) {
           // Transformar los archivos recibidos al formato esperado por el componente
-          const archivos = response.files.map((file: any) => ({
-            nombre: file.name,
-            tipo: this.getMimeType(file.type),
-            url: `http://localhost:3000/api/pruebas/${prueba.id}/files/${file.name}`
-          }));
+          const archivos = response.files.map((file: any) => {
+            console.log('Procesando archivo:', file);
+            return {
+              nombre: file.name,
+              tipo: this.getMimeType(file.type),
+              url: `http://localhost:3000/pruebas/${prueba.id}/files/${file.name}`
+            };
+          });
+          
+          // Imprimir las URLs generadas para depuración
+          console.log('URLs de archivos generadas:', archivos.map((a: {nombre: string, tipo: string, url: string}) => a.url));
           
           console.log('Archivos procesados:', archivos);
           // Asignar los archivos a la prueba seleccionada
@@ -210,19 +214,25 @@ export class PruebasSolicitadasComponent implements OnInit {
               this.pruebaSeleccionadaResultado.archivos = [];
             }
             this.pruebaSeleccionadaResultado.archivos = archivos;
+            console.log('Archivos asignados a pruebaSeleccionadaResultado:', this.pruebaSeleccionadaResultado.archivos);
           }
         } else if (this.pruebaSeleccionadaResultado) {
           console.log('No se encontraron archivos para esta prueba');
           this.pruebaSeleccionadaResultado.archivos = [];
         }
+        
+        // Inicializar el offcanvas de Bootstrap después de cargar los archivos
+        setTimeout(() => {
+          const offcanvasElement = document.getElementById('resultadoOffcanvas');
+          if (offcanvasElement) {
+            const bsOffcanvas = new bootstrap.Offcanvas(offcanvasElement);
+            bsOffcanvas.show();
+            console.log('Offcanvas mostrado');
+          } else {
+            console.error('No se encontró el elemento offcanvas');
+          }
+        }, 100);
       });
-    
-    // Inicializar el offcanvas de Bootstrap
-    const offcanvasElement = document.getElementById('resultadoOffcanvas');
-    if (offcanvasElement) {
-      const bsOffcanvas = new bootstrap.Offcanvas(offcanvasElement);
-      bsOffcanvas.show();
-    }
   }
 
   abrirImagen(url: string) {
@@ -336,5 +346,76 @@ export class PruebasSolicitadasComponent implements OnInit {
     
     const extension = fileType.toLowerCase();
     return mimeTypes[extension] || 'application/octet-stream';
+  }
+
+// Método para descargar un archivo
+  descargarArchivo(url: string, nombreArchivo: string) {
+    console.log(`Descargando archivo: ${nombreArchivo} desde ${url}`);
+    
+    // Usar HttpClient en lugar de fetch para beneficiarse del interceptor de autenticación
+    this.http.get(url, { responseType: 'blob' })
+      .pipe(
+        catchError(error => {
+          console.error('Error al descargar el archivo:', error);
+          alert(`Error al descargar el archivo: ${error.message || 'Error desconocido'}`);
+          throw error;
+        })
+      )
+      .subscribe(blob => {
+        // Crear un objeto URL para el blob
+        const blobUrl = window.URL.createObjectURL(blob);
+        
+        // Crear un elemento <a> temporal
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = nombreArchivo;
+        
+        // Añadir el enlace al documento
+        document.body.appendChild(link);
+        
+        // Simular un clic en el enlace
+        link.click();
+        
+        // Eliminar el enlace del documento
+        document.body.removeChild(link);
+        
+        // Liberar el objeto URL
+        window.URL.revokeObjectURL(blobUrl);
+      });
+  }
+
+  // Método para previsualizar un archivo
+  previsualizarArchivo(url: string, tipo: string, nombre: string) {
+    console.log(`Previsualizando archivo: ${nombre} (${tipo}) desde ${url}`);
+    
+    if (tipo?.startsWith('image/')) {
+      // Para imágenes, ya tenemos el método abrirImagen
+      this.abrirImagen(url);
+    } else if (tipo === 'application/pdf') {
+      // Para PDFs, abrir en una nueva pestaña
+      window.open(url, '_blank');
+    } else {
+      // Para otros tipos de archivos, intentar descargar y abrir
+      this.http.get(url, { responseType: 'blob' })
+        .pipe(
+          catchError(error => {
+            console.error('Error al obtener el archivo para previsualización:', error);
+            alert(`Error al previsualizar el archivo: ${error.message || 'Error desconocido'}`);
+            throw error;
+          })
+        )
+        .subscribe(blob => {
+          // Crear un objeto URL para el blob
+          const blobUrl = window.URL.createObjectURL(blob);
+          
+          // Abrir en una nueva ventana
+          window.open(blobUrl, '_blank');
+          
+          // Programar la liberación del objeto URL después de un tiempo
+          setTimeout(() => {
+            window.URL.revokeObjectURL(blobUrl);
+          }, 60000); // Liberar después de 1 minuto
+        });
+    }
   }
 }

@@ -1,5 +1,8 @@
 const { Cita, Factura, Medico, Usuario, Paciente } = require('../models');
 const xss = require('xss');
+const path = require('path');
+const fs = require('fs');
+const ftpService = require('../services/ftpService');
 
 // Función para sanitizar input
 const sanitizarInput = (input) => {
@@ -323,10 +326,154 @@ async function anularCita(req, res) {
     }
 }
 
+// Descargar receta médica de un paciente
+const descargarReceta = async (req, res) => {
+    try {
+        const idCita = req.params.id;
+        const usuarioId = req.usuario.id;
+        const rol = req.usuario.rol;
+        
+        // Buscar la receta en la base de datos
+        const receta = await RecetaMedica.findOne({
+            where: { id_cita: idCita }
+        });
+        
+        if (!receta) {
+            return res.status(404).json({
+                success: false,
+                mensaje: 'Receta médica no encontrada'
+            });
+        }
+        
+        // Verificar permisos: solo el paciente dueño de la receta o personal médico/admin puede descargar
+        if (rol === 'paciente') {
+            const paciente = await Paciente.findOne({ where: { id_usuario: usuarioId } });
+            
+            if (!paciente || paciente.id !== receta.id_paciente) {
+                return res.status(403).json({ mensaje: 'No tiene permiso para descargar esta receta' });
+            }
+        } else if (!['medico', 'admin', 'recepcion'].includes(rol)) {
+            return res.status(403).json({ mensaje: 'No tiene permiso para descargar recetas médicas' });
+        }
+        
+        // Verificar que la receta tenga una ruta de archivo
+        if (!receta.ruta) {
+            return res.status(404).json({ mensaje: 'El archivo de la receta no está disponible' });
+        }
+        
+        // Obtener el nombre del archivo de la ruta
+        const nombreArchivo = receta.ruta.split('/').pop();
+        
+        // Crear un directorio temporal para la descarga
+        const tempDir = path.join(__dirname, '../temp');
+        if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir);
+        }
+        
+        const tempFilePath = path.join(tempDir, nombreArchivo);
+        
+        try {
+            // Descargar el archivo desde el servidor FTP
+            await ftpService.downloadFile(receta.ruta, tempFilePath, 'recetas');
+            
+            // Enviar el archivo como respuesta
+            res.download(tempFilePath, `receta_${idCita}.pdf`, (err) => {
+                // Eliminar el archivo temporal después de enviarlo
+                if (fs.existsSync(tempFilePath)) {
+                    fs.unlinkSync(tempFilePath);
+                }
+                
+                if (err && !res.headersSent) {
+                    console.error('Error al enviar el archivo:', err);
+                    return res.status(500).json({ mensaje: 'Error al descargar la receta' });
+                }
+            });
+        } catch (error) {
+            console.error('Error al descargar el archivo del FTP:', error);
+            return res.status(500).json({ mensaje: 'Error al obtener el archivo de la receta' });
+        }
+    } catch (error) {
+        console.error('Error en descargarReceta:', error);
+        res.status(500).json({ mensaje: 'Error interno del servidor' });
+    }
+};
+
+// Descargar factura de un paciente
+const descargarFactura = async (req, res) => {
+    try {
+        const idFactura = req.params.id;
+        const usuarioId = req.usuario.id;
+        const rol = req.usuario.rol;
+        
+        // Buscar la factura en la base de datos
+        const factura = await Factura.findByPk(idFactura);
+        
+        if (!factura) {
+            return res.status(404).json({
+                success: false,
+                mensaje: 'Factura no encontrada'
+            });
+        }
+        
+        // Verificar permisos: solo el paciente dueño de la factura o personal médico/admin puede descargar
+        if (rol === 'paciente') {
+            const paciente = await Paciente.findOne({ where: { id_usuario: usuarioId } });
+            
+            if (!paciente || paciente.id !== factura.id_paciente) {
+                return res.status(403).json({ mensaje: 'No tiene permiso para descargar esta factura' });
+            }
+        } else if (!['medico', 'admin', 'recepcion'].includes(rol)) {
+            return res.status(403).json({ mensaje: 'No tiene permiso para descargar facturas' });
+        }
+        
+        // Verificar que la factura tenga una ruta de archivo
+        if (!factura.ruta) {
+            return res.status(404).json({ mensaje: 'El archivo de la factura no está disponible' });
+        }
+        
+        // Obtener el nombre del archivo de la ruta
+        const nombreArchivo = factura.ruta.split('/').pop();
+        
+        // Crear un directorio temporal para la descarga
+        const tempDir = path.join(__dirname, '../temp');
+        if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir);
+        }
+        
+        const tempFilePath = path.join(tempDir, nombreArchivo);
+        
+        try {
+            // Descargar el archivo desde el servidor FTP
+            await ftpService.downloadFacturaFile(factura.ruta, tempFilePath);
+            
+            // Enviar el archivo como respuesta
+            res.download(tempFilePath, `factura_${idFactura}.pdf`, (err) => {
+                // Eliminar el archivo temporal después de enviarlo
+                if (fs.existsSync(tempFilePath)) {
+                    fs.unlinkSync(tempFilePath);
+                }
+                
+                if (err && !res.headersSent) {
+                    console.error('Error al enviar el archivo:', err);
+                    return res.status(500).json({ mensaje: 'Error al descargar la factura' });
+                }
+            });
+        } catch (error) {
+            console.error('Error al descargar el archivo del FTP:', error);
+            return res.status(500).json({ mensaje: 'Error al obtener el archivo de la factura' });
+        }
+    } catch (error) {
+        console.error('Error en descargarFactura:', error);
+        res.status(500).json({ mensaje: 'Error interno del servidor' });
+    }
+};
+
 module.exports = {
     obtenerCitasPaciente,
     obtenerFacturasPaciente,
     crearCita,
     anularCita,
-    obtenerHistorialPaciente
+    obtenerHistorialPaciente,
+    descargarFactura,
+    descargarReceta
 };

@@ -97,16 +97,56 @@ class FileController {
             const pruebaId = req.params.pruebaId;
             console.log(`[DEBUG] Buscando archivos para prueba ID: ${pruebaId}`);
             
+            // Importar los modelos necesarios
+            const db = require('../models');
+            const { Cita, Prueba } = db;
+            
+            // Buscar la prueba para obtener su id_cita asociado
+            const prueba = await Prueba.findByPk(pruebaId);
+            let citaIds = [];
+            
+            if (prueba && prueba.id_cita) {
+                citaIds.push(prueba.id_cita);
+                console.log(`[DEBUG] Prueba encontrada con id_cita: ${prueba.id_cita}`);
+            }
+            
+            // Buscar citas donde id_prueba sea igual a pruebaId
+            console.log(`[DEBUG] Buscando citas con id_prueba = ${pruebaId}`);
+            const citas = await Cita.findAll({
+                where: { id_prueba: pruebaId }
+            });
+            
+            // Agregar los IDs de las citas encontradas
+            citas.forEach(cita => {
+                if (!citaIds.includes(cita.id)) {
+                    citaIds.push(cita.id);
+                }
+            });
+            
+            console.log(`[DEBUG] Citas encontradas: ${citas.length}, IDs de citas: ${citaIds.join(', ')}`);
+            
             // Obtener todos los archivos del directorio
             console.log('[DEBUG] Solicitando listado de archivos al FTP...');
             const allFiles = await ftpService.listFiles('.');
             console.log('[DEBUG] Archivos recibidos del FTP:', JSON.stringify(allFiles));
             
-            // Filtrar solo los archivos que corresponden a esta prueba
-            const files = allFiles.filter(file => 
+            // Filtrar archivos para todas las citas encontradas y para la prueba directamente
+            let files = [];
+            
+            // Incluir archivos que coincidan directamente con el ID de la prueba
+            const pruebaFiles = allFiles.filter(file => 
                 file.name.startsWith(`archivo_${pruebaId}_`));
-
-            console.log(`[DEBUG] Archivos encontrados para prueba ${pruebaId}:`, JSON.stringify(files.map(f => f.name)));
+            files = [...pruebaFiles];
+            
+            // Incluir archivos de las citas asociadas a esta prueba
+            for (const citaId of citaIds) {
+                const citaFiles = allFiles.filter(file => 
+                    file.name.startsWith(`archivo_${citaId}_`));
+                files = [...files, ...citaFiles];
+            }
+            
+            console.log(`[DEBUG] Total de archivos encontrados: ${files.length}`);
+            console.log(`[DEBUG] Archivos encontrados:`, JSON.stringify(files.map(f => f.name)));
             console.log('[DEBUG] Respuesta que se enviará al cliente:', JSON.stringify({
                 files: files.map(file => ({
                     name: file.name,

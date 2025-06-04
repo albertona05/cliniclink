@@ -7,9 +7,9 @@ const authMiddleware = require('../middleware/authMiddleware');
 router.use(authMiddleware.verificarToken);
 
 // Obtener citas del día
-router.post('/citas-dia', medicoController.obtenerCitasDia);
+router.post('/medicos/citas-dia', medicoController.obtenerCitasDia);
 
 // Finalizar cita y generar documentos
-router.post('/finalizar-cita', medicoController.finalizarCita);
+router.post('/medicos/finalizar-cita', medicoController.finalizarCita);
 
 module.exports = router;

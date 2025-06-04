@@ -46,10 +46,10 @@ export class CitaService {
     
     // Asegurar que todos los campos estén presentes y con el formato correcto
     const datosFormateados = {
-      fecha: citaData.fecha.toString(), // Asegurar que sea string
-      hora: citaData.hora.toString(), // Asegurar que sea string
-      id_medico: medicoId, // Ya convertido a número si es posible
-      dni_paciente: citaData.pacienteId.toString().trim() // Asegurar que sea string sin espacios
+      fecha: citaData.fecha.toString(), 
+      hora: citaData.hora.toString(),
+      id_medico: medicoId, 
+      dni_paciente: citaData.pacienteId.toString().trim()
     };
     
     // Verificación detallada antes de enviar
@@ -86,7 +86,7 @@ export class CitaService {
           mensaje: error.error?.mensaje,
           error: error.error
         });
-        throw error; // Re-lanzar el error para que el componente lo maneje
+        throw error; 
       })
     );
   }

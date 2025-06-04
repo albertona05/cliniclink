@@ -19,6 +19,7 @@ export class FacturasComponent implements OnInit {
   cargando: boolean = false;
   mensajeError: string = '';
   idPaciente: string = '';
+  private apiUrl = 'http://localhost:3000';
   
   constructor(
     private http: HttpClient,
@@ -39,7 +40,7 @@ export class FacturasComponent implements OnInit {
     this.cargando = true;
     this.mensajeError = '';
     
-    this.http.get<any>(`http://localhost:3000/facturas/${id}`)
+    this.http.get<any>(`${this.apiUrl}/facturas/${id}`)
       .pipe(
         catchError(error => {
           console.error('Error al cargar facturas:', error);
@@ -60,10 +61,41 @@ export class FacturasComponent implements OnInit {
   }
 
   descargarFactura(idFactura: number) {
-    // Aquí se implementaría la descarga de la factura
-    // Por ahora solo mostramos un mensaje en consola
     console.log(`Descargando factura ${idFactura}`);
-    alert(`La factura ${idFactura} se está descargando...`);
+    
+    // Crear una URL para la descarga
+    const url = `${this.apiUrl}/facturas/descargar/${idFactura}`;
+    
+    // Usar HttpClient para obtener el archivo como blob
+    this.http.get(url, { responseType: 'blob' })
+      .pipe(
+        catchError(error => {
+          console.error('Error al descargar la factura:', error);
+          alert(`Error al descargar la factura: ${error.message || 'Error desconocido'}`);
+          throw error;
+        })
+      )
+      .subscribe(blob => {
+        // Crear un objeto URL para el blob
+        const blobUrl = window.URL.createObjectURL(blob);
+        
+        // Crear un elemento <a> temporal
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = `factura_${idFactura}.pdf`;
+        
+        // Añadir el enlace al documento
+        document.body.appendChild(link);
+        
+        // Simular un clic en el enlace
+        link.click();
+        
+        // Eliminar el enlace del documento
+        document.body.removeChild(link);
+        
+        // Liberar el objeto URL
+        window.URL.revokeObjectURL(blobUrl);
+      });
   }
 
   formatearFecha(fecha: string): string {

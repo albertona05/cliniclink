@@ -39,8 +39,8 @@ services:
     depends_on:
       - backend
     volumes:
-      - ./sources/frontendAngular:/app  # Montaje del código fuente frontend
-      - /app/node_modules                # Evita sobreescritura de node_modules
+      - ./sources/frontendAngular:/app
+      - /app/node_modules
     networks:
       red_frontend:
         ipv4_address: 192.168.2.3
@@ -64,17 +64,20 @@ services:
       FTP_MAX_CONNECTIONS: 50
     volumes:
       - ./ftp/setup.sh:/etc/pure-ftpd/setup.sh:ro
-      - ftp_data:/home/cliniclink/pruebas
+      - ftp_data_pruebas:/home/cliniclink/pruebas
+      - ftp_data_facturas:/home/cliniclink/facturas
     ports:
       - "21:21"
       - "30000-30009:30000-30009"
-    entrypoint: ["sh", "/etc/pure-ftpd/setup.sh"]
+    entrypoint: ["bash", "-c", "tr -d '\r' < /etc/pure-ftpd/setup.sh > /tmp/setup.sh && chmod +x /tmp/setup.sh && /tmp/setup.sh"]
 
 volumes:
   node_modules:
   db_datos:
     driver: local
-  ftp_data:
+  ftp_data_pruebas:
+    driver: local
+  ftp_data_facturas:
     driver: local
 
 networks:

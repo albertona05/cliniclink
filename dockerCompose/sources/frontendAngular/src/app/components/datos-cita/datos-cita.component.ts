@@ -7,6 +7,7 @@ import { PruebaService } from '../../services/prueba.service';
 import { NavComponent } from '../nav/nav.component';
 import { catchError, finalize, of, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-datos-cita',
@@ -39,6 +40,7 @@ export class DatosCitaComponent implements OnInit {
   duracionesComunes: string[] = ['3 días', '5 días', '7 días', '10 días', '14 días', '30 días'];
   mostrarFormPrueba: boolean = false;
   tiposPrueba: string[] = ['Análisis de sangre', 'Radiografía', 'Ecografía', 'Electrocardiograma', 'Resonancia magnética', 'TAC', 'Otros'];
+  private apiUrl = environment.apiUrl;
   
   constructor(
     private formBuilder: FormBuilder,
@@ -306,6 +308,23 @@ export class DatosCitaComponent implements OnInit {
           this.mensajeExito += '. Se ha programado una nueva cita.';
         }
         this.loading = false;
+
+        // Descargar automáticamente los documentos generados
+        if (response.documentos_generados && response.documentos_generados.length > 0) {
+          // Pequeña pausa para asegurar que los documentos estén listos
+          setTimeout(() => {
+            response.documentos_generados.forEach((documento: any) => {
+              // Crear un enlace temporal para la descarga
+              const link = document.createElement('a');
+              link.href = `${this.apiUrl}${documento.url}`;
+              link.target = '_blank';
+              link.download = documento.nombre;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            });
+          }, 1000);
+        }
 
         // Redirigir a la agenda después de 2 segundos
         setTimeout(() => {

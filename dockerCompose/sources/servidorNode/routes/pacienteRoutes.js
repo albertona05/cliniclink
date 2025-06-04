@@ -14,6 +14,9 @@ router.post('/citasPaciente', pacienteController.crearCita);
 
 // Rutas para gestión de facturas
 router.get('/facturas/:id', pacienteController.obtenerFacturasPaciente);
+router.get('/facturas/descargar/:id', pacienteController.descargarFactura);
 
+// Rutas para gestión de recetas médicas
+router.get('/recetas/descargar/:id', pacienteController.descargarReceta);
 
 module.exports = router;
