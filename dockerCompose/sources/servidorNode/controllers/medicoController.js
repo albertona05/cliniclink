@@ -451,7 +451,7 @@ async function finalizarCita(req, res) {
             resultados.documentos_generados.push({
                 tipo: 'receta',
                 nombre: recetaResult.fileName,
-                url: `/api/recetas/descargar/${id_cita}`
+                url: `/recetas/descargar/${id_cita}`
             });
 
             // Guardar receta en la base de datos
@@ -491,7 +491,7 @@ async function finalizarCita(req, res) {
             resultados.documentos_generados.push({
                 tipo: 'factura',
                 nombre: `factura_${id_cita}.pdf`,
-                url: `/api/pacientes/facturas/descargar/${id_cita}`
+                url: `/pacientes/facturas/descargar/${id_cita}`
             });
 
             // Guardar factura en la base de datos

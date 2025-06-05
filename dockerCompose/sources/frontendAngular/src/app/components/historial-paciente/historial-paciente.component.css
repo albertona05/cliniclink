@@ -20,13 +20,21 @@ body {
     text-align: center;
     background-color: #009688;
     color: #fff;
-}
-
-.content-header h2 {
+    position: relative;
+  }
+  
+  .content-header h2 {
     margin: 0;
     font-size: 26px;
     font-weight: 600;
-}
+  }
+  
+  .content-header button {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
 
 /* === Body === */
 .content-body {

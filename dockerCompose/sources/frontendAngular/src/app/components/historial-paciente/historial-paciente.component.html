@@ -2,39 +2,155 @@
 
 <div class="container-fluid px-4 mt-3">
   <div class="content-header rounded p-4 mb-4" style="background-color: #009688; color: white;">
-    <h2 class="m-0">Historial Médico</h2>
+    <h2 class="m-0">Historial Medico</h2>
+    <app-boton-volver class="float-end"></app-boton-volver>
   </div>
 
   <div class="content-body p-4">
+    <!-- Filtros -->
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="input-group">
+          <span class="input-group-text bg-white">
+            <i class="bi bi-search"></i>
+          </span>
+          <input 
+            type="text" 
+            class="form-control" 
+            placeholder="Buscar en el historial..." 
+            [(ngModel)]="filtroTexto"
+            (input)="aplicarFiltros()"
+          >
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="d-flex gap-2">
+          <button 
+            class="btn" 
+            [ngClass]="{'btn-primary': filtroTipo === 'todos', 'btn-outline-primary': filtroTipo !== 'todos'}"
+            (click)="filtrarPorTipo('todos')"
+          >
+            Todos
+          </button>
+          <button 
+            class="btn" 
+            [ngClass]="{'btn-success': filtroTipo === 'consulta', 'btn-outline-success': filtroTipo !== 'consulta'}"
+            (click)="filtrarPorTipo('consulta')"
+          >
+            <i class="bi bi-journal-medical me-1"></i>Consultas
+          </button>
+          <button 
+            class="btn" 
+            [ngClass]="{'btn-info': filtroTipo === 'prueba', 'btn-outline-info': filtroTipo !== 'prueba'}"
+            (click)="filtrarPorTipo('prueba')"
+          >
+            <i class="bi bi-clipboard-pulse me-1"></i>Pruebas
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Indicador de carga -->
     <div *ngIf="cargando" class="text-center my-4">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Cargando...</span>
       </div>
-      <p class="mt-2">Cargando historial...</p>
+      <p class="mt-2">Cargando historial médico...</p>
     </div>
 
     <!-- Mensajes de alerta -->
     <div *ngIf="mensajeError" class="alert alert-danger">
-      {{ mensajeError }}
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ mensajeError }}
+    </div>
+    
+    <div *ngIf="mensajeExito" class="alert alert-success">
+      <i class="bi bi-check-circle-fill me-2"></i>{{ mensajeExito }}
     </div>
 
     <!-- Lista de historial -->
-    <div *ngIf="historialCitas.length > 0 && !cargando" class="row">
-      <div class="col-12 col-md-6 col-lg-4 mb-4" *ngFor="let cita of historialCitas">
-        <div class="card shadow-sm h-100">
-          <div class="card-header bg-light">
+    <div *ngIf="historialFiltrado.length > 0 && !cargando" class="row">
+      <div class="col-12 col-md-6 col-lg-4 mb-4" *ngFor="let cita of historialFiltrado">
+        <div class="card shadow-sm h-100" [ngClass]="{
+          'border-primary': cita.tipo === 'prueba',
+          'border-success': cita.tipo === 'consulta'
+        }">
+          <!-- Encabezado de la tarjeta -->
+          <div class="card-header" [ngClass]="{
+            'bg-success text-white': cita.tipo === 'consulta',
+            'bg-primary text-white': cita.tipo === 'prueba'
+          }">
             <h5 class="card-title mb-0 d-flex justify-content-between align-items-center">
               <span>{{ formatearFecha(cita.fecha) }}</span>
-              <span class="badge bg-success">Finalizado</span>
+              <div>
+                <span class="badge" [ngClass]="{
+                  'bg-light text-success': cita.tipo === 'consulta',
+                  'bg-light text-primary': cita.tipo === 'prueba'
+                }">
+                  {{ cita.tipo === 'prueba' ? 'Prueba' : 'Consulta' }}
+                </span>
+              </div>
             </h5>
           </div>
+
+          <!-- Cuerpo de la tarjeta -->
           <div class="card-body">
             <div class="cita-details">
-              <p class="mb-2"><i class="bi bi-clock me-2"></i>{{ cita.hora.substring(0,5) }}</p>
-              <p class="mb-2"><i class="bi bi-hospital me-2"></i>{{ cita.especialidad }}</p>
-              <p class="mb-2"><i class="bi bi-person-badge me-2"></i>Dr. {{ cita.medico }}</p>
-              <p class="mb-2"><i class="bi bi-info-circle me-2"></i>{{ cita.info }}</p>
+              <!-- Información común -->
+              <div class="d-flex align-items-center mb-2">
+                <i class="bi bi-clock me-2" [ngClass]="{
+                  'text-success': cita.tipo === 'consulta',
+                  'text-primary': cita.tipo === 'prueba'
+                }"></i>
+                <strong>Hora:</strong>
+                <span class="ms-2">{{ cita.hora.substring(0,5) }}</span>
+              </div>
+              
+              <div class="d-flex align-items-center mb-2">
+                <i class="bi bi-hospital me-2" [ngClass]="{
+                  'text-success': cita.tipo === 'consulta',
+                  'text-primary': cita.tipo === 'prueba'
+                }"></i>
+                <strong>Especialidad:</strong>
+                <span class="ms-2">{{ cita.especialidad }}</span>
+              </div>
+              
+              <div class="d-flex align-items-center mb-3">
+                <i class="bi bi-person-badge me-2" [ngClass]="{
+                  'text-success': cita.tipo === 'consulta',
+                  'text-primary': cita.tipo === 'prueba'
+                }"></i>
+                <strong>Médico:</strong>
+                <span class="ms-2">Dr. {{ cita.medico }}</span>
+              </div>
+              
+              <!-- Información específica para pruebas -->
+              <div *ngIf="cita.tipo === 'prueba'" class="mt-3 pt-3 border-top">
+                <div class="d-flex align-items-center mb-2">
+                  <i class="bi bi-clipboard-pulse me-2 text-primary"></i>
+                  <strong>Tipo de prueba:</strong>
+                  <span class="ms-2 badge bg-light text-primary">{{ cita.tipo_prueba }}</span>
+                </div>
+                
+                <div class="mb-2">
+                  <div class="d-flex align-items-center">
+                    <i class="bi bi-file-earmark-text me-2 text-primary"></i>
+                    <strong>Resultado:</strong>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Información para consultas regulares -->
+              <div *ngIf="cita.tipo === 'consulta'" class="mt-3 pt-3 border-top">
+                <div class="mb-2">
+                  <div class="d-flex align-items-center">
+                    <i class="bi bi-journal-text me-2 text-success"></i>
+                    <strong>Observaciones:</strong>
+                  </div>
+                  <div class="p-3 bg-light rounded mt-2 border">
+                    {{ cita.info || 'No hay observaciones registradas' }}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -42,8 +158,10 @@
     </div>
 
     <!-- Mensaje cuando no hay historial -->
-    <div *ngIf="historialCitas.length === 0 && !cargando" class="alert alert-info">
-      <i class="bi bi-info-circle me-2"></i>No hay registros en el historial médico.
+    <div *ngIf="historialFiltrado.length === 0 && !cargando" class="alert alert-info">
+      <i class="bi bi-info-circle me-2"></i>
+      <span *ngIf="historialCitas.length === 0">No hay registros en el historial médico.</span>
+      <span *ngIf="historialCitas.length > 0">No se encontraron registros que coincidan con los filtros aplicados.</span>
     </div>
   </div>
 </div>

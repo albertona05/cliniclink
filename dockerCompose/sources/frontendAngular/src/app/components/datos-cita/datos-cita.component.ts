@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { MedicoService } from '../../services/medico.service';
 import { PruebaService } from '../../services/prueba.service';
 import { NavComponent } from '../nav/nav.component';
@@ -26,6 +27,7 @@ export class DatosCitaComponent implements OnInit {
   idCita: string = '';
   nombrePaciente: string = '';
   dniPaciente: string = '';
+  idUsuarioPaciente: string = '';
   medicos: any[] = [];
   horasDisponibles: string[] = [];
   horaSeleccionada: string = '';
@@ -47,7 +49,8 @@ export class DatosCitaComponent implements OnInit {
     private medicoService: MedicoService,
     private pruebaService: PruebaService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private http: HttpClient
   ) { }
 
   consultarHorasDisponiblesPrueba() {
@@ -121,6 +124,9 @@ export class DatosCitaComponent implements OnInit {
     // Cargar la lista de médicos y medicamentos
     this.cargarMedicos();
     this.cargarMedicamentos();
+    
+    // Obtener información de la cita actual
+    this.obtenerDatosCita();
   
     this.citaForm = this.formBuilder.group({
       info: ['', Validators.required],
@@ -314,14 +320,37 @@ export class DatosCitaComponent implements OnInit {
           // Pequeña pausa para asegurar que los documentos estén listos
           setTimeout(() => {
             response.documentos_generados.forEach((documento: any) => {
-              // Crear un enlace temporal para la descarga
-              const link = document.createElement('a');
-              link.href = `${this.apiUrl}${documento.url}`;
-              link.target = '_blank';
-              link.download = documento.nombre;
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
+              // Usar HttpClient para obtener el archivo como blob
+              this.http.get(`${this.apiUrl}${documento.url}`, { responseType: 'blob' })
+                .pipe(
+                  catchError(error => {
+                    console.error(`Error al descargar ${documento.nombre}:`, error);
+                    return of(null);
+                  })
+                )
+                .subscribe(blob => {
+                  if (blob) {
+                    // Crear un objeto URL para el blob
+                    const blobUrl = window.URL.createObjectURL(blob);
+                    
+                    // Crear un elemento <a> temporal
+                    const link = document.createElement('a');
+                    link.href = blobUrl;
+                    link.download = documento.nombre;
+                    
+                    // Añadir el enlace al documento
+                    document.body.appendChild(link);
+                    
+                    // Simular un clic en el enlace
+                    link.click();
+                    
+                    // Eliminar el enlace del documento
+                    document.body.removeChild(link);
+                    
+                    // Liberar el objeto URL
+                    window.URL.revokeObjectURL(blobUrl);
+                  }
+                });
             });
           }, 1000);
         }
@@ -357,19 +386,50 @@ export class DatosCitaComponent implements OnInit {
     return '';
   }
 
+  obtenerDatosCita() {
+    if (!this.idCita) {
+      this.mensajeError = 'No se pudo obtener el ID de la cita';
+      return;
+    }
+
+    this.loading = true;
+    this.http.get(`${this.apiUrl}/cita/${this.idCita}`)
+      .subscribe({
+        next: (response: any) => {
+          if (response && response.success && response.data) {
+            const cita = response.data;
+            if (cita.paciente && cita.paciente.id_usuario) {
+              this.idUsuarioPaciente = cita.paciente.id_usuario;
+              console.log('ID de usuario del paciente obtenido:', this.idUsuarioPaciente);
+            }
+          } else {
+            console.error('Respuesta inválida al obtener datos de la cita');
+          }
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error al obtener datos de la cita:', error);
+          this.loading = false;
+        }
+      });
+  }
+
   volver() {
-    console.log('DNI del paciente en volver():', this.dniPaciente);
-    console.log('Nombre del paciente en volver():', this.nombrePaciente);
+    console.log('ID de usuario del paciente en volver():', this.idUsuarioPaciente);
     
-    // Navegar al historial del paciente usando el DNI y pasando información adicional
-    if (this.dniPaciente) {
+    // Navegar al historial del paciente usando el ID de usuario
+    if (this.idUsuarioPaciente) {
+      this.router.navigate(['/historial-paciente', this.idUsuarioPaciente]);
+    } else if (this.dniPaciente) {
+      // Fallback al comportamiento anterior si no tenemos el ID de usuario
+      console.log('Usando DNI como fallback:', this.dniPaciente);
       this.router.navigate(['/historial-paciente', this.dniPaciente], {
         queryParams: {
           nombre: this.nombrePaciente
         }
       });
     } else {
-      console.log('No se encontró el DNI del paciente, redirigiendo a agenda');
+      console.log('No se encontró información del paciente, redirigiendo a agenda');
       this.router.navigate(['/agenda']);
     }
   }

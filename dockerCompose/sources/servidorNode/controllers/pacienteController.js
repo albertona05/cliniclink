@@ -1,4 +1,4 @@
-const { Cita, Factura, Medico, Usuario, Paciente } = require('../models');
+const { Cita, Factura, Medico, Usuario, Paciente, RecetaMedica, Prueba } = require('../models');
 const xss = require('xss');
 const path = require('path');
 const fs = require('fs');
@@ -17,15 +17,46 @@ const validarFecha = (fecha) => {
     return fechaObj >= hoy;
 };
 
+// Obtener paciente por id_usuario
+const obtenerPacientePorUsuario = async (req, res) => {
+    try {
+        const { id } = req.params; 
+        
+        // Buscar el paciente por id_usuario
+        console.log(`Buscando paciente con id_usuario ${id}`);
+        const paciente = await Paciente.findOne({
+            where: { id_usuario: id }
+        });
+
+        if (!paciente) {
+            console.log(`No se encontró paciente con id_usuario ${id}`);
+            return res.status(404).json({
+                success: false,
+                mensaje: 'No se encontró el paciente'
+            });
+        }
+
+        console.log(`Paciente encontrado con id ${paciente.id}`);
+        
+        res.json({
+            success: true,
+            id: paciente.id
+        });
+    } catch (error) {
+        console.error('Error al obtener paciente por id_usuario:', error);
+        res.status(500).json({ 
+            success: false,
+            mensaje: 'Error al obtener paciente'
+        });
+    }
+};
+
 // Obtener citas de un paciente
 const obtenerCitasPaciente = async (req, res) => {
     try {
         const { id } = req.params; // Este id es el id_usuario, no el id_paciente
         const usuarioAutenticado = req.usuario;
         
-        // Verificar si el usuario tiene permiso para ver estas citas
-        // Si es paciente, solo puede ver sus propias citas
-        // Si es médico o recepcionista, puede ver las citas de cualquier paciente
         if (usuarioAutenticado.rol === 'paciente' && usuarioAutenticado.id !== parseInt(id)) {
             console.log('Intento de acceso no autorizado: Usuario', usuarioAutenticado.id, 'intentó acceder a citas del paciente con id_usuario', id);
             return res.status(403).json({ 
@@ -243,10 +274,38 @@ const crearCita = async (req, res) => {
     }
 };
 
-// Función para obtener el historial de citas de un paciente
 const obtenerHistorialPaciente = async (req, res) => {
     try {
-        const id_paciente = req.params.id;
+        const parametro = req.params.id;
+        let paciente;
+
+        // Verificar si el parámetro es un DNI (contiene letras) o un id_usuario (solo números)
+        const esDNI = /[A-Za-z]/.test(parametro);
+        
+        if (esDNI) {
+            // Si es un DNI, buscar el paciente por DNI
+            console.log(`Buscando paciente con DNI ${parametro}`);
+            paciente = await Paciente.findOne({
+                where: { dni: parametro }
+            });
+        } else {
+            // Si es un id_usuario, buscar el paciente por id_usuario
+            console.log(`Buscando paciente con id_usuario ${parametro}`);
+            paciente = await Paciente.findOne({
+                where: { id_usuario: parametro }
+            });
+        }
+
+        if (!paciente) {
+            console.log(`No se encontró paciente con ${esDNI ? 'DNI' : 'id_usuario'} ${parametro}`);
+            return res.status(404).json({
+                success: false,
+                mensaje: 'No se encontró el paciente'
+            });
+        }
+
+        const id_paciente = paciente.id;
+        console.log(`Paciente encontrado con id ${id_paciente}`);
         
         if (!id_paciente) {
             return res.status(400).json({
@@ -255,10 +314,12 @@ const obtenerHistorialPaciente = async (req, res) => {
             });
         }
 
+        // Obtener citas finalizadas
         const historialCitas = await Cita.findAll({
             where: { 
                 id_paciente,
-                estado: 'finalizado' // Solo citas finalizadas
+                estado: 'finalizado', // Solo citas finalizadas
+                es_prueba: false // Excluir citas que son pruebas médicas
             },
             include: [{
                 model: Medico,
@@ -270,22 +331,71 @@ const obtenerHistorialPaciente = async (req, res) => {
                     attributes: ['nombre']
                 }]
             }],
-            attributes: ['id', 'fecha', 'hora', 'info'],
+            attributes: ['id', 'fecha', 'hora', 'info', 'es_prueba'],
             order: [['fecha', 'DESC'], ['hora', 'DESC']]
         });
 
+        // Obtener citas de pruebas finalizadas
+        const historialPruebas = await Cita.findAll({
+            where: { 
+                id_paciente,
+                estado: 'finalizado',
+                es_prueba: true // Solo citas que son pruebas médicas
+            },
+            include: [{
+                model: Medico,
+                as: 'medico',
+                attributes: ['especialidad'],
+                include: [{
+                    model: Usuario,
+                    as: 'usuario',
+                    attributes: ['nombre']
+                }]
+            }, {
+                model: Prueba,
+                as: 'prueba',
+                attributes: ['tipo_prueba', 'resultado', 'fecha_realizacion']
+            }],
+            attributes: ['id', 'fecha', 'hora', 'info', 'es_prueba', 'tipo_prueba'],
+            order: [['fecha', 'DESC'], ['hora', 'DESC']]
+        });
+
+        // Formatear citas regulares
         const citasFormateadas = historialCitas.map(cita => ({
             id: cita.id,
             fecha: cita.fecha,
             hora: cita.hora,
             especialidad: cita.medico?.especialidad || 'No especificada',
             medico: cita.medico?.usuario?.nombre || 'No especificado',
-            info: cita.info || 'Sin información adicional'
+            info: cita.info || 'Sin información adicional',
+            tipo: 'consulta'
         }));
+
+        // Formatear citas de pruebas
+        const pruebasFormateadas = historialPruebas.map(cita => ({
+            id: cita.id,
+            fecha: cita.fecha,
+            hora: cita.hora,
+            especialidad: cita.medico?.especialidad || 'No especificada',
+            medico: cita.medico?.usuario?.nombre || 'No especificado',
+            info: cita.prueba?.resultado || cita.info || 'Sin información adicional',
+            tipo: 'prueba',
+            tipo_prueba: cita.tipo_prueba || cita.prueba?.tipo_prueba || 'No especificado'
+        }));
+
+        // Combinar ambos historiales
+        const historialCompleto = [...citasFormateadas, ...pruebasFormateadas];
+        
+        // Ordenar por fecha y hora (de más reciente a más antiguo)
+        historialCompleto.sort((a, b) => {
+            const fechaA = new Date(a.fecha + 'T' + a.hora);
+            const fechaB = new Date(b.fecha + 'T' + b.hora);
+            return fechaB.getTime() - fechaA.getTime();
+        });
 
         res.status(200).json({
             success: true,
-            data: citasFormateadas
+            data: historialCompleto
         });
     } catch (error) {
         console.error('Error al obtener historial de citas:', error);
@@ -374,17 +484,27 @@ const descargarReceta = async (req, res) => {
         
         try {
             // Descargar el archivo desde el servidor FTP
-            await ftpService.downloadFile(receta.ruta, tempFilePath);
+            await ftpService.downloadFile(receta.ruta, tempFilePath, 'recetas');
+             
+            // Configurar los encabezados para la descarga automática
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename=receta_${idCita}.pdf`);
             
-            // Enviar el archivo como respuesta
-            res.download(tempFilePath, `receta_${idCita}.pdf`, (err) => {
+            // Crear un stream de lectura y enviarlo como respuesta
+            const fileStream = fs.createReadStream(tempFilePath);
+            fileStream.pipe(res);
+            
+            // Manejar eventos del stream
+            fileStream.on('end', () => {
                 // Eliminar el archivo temporal después de enviarlo
                 if (fs.existsSync(tempFilePath)) {
                     fs.unlinkSync(tempFilePath);
                 }
-                
-                if (err && !res.headersSent) {
-                    console.error('Error al enviar el archivo:', err);
+            });
+            
+            fileStream.on('error', (err) => {
+                console.error('Error al enviar el archivo:', err);
+                if (!res.headersSent) {
                     return res.status(500).json({ mensaje: 'Error al descargar la receta' });
                 }
             });
@@ -400,20 +520,22 @@ const descargarReceta = async (req, res) => {
 
 // Descargar factura de un paciente
 const descargarFactura = async (req, res) => {
+    const idFactura = req.params.id;
+    const usuarioId = req.usuario.id;
+    const rol = req.usuario.rol;
     try {
-        const idFactura = req.params.id;
-        const usuarioId = req.usuario.id;
-        const rol = req.usuario.rol;
         
-        // Buscar la factura en la base de datos
-        const factura = await Factura.findByPk(idFactura);
-        
-        if (!factura) {
-            return res.status(404).json({
-                success: false,
-                mensaje: 'Factura no encontrada'
-            });
-        }
+            
+            
+            // Buscar la factura en la base de datos
+            const factura = await Factura.findByPk(idFactura);
+            
+            if (!factura) {
+                return res.status(404).json({
+                    success: false,
+                    mensaje: 'Factura no encontrada'
+                });
+            }
         
         // Verificar permisos: solo el paciente dueño de la factura o personal médico/admin puede descargar
         if (rol === 'paciente') {
@@ -468,12 +590,90 @@ const descargarFactura = async (req, res) => {
     }
 };
 
+
+
+// Obtener una cita específica por ID
+async function obtenerCitaPorId(req, res) {
+    try {
+        const { id } = req.params;
+        
+        if (!id || isNaN(id)) {
+            return res.status(400).json({
+                success: false,
+                mensaje: 'ID de cita inválido'
+            });
+        }
+
+        const cita = await Cita.findByPk(id, {
+            include: [{
+                model: Paciente,
+                as: 'paciente',
+                attributes: ['id', 'dni'],
+                include: [{
+                    model: Usuario,
+                    as: 'usuario',
+                    attributes: ['id', 'nombre']
+                }]
+            }, {
+                model: Medico,
+                as: 'medico',
+                attributes: ['id', 'especialidad'],
+                include: [{
+                    model: Usuario,
+                    as: 'usuario',
+                    attributes: ['id', 'nombre']
+                }]
+            }]
+        });
+
+        if (!cita) {
+            return res.status(404).json({
+                success: false,
+                mensaje: 'Cita no encontrada'
+            });
+        }
+
+        res.json({
+            success: true,
+            data: {
+                id: cita.id,
+                fecha: cita.fecha,
+                hora: cita.hora,
+                estado: cita.estado,
+                info: cita.info,
+                es_prueba: cita.es_prueba,
+                tipo_prueba: cita.tipo_prueba,
+                paciente: {
+                    id: cita.paciente?.id,
+                    dni: cita.paciente?.dni,
+                    id_usuario: cita.paciente?.usuario?.id,
+                    nombre: cita.paciente?.usuario?.nombre
+                },
+                medico: {
+                    id: cita.medico?.id,
+                    especialidad: cita.medico?.especialidad,
+                    id_usuario: cita.medico?.usuario?.id,
+                    nombre: cita.medico?.usuario?.nombre
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error al obtener cita por ID:', error);
+        res.status(500).json({
+            success: false,
+            mensaje: 'Error al obtener la cita'
+        });
+    }
+}
+
 module.exports = {
     obtenerCitasPaciente,
     obtenerFacturasPaciente,
     crearCita,
     anularCita,
     obtenerHistorialPaciente,
+    descargarReceta,
     descargarFactura,
-    descargarReceta
+    obtenerPacientePorUsuario,
+    obtenerCitaPorId
 };

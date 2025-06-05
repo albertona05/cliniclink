@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-nav',
@@ -13,8 +14,9 @@ import { AuthService } from '../../services/auth.service';
 export class NavComponent {
   userName: string | null = null;
   userRole: string | null = null;
+  private apiUrl = 'http://localhost:3000';
 
-  constructor(private authService: AuthService, private router: Router) {
+  constructor(private authService: AuthService, private router: Router, private http: HttpClient) {
     this.updateUserInfo();
   }
 
@@ -28,7 +30,20 @@ export class NavComponent {
   navigateToFacturas() {
     const userId = this.authService.getUserID();
     if (userId) {
-      this.router.navigate(['/facturas', userId]);
+      // Primero obtenemos el id_paciente a partir del id_usuario
+      this.http.get<any>(`${this.apiUrl}/pacientes/usuario/${userId}`).subscribe({
+        next: (response) => {
+          if (response && response.success && response.id) {
+            // Navegamos a facturas con el id_paciente
+            this.router.navigate(['/facturas', response.id]);
+          } else {
+            console.error('No se pudo obtener el ID del paciente');
+          }
+        },
+        error: (error) => {
+          console.error('Error al obtener el ID del paciente:', error);
+        }
+      });
     }
   }
 

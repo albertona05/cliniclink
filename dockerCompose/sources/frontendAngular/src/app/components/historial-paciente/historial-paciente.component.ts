@@ -5,19 +5,26 @@ import { NavComponent } from '../nav/nav.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, finalize, of } from 'rxjs';
 import { HistorialService } from '../../services/historial.service';
+import { BotonVolverComponent } from '../boton-volver/boton-volver.component';
 
 @Component({
   selector: 'app-historial-paciente',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavComponent],
+  imports: [CommonModule, FormsModule, NavComponent, BotonVolverComponent],
   templateUrl: './historial-paciente.component.html',
   styleUrls: ['./historial-paciente.component.css']
 })
 export class HistorialPacienteComponent implements OnInit {
   historialCitas: any[] = [];
+  historialFiltrado: any[] = [];
   cargando: boolean = false;
   mensajeError: string = '';
+  mensajeExito: string = '';
   idPaciente: string = '';
+  
+  // Variables para filtrado
+  filtroTexto: string = '';
+  filtroTipo: string = 'todos';
   
   constructor(
     private historialService: HistorialService,
@@ -59,6 +66,18 @@ export class HistorialPacienteComponent implements OnInit {
             const fechaB = new Date(b.fecha + 'T' + b.hora);
             return fechaB.getTime() - fechaA.getTime();
           });
+          
+          // Inicializar el historial filtrado con todos los registros
+          this.historialFiltrado = [...this.historialCitas];
+          
+          // Mostrar mensaje de éxito
+          if (this.historialCitas.length > 0) {
+            this.mensajeError = '';
+            this.mensajeExito = `Se han cargado ${this.historialCitas.length} registros médicos`;
+          } else {
+            this.mensajeError = '';
+            this.mensajeExito = 'No hay registros en el historial médico';
+          }
         } else {
           this.historialCitas = [];
           if (!this.mensajeError) {
@@ -96,5 +115,48 @@ export class HistorialPacienteComponent implements OnInit {
   
   volver(): void {
     this.router.navigate(['/detalle-paciente', this.idPaciente]);
+  }
+  
+  /**
+   * Filtra el historial por tipo (consulta, prueba o todos)
+   */
+  filtrarPorTipo(tipo: string): void {
+    this.filtroTipo = tipo;
+    this.aplicarFiltros();
+  }
+  
+  /**
+   * Aplica los filtros de texto y tipo al historial
+   */
+  aplicarFiltros(): void {
+    // Primero filtramos por tipo
+    let resultados = this.historialCitas;
+    
+    if (this.filtroTipo !== 'todos') {
+      resultados = resultados.filter(cita => cita.tipo === this.filtroTipo);
+    }
+    
+    // Luego aplicamos el filtro de texto si existe
+    if (this.filtroTexto && this.filtroTexto.trim() !== '') {
+      const textoFiltro = this.filtroTexto.toLowerCase().trim();
+      resultados = resultados.filter(cita => 
+        // Buscar en varios campos
+        cita.medico?.toLowerCase().includes(textoFiltro) ||
+        cita.especialidad?.toLowerCase().includes(textoFiltro) ||
+        cita.info?.toLowerCase().includes(textoFiltro) ||
+        (cita.tipo_prueba && cita.tipo_prueba.toLowerCase().includes(textoFiltro))
+      );
+    }
+    
+    this.historialFiltrado = resultados;
+  }
+  
+  /**
+   * Limpia todos los filtros aplicados
+   */
+  limpiarFiltros(): void {
+    this.filtroTexto = '';
+    this.filtroTipo = 'todos';
+    this.historialFiltrado = [...this.historialCitas];
   }
 }

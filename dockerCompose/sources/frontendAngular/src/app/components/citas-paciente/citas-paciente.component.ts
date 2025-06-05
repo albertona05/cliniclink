@@ -58,27 +58,45 @@ export class CitasPacienteComponent implements OnInit {
         // Ordenar todas las citas de la más temprana a la más tardía
         this.citas.sort((a, b) => {
           try {
-            // Asegurar que la fecha tenga el formato correcto (YYYY-MM-DD)
-            const fechaA_str = a.fecha.split('T')[0];
-            const fechaB_str = b.fecha.split('T')[0];
+            if (!a.fecha || !b.fecha || !a.hora || !b.hora) {
+              console.warn('Cita con datos incompletos detectada durante ordenamiento:', 
+                { citaA: { fecha: a.fecha, hora: a.hora }, citaB: { fecha: b.fecha, hora: b.hora } });
+              return 0;
+            }
             
-            // Asegurar que la hora tenga el formato correcto (HH:mm)
-            const horaA = a.hora.split(':').slice(0, 2).join(':');
-            const horaB = b.hora.split(':').slice(0, 2).join(':');
+            // Normalizar el formato de fecha
+            let fechaA_str, fechaB_str;
+            
+            if (typeof a.fecha === 'string') {
+              fechaA_str = a.fecha.includes('T') ? a.fecha.split('T')[0] : a.fecha.split(' ')[0];
+            } else {
+              fechaA_str = new Date(a.fecha).toISOString().split('T')[0];
+            }
+            
+            if (typeof b.fecha === 'string') {
+              fechaB_str = b.fecha.includes('T') ? b.fecha.split('T')[0] : b.fecha.split(' ')[0];
+            } else {
+              fechaB_str = new Date(b.fecha).toISOString().split('T')[0];
+            }
+            
+            // Normalizar el formato de hora
+            const horaA = typeof a.hora === 'string' ? a.hora.split(':').slice(0, 2).join(':') : '00:00';
+            const horaB = typeof b.hora === 'string' ? b.hora.split(':').slice(0, 2).join(':') : '00:00';
             
             // Crear objetos Date con las fechas y horas combinadas
-            const fechaA = new Date(`${fechaA_str}T${horaA}`);
-            const fechaB = new Date(`${fechaB_str}T${horaB}`);
+            const fechaA = new Date(`${fechaA_str}T${horaA}:00`);
+            const fechaB = new Date(`${fechaB_str}T${horaB}:00`);
             
             // Verificar que las fechas sean válidas
             if (isNaN(fechaA.getTime()) || isNaN(fechaB.getTime())) {
-              console.error('Fecha inválida detectada durante ordenamiento');
-              return 0; // Mantener el orden original si hay fechas inválidas
+              console.warn('Fecha inválida detectada durante ordenamiento:', 
+                { fechaA_str, horaA, fechaB_str, horaB, fechaA_valida: !isNaN(fechaA.getTime()), fechaB_valida: !isNaN(fechaB.getTime()) });
+              return 0; 
             }
             
             return fechaB.getTime() - fechaA.getTime(); // Orden descendente
           } catch (error) {
-            console.error('Error al ordenar citas:', error);
+            console.error('Error durante ordenamiento de citas:', error);
             return 0; // Mantener el orden original en caso de error
           }
         });
@@ -86,13 +104,11 @@ export class CitasPacienteComponent implements OnInit {
   }
   
   esFechaFutura(fecha: string, hora: string): boolean {
-    // Validar que la fecha y hora no estén vacías
     if (!fecha || !hora) {
       return false;
     }
 
     try {
-      // Extraer solo la hora y minutos (HH:mm) si viene en formato HH:mm:ss
       const horaFormateada = hora.split(':').slice(0, 2).join(':');
 
       // Asegurar que la hora tenga el formato correcto (HH:mm)
@@ -133,7 +149,6 @@ export class CitasPacienteComponent implements OnInit {
         .subscribe(response => {
           if (response) {
             this.mensajeExito = 'Cita anulada correctamente';
-            // Recargar las citas para reflejar el cambio
             this.cargarCitas();
           }
         });

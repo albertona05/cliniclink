@@ -193,7 +193,7 @@ class FtpService {
     }
 
 
-    async downloadFacturaFile(remotePath, localPath) {
+    async downloadFacturaFile(fileName, localPath) {
         const maxRetries = 3;
         let retries = 0;
         let success = false;
@@ -207,10 +207,7 @@ class FtpService {
             // Navegar al directorio /facturas
             await this.client.cd('/facturas');
             
-            // Extraer el nombre del archivo de la ruta remota
-            const fileName = remotePath.split('/').pop();
-            
-            // Descargar el archivo
+            // Descargar el archivo usando directamente el nombre del archivo
             await this.client.downloadTo(localPath, fileName);
             
             success = true;
