@@ -163,7 +163,7 @@ export class RealizarPruebaComponent implements OnInit {
             console.log('Respuesta del servidor:', response);
             
             if (response && response.files) {
-              this.uploadedFiles = response.files.map((file: any) => {
+              const newFiles = response.files.map((file: any) => {
                 console.log(`Archivo subido: ${file.filename || file.originalName}`);
                 return {
                   nombre: file.filename || file.originalName,
@@ -171,6 +171,7 @@ export class RealizarPruebaComponent implements OnInit {
                   url: `${this.apiUrl}/pruebas/${this.idPrueba}/files/${file.filename || file.storedName}`
                 };
               });
+              this.uploadedFiles = [...this.uploadedFiles, ...newFiles];
               this.selectedFiles = [];
               this.mensajeExito = 'Archivos subidos correctamente';
               setTimeout(() => this.mensajeExito = '', 3000);

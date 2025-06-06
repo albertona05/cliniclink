@@ -6,6 +6,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, finalize, of } from 'rxjs';
 import { HistorialService } from '../../services/historial.service';
 import { BotonVolverComponent } from '../boton-volver/boton-volver.component';
+import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-historial-paciente',
@@ -29,10 +31,19 @@ export class HistorialPacienteComponent implements OnInit {
   constructor(
     private historialService: HistorialService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private http: HttpClient,
+    private authService: AuthService
   ) {}
   
   ngOnInit(): void {
+    // Verificar autenticación antes de cargar datos
+    if (!this.authService.isLoggedIn()) {
+      this.mensajeError = 'Sesión expirada. Por favor, inicie sesión nuevamente.';
+      this.router.navigate(['/login']);
+      return;
+    }
+
     this.idPaciente = this.route.snapshot.paramMap.get('id') || '';
     if (this.idPaciente) {
       this.cargarHistorial();
@@ -49,7 +60,12 @@ export class HistorialPacienteComponent implements OnInit {
       .pipe(
         catchError(error => {
           console.error('Error al cargar historial:', error);
-          this.mensajeError = 'Error al cargar el historial del paciente';
+          if (error.status === 401) {
+            this.mensajeError = 'Sesión expirada. Por favor, inicie sesión nuevamente.';
+            this.authService.logout().subscribe();
+          } else {
+            this.mensajeError = 'Error al cargar el historial del paciente';
+          }
           return of({ success: false, data: [] });
         }),
         finalize(() => {
@@ -66,6 +82,9 @@ export class HistorialPacienteComponent implements OnInit {
             const fechaB = new Date(b.fecha + 'T' + b.hora);
             return fechaB.getTime() - fechaA.getTime();
           });
+          
+          // Cargar archivos para las pruebas médicas
+          this.cargarArchivosParaPruebas();
           
           // Inicializar el historial filtrado con todos los registros
           this.historialFiltrado = [...this.historialCitas];
@@ -116,6 +135,10 @@ export class HistorialPacienteComponent implements OnInit {
   volver(): void {
     this.router.navigate(['/detalle-paciente', this.idPaciente]);
   }
+
+  irALogin(): void {
+    this.router.navigate(['/login']);
+  }
   
   /**
    * Filtra el historial por tipo (consulta, prueba o todos)
@@ -158,5 +181,153 @@ export class HistorialPacienteComponent implements OnInit {
     this.filtroTexto = '';
     this.filtroTipo = 'todos';
     this.historialFiltrado = [...this.historialCitas];
+  }
+
+  /**
+   * Carga los archivos adjuntos para las pruebas médicas
+   */
+  cargarArchivosParaPruebas(): void {
+    const pruebas = this.historialCitas.filter(cita => cita.tipo === 'prueba');
+    console.log('Cargando archivos para pruebas:', pruebas.length, 'pruebas encontradas');
+    
+    pruebas.forEach(prueba => {
+      console.log(`Solicitando archivos para prueba ID: ${prueba.id}`);
+      this.http.get<any>(`http://localhost:3000/pruebas/${prueba.id}/files`)
+        .pipe(
+          catchError(error => {
+            console.error(`Error al cargar archivos para la prueba ${prueba.id}:`, error);
+            if (error.status === 401) {
+              console.log('Error de autenticación detectado en carga de archivos');
+              this.mensajeError = 'Sesión expirada. Por favor, inicie sesión nuevamente.';
+              this.authService.logout().subscribe();
+            }
+            return of({ files: [] });
+          })
+        )
+        .subscribe(response => {
+          console.log(`Respuesta para prueba ${prueba.id}:`, response);
+          if (response && response.files) {
+            prueba.archivos = response.files.map((file: any) => ({
+              nombre: file.name,
+              tipo: this.getMimeType(file.type),
+              url: `http://localhost:3000/pruebas/${prueba.id}/files/${file.name}`
+            }));
+            console.log(`Archivos asignados a prueba ${prueba.id}:`, prueba.archivos);
+          } else {
+            prueba.archivos = [];
+            console.log(`No se encontraron archivos para prueba ${prueba.id}`);
+          }
+        });
+    });
+  }
+
+  /**
+   * Obtiene el tipo MIME basado en la extensión del archivo
+   */
+  getMimeType(type: string): string {
+    const mimeTypes: { [key: string]: string } = {
+      'pdf': 'application/pdf',
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png',
+      'gif': 'image/gif',
+      'txt': 'text/plain',
+      'doc': 'application/msword',
+      'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    };
+    
+    return mimeTypes[type.toLowerCase()] || 'application/octet-stream';
+  }
+
+  /**
+   * Abre una imagen en una nueva ventana
+   */
+  abrirImagen(url: string): void {
+    window.open(url, '_blank');
+  }
+
+  /**
+   * Verifica si hay archivos que no sean imágenes
+   */
+  tieneArchivosNoImagen(archivos: any[]): boolean {
+    return archivos.some(archivo => !archivo.tipo?.startsWith('image/'));
+  }
+
+  /**
+   * Obtiene el icono apropiado para el tipo de archivo
+   */
+  getFileIcon(tipo: string): string {
+    if (tipo?.includes('pdf')) {
+      return 'bi-file-earmark-pdf';
+    } else if (tipo?.includes('image')) {
+      return 'bi-file-earmark-image';
+    } else if (tipo?.includes('text')) {
+      return 'bi-file-earmark-text';
+    } else {
+      return 'bi-file-earmark';
+    }
+  }
+
+  /**
+   * Previsualiza un archivo
+   */
+  previsualizarArchivo(url: string, tipo: string, nombre: string): void {
+    console.log(`Previsualizando archivo: ${nombre} (${tipo}) desde ${url}`);
+    
+    if (tipo?.startsWith('image/')) {
+      // Para imágenes, ya tenemos el método abrirImagen
+      this.abrirImagen(url);
+    } else if (tipo === 'application/pdf') {
+      // Para PDFs, abrir en una nueva pestaña
+      window.open(url, '_blank');
+    } else {
+      // Para otros tipos de archivos, intentar descargar y abrir
+      this.http.get(url, { responseType: 'blob' })
+        .pipe(
+          catchError(error => {
+            console.error('Error al obtener el archivo para previsualización:', error);
+            alert(`Error al previsualizar el archivo: ${error.message || 'Error desconocido'}`);
+            throw error;
+          })
+        )
+        .subscribe(blob => {
+          // Crear un objeto URL para el blob
+          const blobUrl = window.URL.createObjectURL(blob);
+          
+          // Abrir en una nueva ventana
+          window.open(blobUrl, '_blank');
+          
+          // Programar la liberación del objeto URL después de un tiempo
+          setTimeout(() => {
+            window.URL.revokeObjectURL(blobUrl);
+          }, 60000); // Liberar después de 1 minuto
+        });
+    }
+  }
+
+  /**
+   * Descarga un archivo
+   */
+  descargarArchivo(url: string, nombreArchivo: string): void {
+    console.log(`Descargando archivo: ${nombreArchivo} desde ${url}`);
+    
+    this.http.get(url, { responseType: 'blob' })
+      .pipe(
+        catchError(error => {
+          console.error('Error al descargar el archivo:', error);
+          alert(`Error al descargar el archivo: ${error.message || 'Error desconocido'}`);
+          throw error;
+        })
+      )
+      .subscribe(blob => {
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = nombreArchivo;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
+      });
   }
 }

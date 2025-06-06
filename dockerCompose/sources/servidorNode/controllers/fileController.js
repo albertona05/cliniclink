@@ -36,7 +36,7 @@ class FileController {
             // Obtener la lista de archivos existentes para determinar el siguiente número
             let existingFiles = [];
             try {
-                existingFiles = await ftpService.listFiles('.');
+                existingFiles = await ftpService.listFiles('.', 'pruebas');
                 // Filtrar solo los archivos que corresponden a esta prueba
                 existingFiles = existingFiles.filter(file => 
                     file.name.startsWith(`archivo_${pruebaId}_`));
@@ -62,7 +62,7 @@ class FileController {
                 const newFileName = `archivo_${pruebaId}_${nextFileNumber}${fileExt}`;
                 
                 console.log(`Intentando subir archivo: ${newFileName}`);
-                const success = await ftpService.uploadFile(file.path, newFileName);
+                const success = await ftpService.uploadPruebaFile(file.path, newFileName);
 
                 if (success) {
                     uploadedFiles.push({
@@ -125,9 +125,9 @@ class FileController {
             
             console.log(`[DEBUG] Citas encontradas: ${citas.length}, IDs de citas: ${citaIds.join(', ')}`);
             
-            // Obtener todos los archivos del directorio
+            // Obtener todos los archivos del directorio de pruebas
             console.log('[DEBUG] Solicitando listado de archivos al FTP...');
-            const allFiles = await ftpService.listFiles('.');
+            const allFiles = await ftpService.listFiles('.', 'pruebas');
             console.log('[DEBUG] Archivos recibidos del FTP:', JSON.stringify(allFiles));
             
             // Filtrar archivos para todas las citas encontradas y para la prueba directamente
@@ -176,7 +176,7 @@ class FileController {
             const localFilePath = path.join('/tmp', fileName);
 
             console.log(`Intentando descargar archivo: ${fileName}`);
-            const success = await ftpService.downloadFile(fileName, localFilePath);
+            const success = await ftpService.downloadPruebaFile(fileName, localFilePath);
 
             if (success) {
                 res.download(localFilePath, fileName, async (err) => {

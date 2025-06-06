@@ -1,15 +1,15 @@
 <app-nav></app-nav>
 
 <div class="container-fluid px-4 mt-3">
-  <div class="content-header rounded p-4 mb-4" style="background-color: #009688; color: white;">
-    <h2 class="m-0">Historial Medico</h2>
-    <app-boton-volver class="float-end"></app-boton-volver>
-  </div>
+  <div class="content-header rounded p-4 mb-4 d-flex justify-content-center align-items-center" style="background-color: #009688; color: white;">
+     <h2 class="m-0">Historial Medico</h2>
+   </div>
 
   <div class="content-body p-4">
     <!-- Filtros -->
     <div class="row mb-4">
-      <div class="col-md-6">
+      <!-- Barra de búsqueda -->
+      <div class="col-12 col-lg-6 mb-3 mb-lg-0">
         <div class="input-group">
           <span class="input-group-text bg-white">
             <i class="bi bi-search"></i>
@@ -23,29 +23,34 @@
           >
         </div>
       </div>
-      <div class="col-md-6">
-        <div class="d-flex gap-2">
+      
+      <!-- Botones de filtro -->
+      <div class="col-12 col-lg-6">
+        <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
           <button 
-            class="btn" 
+            class="btn btn-sm flex-fill flex-sm-grow-0" 
             [ngClass]="{'btn-primary': filtroTipo === 'todos', 'btn-outline-primary': filtroTipo !== 'todos'}"
             (click)="filtrarPorTipo('todos')"
           >
             Todos
           </button>
           <button 
-            class="btn" 
+            class="btn btn-sm flex-fill flex-sm-grow-0" 
             [ngClass]="{'btn-success': filtroTipo === 'consulta', 'btn-outline-success': filtroTipo !== 'consulta'}"
             (click)="filtrarPorTipo('consulta')"
           >
-            <i class="bi bi-journal-medical me-1"></i>Consultas
+            <i class="bi bi-journal-medical me-1 d-none d-sm-inline"></i>
+            <span class="d-sm-none">📋</span>Consultas
           </button>
           <button 
-            class="btn" 
+            class="btn btn-sm flex-fill flex-sm-grow-0" 
             [ngClass]="{'btn-info': filtroTipo === 'prueba', 'btn-outline-info': filtroTipo !== 'prueba'}"
             (click)="filtrarPorTipo('prueba')"
           >
-            <i class="bi bi-clipboard-pulse me-1"></i>Pruebas
+            <i class="bi bi-clipboard-pulse me-1 d-none d-sm-inline"></i>
+            <span class="d-sm-none">🔬</span>Pruebas
           </button>
+          <app-boton-volver class="flex-fill flex-sm-grow-0"></app-boton-volver>
         </div>
       </div>
     </div>
@@ -61,6 +66,11 @@
     <!-- Mensajes de alerta -->
     <div *ngIf="mensajeError" class="alert alert-danger">
       <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ mensajeError }}
+      <div *ngIf="mensajeError.includes('Sesión expirada')" class="mt-2">
+        <button class="btn btn-outline-danger btn-sm" (click)="irALogin()">
+          <i class="bi bi-box-arrow-in-right me-1"></i>Ir al Login
+        </button>
+      </div>
     </div>
     
     <div *ngIf="mensajeExito" class="alert alert-success">
@@ -136,6 +146,65 @@
                     <i class="bi bi-file-earmark-text me-2 text-primary"></i>
                     <strong>Resultado:</strong>
                   </div>
+                  <div class="p-3 bg-light rounded mt-2 border">
+                    {{ cita.info || 'No hay resultados registrados' }}
+                  </div>
+                </div>
+                
+                <!-- Archivos adjuntos de la prueba -->
+                <div class="mb-2" *ngIf="cita.tipo === 'prueba'">
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-paperclip me-2 text-primary"></i>
+                    <strong>Archivos adjuntos:</strong>
+                  </div>
+                  
+                  <!-- Mensaje cuando no hay archivos -->
+                  <div *ngIf="!cita.archivos || cita.archivos.length === 0" class="p-3 bg-light rounded border text-muted">
+                    <i class="bi bi-info-circle me-2"></i>
+                    No hay archivos adjuntos para esta prueba
+                  </div>
+                  
+                  <!-- Contenido cuando hay archivos -->
+                  <div *ngIf="cita.archivos && cita.archivos.length > 0">
+                  <div class="row g-2">
+                    <!-- Imágenes -->
+                    <ng-container *ngFor="let archivo of cita.archivos">
+                      <div class="col-6 col-md-4" *ngIf="archivo.tipo?.startsWith('image/')">
+                      <div class="card h-100">
+                        <img [src]="archivo.url" class="card-img-top" [alt]="archivo.nombre"
+                             style="height: 100px; object-fit: cover; cursor: pointer;"
+                             (click)="abrirImagen(archivo.url)">
+                        <div class="card-body p-2">
+                          <p class="card-text small text-truncate mb-0">{{ archivo.nombre }}</p>
+                        </div>
+                      </div>
+                      </div>
+                    </ng-container>
+                  </div>
+                  
+                  <!-- Otros archivos (PDF, documentos) -->
+                  <div class="list-group mt-2" *ngIf="tieneArchivosNoImagen(cita.archivos)">
+                    <ng-container *ngFor="let archivo of cita.archivos">
+                      <div class="list-group-item d-flex justify-content-between align-items-center" 
+                           *ngIf="!archivo.tipo?.startsWith('image/')">
+                      <div>
+                        <i class="bi" [ngClass]="getFileIcon(archivo.tipo)" class="me-2"></i>
+                        <span>{{ archivo.nombre }}</span>
+                      </div>
+                      <div class="btn-group btn-group-sm">
+                        <button (click)="previsualizarArchivo(archivo.url, archivo.tipo, archivo.nombre)" 
+                                class="btn btn-sm btn-outline-info">
+                          <i class="bi bi-eye"></i>
+                        </button>
+                        <button (click)="descargarArchivo(archivo.url, archivo.nombre)" 
+                                class="btn btn-sm btn-outline-primary">
+                          <i class="bi bi-download"></i>
+                        </button>
+                      </div>
+                    </div>
+                    </ng-container>
+                  </div>
+                  </div> <!-- Cierre del div cuando hay archivos -->
                 </div>
               </div>
               

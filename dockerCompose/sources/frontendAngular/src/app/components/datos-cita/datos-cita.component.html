@@ -163,7 +163,8 @@
 
                       <div class="col-md-6 mb-3">
                         <div class="form-group">
-                          <button type="button" class="btn btn-primary" (click)="consultarHorasDisponiblesPrueba()"
+                          <label>&nbsp;</label>
+                          <button type="button" class="btn btn-primary d-block" (click)="consultarHorasDisponiblesPrueba()"
                             [disabled]="!pruebaForm.get('fecha_prueba')?.value || !pruebaForm.get('id_medicoAsignado')?.value">
                             <i class="bi bi-search me-1"></i> Consultar horas disponibles
                           </button>
@@ -172,15 +173,16 @@
 
                       <div class="col-md-12 mb-3" *ngIf="horasDisponiblesPrueba.length > 0">
                         <div class="form-group">
-                          <h5>Horas Disponibles:</h5>
-                          <div class="d-flex flex-wrap gap-2">
-                            <button type="button" *ngFor="let hora of horasDisponiblesPrueba" 
-                              class="btn" 
-                              [class.btn-outline-primary]="horaPruebaSeleccionada !== hora"
-                              [class.btn-primary]="horaPruebaSeleccionada === hora"
-                              (click)="seleccionarHoraPrueba(hora)">
-                              {{ hora }}
-                            </button>
+                          <div class="card-body px-0">
+                            <div class="row g-2">
+                              <div class="col-6 col-sm-4 col-md-3" *ngFor="let hora of horasDisponiblesPrueba">
+                                <button class="btn w-100 hora-btn" 
+                                  [class.selected]="horaPruebaSeleccionada === hora"
+                                  (click)="seleccionarHoraPrueba(hora)">
+                                  {{ hora }}
+                                </button>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>

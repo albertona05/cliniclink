@@ -78,8 +78,8 @@
                 <div class="list-group">
                   <div *ngFor="let file of uploadedFiles; let i = index" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
                     <div>
-                      <i [ngClass]="getFileIcon(file.name)" class="me-2"></i>
-                      {{ file.name }}
+                      <i [ngClass]="getFileIcon(file.nombre)" class="me-2"></i>
+                      {{ file.nombre }}
                     </div>
                     <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeFile(i)">
                       <i class="bi bi-trash"></i>
