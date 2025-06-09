@@ -16,8 +16,18 @@ RUN npm install
 # Crear directorio de cache de Angular y establecer permisos
 RUN mkdir -p /app/.angular/cache && chmod -R 777 /app/.angular
 
+# Instalar gettext para envsubst
+RUN apt-get update && apt-get install -y gettext-base && rm -rf /var/lib/apt/lists/*
+
+# Copiar script de configuración de entorno
+COPY ./sources/frontendAngular/env-config.sh /usr/local/bin/env-config.sh
+RUN chmod +x /usr/local/bin/env-config.sh
+
 # Exponer el puerto para desarrollo
 #EXPOSE 4200
+
+# Usar el script como entrypoint
+ENTRYPOINT ["/usr/local/bin/env-config.sh"]
 
 # Comando para arrancar el servidor Angular con configuración para entorno Docker
 #CMD ["ng", "serve", "--host", "0.0.0.0", "--port", "4200", "--disable-host-check"]
