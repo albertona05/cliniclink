@@ -8,6 +8,7 @@ import { HistorialService } from '../../services/historial.service';
 import { BotonVolverComponent } from '../boton-volver/boton-volver.component';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-historial-paciente',
@@ -192,7 +193,7 @@ export class HistorialPacienteComponent implements OnInit {
     
     pruebas.forEach(prueba => {
       console.log(`Solicitando archivos para prueba ID: ${prueba.id}`);
-      this.http.get<any>(`http://localhost:3000/pruebas/${prueba.id}/files`)
+      this.http.get<any>(`${environment.apiUrl}/pruebas/${prueba.id}/files`)
         .pipe(
           catchError(error => {
             console.error(`Error al cargar archivos para la prueba ${prueba.id}:`, error);
@@ -210,7 +211,7 @@ export class HistorialPacienteComponent implements OnInit {
             prueba.archivos = response.files.map((file: any) => ({
               nombre: file.name,
               tipo: this.getMimeType(file.type),
-              url: `http://localhost:3000/pruebas/${prueba.id}/files/${file.name}`
+              url: `${environment.apiUrl}/pruebas/${prueba.id}/files/${file.name}`
             }));
             console.log(`Archivos asignados a prueba ${prueba.id}:`, prueba.archivos);
           } else {

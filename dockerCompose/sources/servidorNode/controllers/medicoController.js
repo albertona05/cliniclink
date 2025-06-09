@@ -97,7 +97,7 @@ async function generarRecetaPDF(datos) {
             margin: 50,
             bufferPages: true
         });
-        const fileName = `receta_${datos.id_cita}.pdf`;
+        const fileName = `receta_${datos.id_paciente}_${datos.id_receta}.pdf`;
         const filePath = `${dirPath}/${fileName}`;
         const writeStream = fs.createWriteStream(filePath);
 
@@ -267,7 +267,7 @@ async function generarFacturaPDF(datos) {
             margin: 50,
             bufferPages: true // Permite ajustar el contenido dinámicamente
         });
-        const fileName = `factura_${datos.id_cita}.pdf`;
+        const fileName = `factura_${datos.id_paciente}_${datos.id_factura}.pdf`;
         const filePath = `${dirPath}/${fileName}`;
         const writeStream = fs.createWriteStream(filePath);
 
@@ -438,13 +438,31 @@ async function finalizarCita(req, res) {
 
         // Generar receta médica si hay medicamentos
         if (medicamentos && Array.isArray(medicamentos) && medicamentos.length > 0) {
+            // Guardar receta en la base de datos primero
+            const recetaCreada = await RecetaMedica.create({
+                id_cita,
+                id_medico: cita.id_medico,
+                id_paciente: cita.id_paciente,
+                descripcion: 'Ver detalle de medicamentos',
+                ruta: '' // Se actualizará después con el nombre correcto
+            });
+            
             const datosReceta = {
                 id_cita,
+                id_paciente: cita.id_paciente,
+                id_receta: recetaCreada.id,
                 nombre_medico: `${cita.medico.usuario.nombre}`,
                 medicamentos,
                 info
             };
             const recetaResult = await generarRecetaPDF(datosReceta);
+            
+            // Actualizar el nombre del archivo con el ID de la receta
+            const nuevoNombreReceta = `receta_${cita.id_paciente}_${recetaCreada.id}.pdf`;
+            const nuevaRutaReceta = `/recetas/${nuevoNombreReceta}`;
+            
+            // Actualizar la ruta en la base de datos
+            await recetaCreada.update({ ruta: nuevaRutaReceta });
             resultados.receta_path = recetaResult.ftpPath;
             
             // Agregar información de la receta a los documentos generados
@@ -454,14 +472,7 @@ async function finalizarCita(req, res) {
                 url: `/recetas/descargar/${id_cita}`
             });
 
-            // Guardar receta en la base de datos
-            const recetaCreada = await RecetaMedica.create({
-                id_cita,
-                id_medico: cita.id_medico,
-                id_paciente: cita.id_paciente,
-                descripcion: 'Ver detalle de medicamentos',
-                ruta: recetaResult.ftpPath
-            });
+
             
             // Guardar cada medicamento asociado a la receta
             for (const med of medicamentos) {
@@ -478,28 +489,38 @@ async function finalizarCita(req, res) {
 
         // Generar factura si hay precio de consulta
         if (precio_consulta) {
+            // Guardar factura en la base de datos primero
+            const facturaCreada = await Factura.create({
+                id_paciente: cita.id_paciente,
+                monto: precio_consulta,
+                estado: 'en espera',
+                ruta: '' // Se actualizará después con el nombre correcto
+            });
+            
             const datosFactura = {
                 id_cita,
+                id_paciente: cita.id_paciente,
+                id_factura: facturaCreada.id,
                 nombre_paciente: `${cita.paciente.usuario.nombre}`,
                 nombre_medico: `${cita.medico.usuario.nombre}`,
                 precio_consulta
             };
             const facturaPath = await generarFacturaPDF(datosFactura);
-            resultados.factura_path = `/facturas/factura_${id_cita}.pdf`;
+            
+            // Actualizar el nombre del archivo con el ID de la factura
+            const nuevoNombreFactura = `factura_${cita.id_paciente}_${facturaCreada.id}.pdf`;
+            const nuevaRutaFactura = `/facturas/${nuevoNombreFactura}`;
+            
+            // Actualizar la ruta en la base de datos
+            await facturaCreada.update({ ruta: nuevaRutaFactura });
+            
+            resultados.factura_path = nuevaRutaFactura;
             
             // Agregar información de la factura a los documentos generados
             resultados.documentos_generados.push({
                 tipo: 'factura',
-                nombre: `factura_${id_cita}.pdf`,
-                url: `/pacientes/facturas/descargar/${id_cita}`
-            });
-
-            // Guardar factura en la base de datos
-            await Factura.create({
-                id_paciente: cita.id_paciente,
-                monto: precio_consulta,
-                estado: 'en espera',
-                ruta: `/facturas/factura_${id_cita}.pdf` // Ruta en el FTP
+                nombre: nuevoNombreFactura,
+                url: `/pacientes/facturas/descargar/${facturaCreada.id}`
             });
         }
 

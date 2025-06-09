@@ -488,7 +488,7 @@ const descargarReceta = async (req, res) => {
              
             // Configurar los encabezados para la descarga automática
             res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', `attachment; filename=receta_${idCita}.pdf`);
+            res.setHeader('Content-Disposition', `attachment; filename=receta_${receta.id_paciente}_${receta.id}.pdf`);
             
             // Crear un stream de lectura y enviarlo como respuesta
             const fileStream = fs.createReadStream(tempFilePath);
@@ -569,7 +569,7 @@ const descargarFactura = async (req, res) => {
             await ftpService.downloadFacturaFile(factura.ruta, tempFilePath);
             
             // Enviar el archivo como respuesta
-            res.download(tempFilePath, `factura_${idFactura}.pdf`, (err) => {
+            res.download(tempFilePath, `factura_${factura.id_paciente}_${factura.id}.pdf`, (err) => {
                 // Eliminar el archivo temporal después de enviarlo
                 if (fs.existsSync(tempFilePath)) {
                     fs.unlinkSync(tempFilePath);

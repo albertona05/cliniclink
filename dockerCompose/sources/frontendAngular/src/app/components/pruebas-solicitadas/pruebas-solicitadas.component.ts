@@ -6,6 +6,7 @@ import { catchError, finalize, of } from 'rxjs';
 import { Prueba, PruebaResponse, PruebaService } from '../../services/prueba.service';
 import { NavComponent } from '../nav/nav.component';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { environment } from '../../../environments/environment';
 
 declare var bootstrap: any;
 
@@ -105,7 +106,7 @@ export class PruebasSolicitadasComponent implements OnInit {
     
     // Consultar horas disponibles del médico asignado
     const medicoId = this.pruebaSeleccionada.medico_asignado;
-    this.http.get<any>(`http://localhost:3000/medicos/horas-libres?fecha=${this.fecha}&id_medico=${medicoId}`)
+    this.http.get<any>(`${environment.apiUrl}/medicos/horas-libres?fecha=${this.fecha}&id_medico=${medicoId}`)
       .pipe(
         catchError(error => {
           console.error('Error al consultar disponibilidad:', error);
@@ -148,7 +149,7 @@ export class PruebasSolicitadasComponent implements OnInit {
       hora: this.horaSeleccionada
     };
 
-    this.http.post<any>('http://localhost:3000/pruebas', datosPrueba)
+    this.http.post<any>(`${environment.apiUrl}/pruebas`, datosPrueba)
       .pipe(
         catchError(error => {
           console.error('Error al programar prueba:', error);
@@ -184,7 +185,7 @@ export class PruebasSolicitadasComponent implements OnInit {
     
     // Cargar los archivos de la prueba
     console.log(`Cargando archivos para la prueba ID: ${prueba.id}`);
-    this.http.get<any>(`http://localhost:3000/pruebas/${prueba.id}/files`)
+    this.http.get<any>(`${environment.apiUrl}/pruebas/${prueba.id}/files`)
       .pipe(
         catchError(error => {
           console.error('Error al cargar archivos de la prueba:', error);
@@ -200,7 +201,7 @@ export class PruebasSolicitadasComponent implements OnInit {
             return {
               nombre: file.name,
               tipo: this.getMimeType(file.type),
-              url: `http://localhost:3000/pruebas/${prueba.id}/files/${file.name}`
+              url: `${environment.apiUrl}/pruebas/${prueba.id}/files/${file.name}`
             };
           });
           

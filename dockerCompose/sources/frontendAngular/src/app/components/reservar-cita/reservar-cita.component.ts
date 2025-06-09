@@ -8,6 +8,7 @@ import { catchError, finalize, of } from 'rxjs';
 import { CitaService } from '../../services/cita.service';
 import { AuthService } from '../../services/auth.service';
 import { BotonVolverComponent } from '../boton-volver/boton-volver.component';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-reservar-cita',
@@ -72,7 +73,7 @@ export class ReservarCitaComponent implements OnInit {
     this.cargando = true;
     this.mensajeError = '';
     
-    this.http.get<any>('http://localhost:3000/medicos')
+    this.http.get<any>(`${environment.apiUrl}/medicos`)
       .pipe(
         catchError(error => {
           console.error('Error al cargar médicos:', error);
@@ -105,7 +106,7 @@ export class ReservarCitaComponent implements OnInit {
     this.mensajeError = '';
     this.horasDisponibles = [];
     
-    this.http.get<any>(`http://localhost:3000/medicos/horas-libres?fecha=${this.fecha}&id_medico=${this.medico}`)
+    this.http.get<any>(`${environment.apiUrl}/medicos/horas-libres?fecha=${this.fecha}&id_medico=${this.medico}`)
       .pipe(
         catchError(error => {
           console.error('Error al consultar disponibilidad:', error);

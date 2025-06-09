@@ -6,6 +6,7 @@ import { NavComponent } from '../nav/nav.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, finalize, of } from 'rxjs';
 import { BotonVolverComponent } from '../boton-volver/boton-volver.component';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-facturas',
@@ -19,7 +20,7 @@ export class FacturasComponent implements OnInit {
   cargando: boolean = false;
   mensajeError: string = '';
   idPaciente: string = '';
-  private apiUrl = 'http://localhost:3000';
+  private apiUrl = environment.apiUrl;
   
   constructor(
     private http: HttpClient,

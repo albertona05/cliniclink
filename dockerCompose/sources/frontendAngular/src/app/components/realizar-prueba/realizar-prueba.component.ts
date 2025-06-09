@@ -6,6 +6,7 @@ import { HttpClient, HttpEventType } from '@angular/common/http';
 import { NavComponent } from '../nav/nav.component';
 import { PruebaService } from '../../services/prueba.service';
 import { catchError, finalize, of } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-realizar-prueba',
@@ -15,7 +16,7 @@ import { catchError, finalize, of } from 'rxjs';
   styleUrls: ['./realizar-prueba.component.css']
 })
 export class RealizarPruebaComponent implements OnInit {
-  private apiUrl = 'http://localhost:3000';
+  private apiUrl = environment.apiUrl;
   pruebaForm!: FormGroup;
   loading = false;
   submitted = false;
