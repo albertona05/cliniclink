@@ -304,6 +304,7 @@ textarea.form-control {
   :host {
     padding-top: 160px;
     padding-bottom: 30px;
+    height: auto;
     padding-left: 5px;
     padding-right: 5px;
   }
