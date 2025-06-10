@@ -69,57 +69,26 @@
 /* Media queries para responsividad */
 @media (max-width: 768px) {
   .content-container {
-    margin-top: 150px; /* Ajustado para la nueva altura del nav */
-    padding-top: 10px;
-    padding-bottom: 30px; /* Espacio adicional para scroll inferior */
-    height: calc(100vh - 150px);
     margin-left: 0;
-    margin-right: 0;
-    padding-left: 10px;
-    padding-right: 10px;
-  }
-  
-  .content-header h2 {
-    font-size: 24px;
-  }
-  
-  .content-body {
-    padding: 15px;
-    margin-bottom: 20px; /* Espacio adicional al final */
+    padding-top: 120px; /* Espacio para el nav fijo */
+    padding-bottom: 20px;
+    margin-top: 0;
   }
 }
 
 @media (max-width: 480px) {
   .content-container {
-    margin-top: 130px; /* Ajustado para móviles pequeños */
-    padding-top: 10px;
-    padding-bottom: 40px; /* Más espacio para scroll */
-    height: calc(100vh - 130px);
-    padding-left: 8px;
-    padding-right: 8px;
-  }
-  
-  .content-header h2 {
-    font-size: 20px;
-  }
-  
-  .content-body {
-    padding: 10px;
-    margin-bottom: 25px;
+    padding-top: 140px; /* Espacio para el nav fijo */
+    padding-bottom: 25px;
+    margin-top: 0;
   }
 }
 
 @media (max-width: 384px) {
   .content-container {
-    margin-top: 120px; /* Ajustado para pantallas muy pequeñas */
-    padding-top: 8px;
-    padding-bottom: 50px; /* Máximo espacio para scroll */
-    height: calc(100vh - 120px);
+    padding-top: 150px; /* Espacio para el nav fijo */
+    padding-bottom: 30px;
     padding-left: 5px;
     padding-right: 5px;
-  }
-  
-  .content-body {
-    margin-bottom: 30px;
   }
 }
