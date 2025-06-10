@@ -16,7 +16,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 
 const corsOptions = {
-  origin: 'http://localhost:4200',  // Permitimos solo esta dirección IP
+  origin: 'http://192.168.2.3:4200',  // Permitimos solo esta dirección IP
   methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Métodos que puedes permitir
   allowedHeaders: ['Content-Type', 'Authorization'],  // Cabeceras permitidas
 };

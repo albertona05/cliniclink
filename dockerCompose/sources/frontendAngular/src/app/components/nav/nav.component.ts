@@ -31,7 +31,6 @@ export class NavComponent {
   navigateToFacturas() {
     const userId = this.authService.getUserID();
     if (userId) {
-      // Navegamos directamente con el ID del usuario
       this.router.navigate(['/facturas', userId]);
     }
   }
