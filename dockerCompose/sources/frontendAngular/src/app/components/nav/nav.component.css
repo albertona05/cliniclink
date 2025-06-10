@@ -198,10 +198,38 @@
 @media (max-width: 480px) {
   .nav-container {
     width: 100%;
-    height: auto;
+    height: 160px;
+    position: fixed;
+    top: 0;
+    z-index: 1000;
   }
 
   .nav-header h1 {
     font-size: 18px;
+  }
+
+  .nav-links {
+    flex-direction: row;
+    justify-content: space-around;
+    padding: 0;
+  }
+
+  .nav-link {
+    padding: 8px;
+    text-align: center;
+    flex-direction: column;
+  }
+
+  .nav-link i {
+    margin-right: 0;
+    margin-bottom: 3px;
+  }
+
+  .nav-link span {
+    font-size: 10px;
+  }
+
+  :host {
+    margin-left: 0;
   }
 }
