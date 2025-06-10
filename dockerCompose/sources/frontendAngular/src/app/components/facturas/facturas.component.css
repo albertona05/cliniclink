@@ -171,8 +171,9 @@ body {
 @media (max-width: 768px) {
   :host {
     margin-left: 0;
-    padding-top: 150px; /* Espacio para el nav fijo */
-    padding-bottom: 30px; /* Espacio para scroll inferior */
+    padding-top: 160px; /* Espacio para el nav fijo */
+    padding-bottom: 20px;
+    margin-top: 0;
   }
 
   .content-body {

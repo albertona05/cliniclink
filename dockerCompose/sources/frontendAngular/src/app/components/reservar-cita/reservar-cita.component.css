@@ -175,7 +175,7 @@
 @media (max-width: 768px) {
   :host {
     margin-left: 0;
-    padding-top: 120px; /* Espacio para el nav fijo */
+    padding-top: 160px; /* Espacio para el nav fijo */
     padding-bottom: 20px;
     margin-top: 0;
   }
