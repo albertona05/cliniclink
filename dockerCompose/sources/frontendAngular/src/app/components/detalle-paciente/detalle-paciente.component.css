@@ -249,7 +249,8 @@ textarea.form-control {
 
 @media (max-width: 480px) {
   :host {
-    padding-top: 160px; /* Espacio para el nav fijo */
+    margin-top: 130px; 
+    padding-top: 160px; 
     padding-bottom: 40px;
     padding-left: 8px;
     padding-right: 8px;
