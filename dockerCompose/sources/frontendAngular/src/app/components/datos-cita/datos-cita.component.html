@@ -3,7 +3,7 @@
 <div class="container-fluid px-4 mt-3">
   <div class="content-header rounded p-4 mb-4" style="background-color: #009688; color: white;">
     <h2 class="m-0">{{ nombrePaciente }} - {{ dniPaciente }}</h2>
-    <button class="btn btn-info float-end" (click)="volver()">
+    <button type="button" class="btn btn-info float-end" (click)="volver()">
       <i class="fas fa-history"></i> Ver Historial del Paciente
     </button>
   </div>
@@ -176,9 +176,9 @@
                           <div class="card-body px-0">
                             <div class="row g-2">
                               <div class="col-6 col-sm-4 col-md-3" *ngFor="let hora of horasDisponiblesPrueba">
-                                <button class="btn w-100 hora-btn" 
-                                  [class.selected]="horaPruebaSeleccionada === hora"
-                                  (click)="seleccionarHoraPrueba(hora)">
+                                <button type="button" class="btn w-100 hora-btn" 
+                  [class.selected]="horaPruebaSeleccionada === hora"
+                  (click)="seleccionarHoraPrueba(hora)">
                                   {{ hora }}
                                 </button>
                               </div>
@@ -236,7 +236,7 @@
                 <div class="card-body px-0">
                   <div class="row g-2">
                     <div class="col-6 col-sm-4 col-md-3" *ngFor="let hora of horasDisponibles">
-                      <button class="btn w-100 hora-btn" 
+                      <button type="button" class="btn w-100 hora-btn" 
                         [class.selected]="horaSeleccionada === hora"
                         (click)="seleccionarHora(hora)">
                         {{ hora }}
