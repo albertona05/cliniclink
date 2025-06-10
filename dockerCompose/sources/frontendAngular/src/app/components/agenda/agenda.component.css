@@ -157,11 +157,91 @@
 @media (max-width: 768px) {
   :host {
     margin-left: 0;
+    padding-top: 150px; /* Espacio para el nav fijo */
+    padding-bottom: 30px; /* Espacio para scroll inferior */
   }
   
   .content-body {
     width: 100%;
     padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .content-header {
+    position: relative;
+    margin-top: -150px;
+    padding-top: 170px;
+  }
+
+  .button-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  :host {
+    padding-top: 130px; /* Ajustado para móviles pequeños */
+    padding-bottom: 40px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .content-header {
+    margin-top: -130px;
+    padding-top: 150px;
+  }
+
+  .content-body {
+    padding: 15px;
+    margin-bottom: 25px;
+  }
+
+  .form-control,
+  .btn {
+    height: 40px;
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .content-header h2 {
+    font-size: 20px;
+  }
+
+  .appointment-card {
+    padding: 15px;
+  }
+
+  .appointment-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .appointment-time {
+    margin-bottom: 10px;
+  }
+}
+
+@media (max-width: 384px) {
+  :host {
+    padding-top: 120px;
+    padding-bottom: 50px;
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+
+  .content-header {
+    margin-top: -120px;
+    padding-top: 140px;
+  }
+
+  .content-body {
+    padding: 10px;
+    margin-bottom: 30px;
   }
 }
 

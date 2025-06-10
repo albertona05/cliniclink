@@ -187,11 +187,16 @@
 @media (max-width: 768px) {
   :host {
     margin-left: 0;
+    padding-top: 120px; /* Espacio para el nav fijo */
+    padding-bottom: 20px;
+    margin-top: 0;
   }
   
   .content-body {
     width: 100%;
-    padding: 20px;
+    padding: 10px;
+    padding-left: 15px;
+    padding-right: 15px;
   }
   
   .card-body {
@@ -204,16 +209,39 @@
 }
 
 @media (max-width: 576px) {
+  :host {
+    margin-left: 0;
+    padding-top: 140px; /* Espacio para el nav fijo */
+    padding-bottom: 25px;
+    margin-top: 0;
+  }
+  
   .content-body {
-    padding: 15px;
+    width: 100%;
+    padding: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
   }
   
   .card-body {
     padding: 15px;
   }
   
+  .content-header h2 {
+    font-size: 1.5rem;
+  }
+  
   .btn {
     width: 100%;
     margin-bottom: 10px;
+  }
+}
+
+@media (max-width: 384px) {
+  :host {
+    padding-top: 150px; /* Espacio para el nav fijo */
+    padding-bottom: 30px;
+    padding-left: 5px;
+    padding-right: 5px;
   }
 }
