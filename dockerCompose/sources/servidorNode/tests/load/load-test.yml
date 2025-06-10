@@ -1,0 +1,45 @@
+config:
+  target: 'http://localhost:3000'
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: "Warm up"
+    - duration: 120
+      arrivalRate: 10
+      name: "Normal load"
+    - duration: 60
+      arrivalRate: 20
+      name: "High load"
+  processor: "./load-test-functions.js"
+
+scenarios:
+  - name: "Login and API calls"
+    weight: 70
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "test@cliniclink.com"
+            contrasena: "password123"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+      - get:
+          url: "/api/pacientes"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+      - think: 2
+
+  - name: "Health check"
+    weight: 20
+    flow:
+      - get:
+          url: "/"
+      - think: 1
+
+  - name: "Static resources"
+    weight: 10
+    flow:
+      - get:
+          url: "/api/medicamentos"
+      - think: 1

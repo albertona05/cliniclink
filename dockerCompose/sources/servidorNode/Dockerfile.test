@@ -1,0 +1,34 @@
+FROM node:18-alpine
+
+# Establecer directorio de trabajo
+WORKDIR /app
+
+# Copiar package.json y package-lock.json
+COPY package*.json ./
+
+# Instalar dependencias
+RUN npm install
+
+# Copiar el código fuente
+COPY . .
+
+# Crear directorio para reportes de test
+RUN mkdir -p /app/coverage /app/test-reports
+
+# Variables de entorno para testing
+ENV NODE_ENV=test
+ENV JWT_SECRET=test_secret_key_for_testing
+ENV DB_HOST=mysql-test
+ENV DB_PORT=3306
+ENV DB_NAME=cliniclink_test
+ENV DB_USER=root
+ENV DB_PASSWORD=rootpassword
+ENV FTP_HOST=ftp-test
+ENV FTP_USER=testuser
+ENV FTP_PASSWORD=testpass
+
+# Exponer puerto para el servidor de test
+EXPOSE 3001
+
+# Comando por defecto para ejecutar tests
+CMD ["npm", "test"]
