@@ -241,16 +241,37 @@ async function obtenerPruebasSolicitadas(req, res) {
             }]
         });
 
-        const pruebasFormateadas = pruebas.map(prueba => ({
-            id: prueba.id,
-            tipo_prueba: prueba.tipo_prueba,
-            descripcion: prueba.descripcion,
-            estado: prueba.estado,
-            resultado: prueba.resultado,
-            fecha_creacion: prueba.fecha_creacion,
-            fecha_realizacion: prueba.fecha_realizacion,
-            paciente: prueba.cita?.paciente?.usuario?.nombre || 'No especificado',
-            medico_asignado: prueba.medicoAsignado?.usuario?.nombre || 'No especificado'
+        // Para cada prueba, buscar la cita de la prueba (no la cita original)
+        const pruebasFormateadas = await Promise.all(pruebas.map(async (prueba) => {
+            // Buscar la cita que tiene id_prueba igual al ID de esta prueba
+            const citaPrueba = await Cita.findOne({
+                where: { id_prueba: prueba.id },
+                include: [{
+                    model: Paciente,
+                    as: 'paciente',
+                    include: [{
+                        model: Usuario,
+                        as: 'usuario',
+                        attributes: ['nombre']
+                    }]
+                }]
+            });
+
+            return {
+                id: prueba.id,
+                tipo_prueba: prueba.tipo_prueba,
+                descripcion: prueba.descripcion,
+                estado: prueba.estado,
+                resultado: prueba.resultado,
+                fecha_creacion: prueba.fecha_creacion,
+                fecha_realizacion: prueba.fecha_realizacion,
+                // Usar la información de la cita de la prueba si existe, sino usar la cita original
+                paciente: citaPrueba?.paciente?.usuario?.nombre || prueba.cita?.paciente?.usuario?.nombre || 'No especificado',
+                medico_asignado: prueba.medicoAsignado?.usuario?.nombre || 'No especificado',
+                // Agregar información de la fecha y hora de la cita de la prueba
+                fecha: citaPrueba?.fecha || null,
+                hora: citaPrueba?.hora || null
+            };
         }));
 
         res.json({
