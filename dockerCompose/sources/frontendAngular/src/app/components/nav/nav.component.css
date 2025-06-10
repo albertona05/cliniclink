@@ -157,7 +157,7 @@
 @media (max-width: 768px) {
   .nav-container {
     width: 100%; /* En pantallas más pequeñas, el nav ocupará todo el ancho */
-    height: auto; /* Se ajustará al contenido */
+    height: 160px;
     position: fixed;
     top: 0;
     z-index: 1000;
