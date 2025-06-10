@@ -196,7 +196,6 @@
 @media (max-width: 480px) {
   :host {
     margin-left: 0;
-    margin-top: 130px;
     padding-top: 160px;
     padding-bottom: 15px;
   }
