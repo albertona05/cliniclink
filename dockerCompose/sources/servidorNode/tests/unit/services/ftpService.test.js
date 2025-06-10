@@ -1,4 +1,4 @@
-const FtpService = require('../../../services/ftpService');
+const ftpService = require('../../../services/ftpService');
 const ftp = require('basic-ftp');
 const fs = require('fs');
 
@@ -7,11 +7,9 @@ jest.mock('basic-ftp');
 jest.mock('fs');
 
 describe('FtpService Tests', () => {
-    let ftpService;
     let mockClient;
 
     beforeEach(() => {
-        ftpService = new FtpService();
         mockClient = {
             access: jest.fn(),
             ensureDir: jest.fn(),
