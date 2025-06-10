@@ -31,20 +31,8 @@ export class NavComponent {
   navigateToFacturas() {
     const userId = this.authService.getUserID();
     if (userId) {
-      // Primero obtenemos el id_paciente a partir del id_usuario
-      this.http.get<any>(`${environment.apiUrl}/usuario/${userId}`).subscribe({
-        next: (response) => {
-          if (response && response.success && response.id) {
-            // Navegamos a facturas con el id_paciente
-            this.router.navigate(['/facturas', response.id]);
-          } else {
-            console.error('No se pudo obtener el ID del paciente');
-          }
-        },
-        error: (error) => {
-          console.error('Error al obtener el ID del paciente:', error);
-        }
-      });
+      // Navegamos directamente con el ID del usuario
+      this.router.navigate(['/facturas', userId]);
     }
   }
 
