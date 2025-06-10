@@ -31,9 +31,9 @@
             <h5 class="card-title mb-0 d-flex justify-content-between align-items-center">
               <span>{{ formatearFecha(cita.fecha) }}</span>
               <span class="badge" [ngClass]="{
-                'bg-success': cita.estado === 'confirmado',
+                'bg-success': cita.estado === 'espera',
                 'bg-danger': cita.estado === 'cancelado',
-                'bg-warning': cita.estado === 'pendiente'
+                'bg-warning': cita.estado === 'finalizado'
               }">{{ cita.estado }}</span>
             </h5>
           </div>
