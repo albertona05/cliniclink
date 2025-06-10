@@ -169,11 +169,11 @@ body {
 }
 
 .estado-espera {
-    color: #ff9800;
+    color: #009688;
 }
 
 .estado-finalizado {
-    color: #4caf50;
+    color: #009688;
 }
 
 .estado-cancelado {
