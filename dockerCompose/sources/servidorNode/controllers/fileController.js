@@ -97,16 +97,30 @@ class FileController {
             const pruebaId = req.params.pruebaId;
             console.log(`[DEBUG] Buscando archivos para prueba ID: ${pruebaId}`);
             
+            // Primero, buscar la cita que tiene id_prueba igual al pruebaId
+            const { Cita } = require('../models');
+            const cita = await Cita.findOne({
+                where: { id_prueba: pruebaId }
+            });
+            
+            if (!cita) {
+                console.log(`[DEBUG] No se encontró cita con id_prueba: ${pruebaId}`);
+                return res.json({ files: [] });
+            }
+            
+            const citaId = cita.id;
+            console.log(`[DEBUG] Encontrada cita ID: ${citaId} para prueba ID: ${pruebaId}`);
+            
             // Obtener todos los archivos del directorio de pruebas
             console.log('[DEBUG] Solicitando listado de archivos al FTP...');
             const allFiles = await ftpService.listFiles('.', 'pruebas');
             console.log('[DEBUG] Archivos recibidos del FTP:', JSON.stringify(allFiles));
             
-            // Filtrar archivos que coincidan ÚNICAMENTE con el ID de la prueba
+            // Filtrar archivos que coincidan con el ID de la cita
             const files = allFiles.filter(file => 
-                file.name.startsWith(`archivo_${pruebaId}_`));
+                file.name.startsWith(`archivo_${citaId}_`));
             
-            console.log(`[DEBUG] Total de archivos encontrados para prueba ${pruebaId}: ${files.length}`);
+            console.log(`[DEBUG] Total de archivos encontrados para cita ${citaId} (prueba ${pruebaId}): ${files.length}`);
             console.log(`[DEBUG] Archivos encontrados:`, JSON.stringify(files.map(f => f.name)));
             console.log('[DEBUG] Respuesta que se enviará al cliente:', JSON.stringify({
                 files: files.map(file => ({
