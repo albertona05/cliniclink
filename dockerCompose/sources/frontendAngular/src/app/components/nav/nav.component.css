@@ -157,147 +157,51 @@
 @media (max-width: 768px) {
   .nav-container {
     width: 100%; /* En pantallas más pequeñas, el nav ocupará todo el ancho */
-    height: 120px; /* Altura fija para móviles */
+    height: auto; /* Se ajustará al contenido */
     position: fixed;
     top: 0;
-    left: 0;
     z-index: 1000;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px;
-  }
-
-  .nav-header {
-    padding: 5px 10px;
-    margin: 0;
-    flex: 0 0 auto;
-    border-bottom: none;
-    background: none;
-    backdrop-filter: none;
-    box-shadow: none;
   }
 
   .nav-header h1 {
-    font-size: 16px;
-    margin: 0;
-  }
-
-  .user-info {
-    padding: 5px 10px;
-    margin: 0;
-    flex: 0 0 auto;
-    border-bottom: none;
-    background: none;
-    backdrop-filter: none;
-    box-shadow: none;
-  }
-
-  .user-info p {
-    font-size: 12px;
-    margin: 0;
-  }
-
-  .user-info small {
-    font-size: 9px;
-    padding: 2px 6px;
+    font-size: 20px;
   }
 
   .nav-links {
-    flex-direction: row;
-    justify-content: center;
+    flex-direction: row; /* Cambiar la dirección a fila para más espacio */
+    justify-content: space-around;
     padding: 0;
-    gap: 5px;
-    flex: 1;
-    overflow-x: auto;
-    overflow-y: hidden;
   }
 
   .nav-link {
-    padding: 8px 6px;
+    padding: 10px;
     text-align: center;
     flex-direction: column;
-    margin: 0;
-    min-width: 50px;
-    flex: 0 0 auto;
-    border-radius: 8px;
   }
 
   .nav-link i {
     margin-right: 0;
-    margin-bottom: 2px;
-    font-size: 14px;
+    margin-bottom: 5px;
   }
 
   .nav-link span {
-    font-size: 9px;
-    line-height: 1.1;
+    font-size: 12px;
+  }
+
+  /* Hacer que el contenido se mueva debajo del nav */
+  :host {
+    margin-left: 0;
   }
 }
 
 /* Media queries para móviles */
 @media (max-width: 480px) {
   .nav-container {
-    height: 140px;
-    padding: 8px;
+    width: 100%;
+    height: auto;
   }
 
   .nav-header h1 {
-    font-size: 14px;
-  }
-
-  .user-info p {
-    font-size: 11px;
-  }
-
-  .user-info small {
-    font-size: 8px;
-    padding: 2px 4px;
-  }
-
-  .nav-link {
-    padding: 6px 4px;
-    min-width: 45px;
-  }
-
-  .nav-link i {
-    font-size: 12px;
-  }
-
-  .nav-link span {
-    font-size: 8px;
-  }
-}
-
-@media (max-width: 384px) {
-  .nav-container {
-    height: 150px;
-    padding: 5px;
-  }
-
-  .nav-header h1 {
-    font-size: 12px;
-  }
-
-  .user-info p {
-    font-size: 10px;
-  }
-
-  .user-info small {
-    font-size: 7px;
-  }
-
-  .nav-link {
-    min-width: 40px;
-    padding: 4px 2px;
-  }
-
-  .nav-link i {
-    font-size: 11px;
-  }
-
-  .nav-link span {
-    font-size: 7px;
+    font-size: 18px;
   }
 }
