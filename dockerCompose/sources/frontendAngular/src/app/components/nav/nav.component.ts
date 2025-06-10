@@ -60,6 +60,10 @@ export class NavComponent {
     return this.userRole === 'paciente';
   }
 
+  getUserId(): string | null {
+    return this.authService.getUserID();
+  }
+
   logout() {
     this.authService.logout().subscribe({
       next: () => console.log('Logout exitoso'),

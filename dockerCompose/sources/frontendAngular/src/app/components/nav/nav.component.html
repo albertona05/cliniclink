@@ -38,17 +38,17 @@
       <span>Reservar Cita</span>
     </a>
     
-    <a *ngIf="isPaciente()" class="nav-link" (click)="navigateToCitas()" routerLinkActive="active">
+    <a *ngIf="isPaciente()" class="nav-link" [routerLink]="['/citas-paciente', getUserId()]" routerLinkActive="active">
       <i class="bi bi-calendar-week"></i>
       <span>Citas</span>
     </a>
     
-    <a *ngIf="isPaciente()" class="nav-link" (click)="navigateToHistorial()" routerLinkActive="active">
+    <a *ngIf="isPaciente()" class="nav-link" [routerLink]="['/historial-paciente', getUserId()]" routerLinkActive="active">
       <i class="bi bi-journal-medical"></i>
       <span>Historial</span>
     </a>
     
-    <a *ngIf="isPaciente()" class="nav-link" (click)="navigateToFacturas()" routerLinkActive="active">
+    <a *ngIf="isPaciente()" class="nav-link" [routerLink]="['/facturas', getUserId()]" routerLinkActive="active">
       <i class="bi bi-receipt"></i>
       <span>Facturas</span>
     </a>
