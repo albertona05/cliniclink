@@ -7,6 +7,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, finalize, of } from 'rxjs';
 import { BotonVolverComponent } from '../boton-volver/boton-volver.component';
 import { environment } from '../../../environments/environment';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-facturas',
@@ -25,13 +26,35 @@ export class FacturasComponent implements OnInit {
   constructor(
     private http: HttpClient,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
+    // Debug: Mostrar información del usuario autenticado
+    const userToken = this.authService.getToken();
+    if (userToken) {
+      try {
+        const tokenParts = userToken.split('.');
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          console.log('=== DEBUG FACTURAS ===');
+          console.log('ID del usuario autenticado:', payload.id);
+          console.log('Rol del usuario:', payload.rol);
+          console.log('Nombre del usuario:', payload.nombre);
+        }
+      } catch (error) {
+        console.error('Error al decodificar token:', error);
+      }
+    } else {
+      console.log('No hay token de autenticación');
+    }
+
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.idPaciente = params['id'];
+        console.log('ID del paciente solicitado en la URL:', this.idPaciente);
+        console.log('¿Coinciden los IDs?', userToken ? 'Revisar arriba' : 'No hay token');
         this.cargarFacturas(this.idPaciente);
       }
     });

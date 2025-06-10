@@ -61,7 +61,7 @@ services:
       FTP_USER_NAME: cliniclink
       FTP_USER_PASS: cliniclink123
       FTP_USER_HOME: /home/cliniclink
-      PUBLICHOST: localhost
+      PUBLICHOST: 0.0.0.0
       FTP_MAX_CLIENTS: 50
       FTP_MAX_CONNECTIONS: 50
     volumes:
