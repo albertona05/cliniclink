@@ -189,6 +189,9 @@ async function obtenerPruebasMedico(req, res) {
             medico_solicitante: prueba.medicoManda?.usuario?.nombre || 'No especificado'
         }));
 
+        console.log('[DEBUG] Enviando respuesta con', pruebasFormateadas.length, 'pruebas formateadas');
+        console.log('[DEBUG] Respuesta completa:', JSON.stringify({ success: true, data: pruebasFormateadas }, null, 2));
+        
         res.json({
             success: true,
             data: pruebasFormateadas
@@ -205,16 +208,22 @@ async function obtenerPruebasMedico(req, res) {
 // Obtener todas las pruebas solicitadas por un médico
 async function obtenerPruebasSolicitadas(req, res) {
     try {
+        console.log('[DEBUG] Iniciando obtenerPruebasSolicitadas');
+        console.log('[DEBUG] Usuario:', req.usuario?.id, 'Médico ID:', req.usuario.medico?.id);
+        
         const id_medico = req.usuario.medico?.id;
 
         // Verificar que el médico existe
         if (!id_medico) {
+            console.log('[ERROR] Médico no encontrado o usuario sin perfil de médico');
             return res.status(403).json({
                 success: false,
                 mensaje: 'Acceso denegado. Usuario no es un médico'
             });
         }
 
+        console.log('[DEBUG] Buscando pruebas solicitadas por médico ID:', id_medico);
+        
         // Obtener pruebas solicitadas por el médico
         const pruebas = await Prueba.findAll({
             where: { id_medicoManda: id_medico },
@@ -241,8 +250,15 @@ async function obtenerPruebasSolicitadas(req, res) {
             }]
         });
 
+        console.log('[DEBUG] Pruebas encontradas:', pruebas.length);
+        console.log('[DEBUG] IDs de pruebas:', pruebas.map(p => p.id));
+
         // Para cada prueba, buscar la cita de la prueba (no la cita original)
         const pruebasFormateadas = await Promise.all(pruebas.map(async (prueba) => {
+            console.log(`[DEBUG] Procesando prueba ID: ${prueba.id}`);
+            console.log(`[DEBUG] Prueba - tipo: ${prueba.tipo_prueba}, estado: ${prueba.estado}`);
+            console.log(`[DEBUG] Prueba - id_cita original: ${prueba.id_cita}`);
+            
             // Buscar la cita que tiene id_prueba igual al ID de esta prueba
             const citaPrueba = await Cita.findOne({
                 where: { id_prueba: prueba.id },
@@ -257,7 +273,17 @@ async function obtenerPruebasSolicitadas(req, res) {
                 }]
             });
 
-            return {
+            console.log(`[DEBUG] Cita de prueba encontrada para prueba ${prueba.id}:`, citaPrueba ? `ID: ${citaPrueba.id}, fecha: ${citaPrueba.fecha}, hora: ${citaPrueba.hora}` : 'No encontrada');
+            
+            if (citaPrueba) {
+                console.log(`[DEBUG] Paciente en cita de prueba:`, citaPrueba.paciente?.usuario?.nombre || 'No encontrado');
+            }
+            
+            if (prueba.cita) {
+                console.log(`[DEBUG] Paciente en cita original:`, prueba.cita.paciente?.usuario?.nombre || 'No encontrado');
+            }
+
+            const resultado = {
                 id: prueba.id,
                 tipo_prueba: prueba.tipo_prueba,
                 descripcion: prueba.descripcion,
@@ -272,8 +298,14 @@ async function obtenerPruebasSolicitadas(req, res) {
                 fecha: citaPrueba?.fecha || null,
                 hora: citaPrueba?.hora || null
             };
+            
+            console.log(`[DEBUG] Resultado formateado para prueba ${prueba.id}:`, resultado);
+            return resultado;
         }));
 
+        console.log('[DEBUG] Enviando respuesta con', pruebasFormateadas.length, 'pruebas formateadas');
+        console.log('[DEBUG] Respuesta completa:', JSON.stringify({ success: true, data: pruebasFormateadas }, null, 2));
+        
         res.json({
             success: true,
             data: pruebasFormateadas
