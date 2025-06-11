@@ -22,10 +22,10 @@ scenarios:
     flow:
       # Test de login exitoso
       - post:
-          url: "/auth/login"
+          url: "/login"
           json:
-            email: "test@example.com"
-            contrasena: "password123"
+            email: "carlos@example.com"
+            contrasena: "contrasena_segura123"
           capture:
             - json: "$.token"
               as: "authToken"
@@ -34,10 +34,10 @@ scenarios:
 
       # Test de login con credenciales inválidas
       - post:
-          url: "/auth/login"
+          url: "/login"
           json:
             email: "invalid@example.com"
-            contrasena: "wrongpassword"
+            contrasena: "contra"
           expect:
             - statusCode: [400, 401]
 
