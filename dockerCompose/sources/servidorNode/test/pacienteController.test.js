@@ -3,7 +3,7 @@ const express = require('express');
 const { Paciente } = require('../models');
 
 // Mock del modelo Paciente
-jest.mock('../../../models', () => ({
+jest.mock('../models', () => ({
     Paciente: {
         findOne: jest.fn(),
         create: jest.fn(),
@@ -24,7 +24,7 @@ describe('PacienteController Tests', () => {
     });
 
     describe('GET /paciente/:id', () => {
-        test('debería retornar paciente existente', async () => {
+        test('debería devolver paciente existente', async () => {
             const mockPaciente = {
                 id: 1,
                 id_usuario: 123,
@@ -44,7 +44,7 @@ describe('PacienteController Tests', () => {
             });
         });
 
-        test('debería retornar 404 para paciente no encontrado', async () => {
+        test('debería devolver 404 para paciente no encontrado', async () => {
             Paciente.findOne.mockResolvedValue(null);
 
             const response = await request(app)

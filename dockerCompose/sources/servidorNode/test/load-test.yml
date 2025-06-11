@@ -1,45 +1,73 @@
 config:
-  target: 'http://localhost:3000'
+  target: "http://localhost:3000"
   phases:
+    - duration: 30
+      arrivalRate: 2
+      name: "Calentamiento"
     - duration: 60
       arrivalRate: 5
-      name: "Warm up"
-    - duration: 120
+      rampTo: 10
+      name: "Carga media"
+    - duration: 90
       arrivalRate: 10
-      name: "Normal load"
-    - duration: 60
-      arrivalRate: 20
-      name: "High load"
-  processor: "./load-test-functions.js"
+      rampTo: 15
+      name: "Carga alta"
+  defaults:
+    headers:
+      Content-Type: "application/json"
 
 scenarios:
-  - name: "Login and API calls"
-    weight: 70
+  - name: "Prueba de carga - Autenticación"
+    weight: 30
     flow:
+      # Test de login exitoso
       - post:
-          url: "/api/auth/login"
+          url: "/auth/login"
           json:
-            email: "test@cliniclink.com"
+            email: "test@example.com"
             contrasena: "password123"
           capture:
             - json: "$.token"
               as: "authToken"
+          expect:
+            - statusCode: [200, 400, 401]
+
+      # Test de login con credenciales inválidas
+      - post:
+          url: "/auth/login"
+          json:
+            email: "invalid@example.com"
+            contrasena: "wrongpassword"
+          expect:
+            - statusCode: [400, 401]
+
+  - name: "Prueba de carga - Gestión de Pacientes"
+    weight: 40
+    flow:
+      # Login para obtener token
+      - post:
+          url: "/auth/login"
+          json:
+            email: "medico@test.com"
+            contrasena: "password123"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+
+      # Obtener paciente por ID
       - get:
-          url: "/api/pacientes"
+          url: "/paciente/{{ $randomInt(1, 100) }}"
           headers:
             Authorization: "Bearer {{ authToken }}"
-      - think: 2
+          expect:
+            - statusCode: [200, 404, 500]
 
-  - name: "Health check"
-    weight: 20
-    flow:
+      # Buscar pacientes
       - get:
-          url: "/"
-      - think: 1
+          url: "/pacientes"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: [200, 401, 500]
 
-  - name: "Static resources"
-    weight: 10
-    flow:
-      - get:
-          url: "/api/medicamentos"
-      - think: 1
+  

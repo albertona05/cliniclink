@@ -19,11 +19,5 @@ module.exports = (sequelize, DataTypes) => {
         timestamps: false
     });
 
-    Usuario.associate = (models) => {
-        Usuario.hasOne(models.Paciente, { foreignKey: 'id_usuario', as: 'paciente' });
-        Usuario.hasOne(models.Medico, { foreignKey: 'id_usuario', as: 'medico' });
-        Usuario.hasOne(models.Recepcion, { foreignKey: 'id_usuario', as: 'recepcion' });
-    };
-
     return Usuario;
 };

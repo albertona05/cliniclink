@@ -1,10 +1,22 @@
 const request = require('supertest');
 const express = require('express');
+
+// Mock de la base de datos y modelos antes de importar el controlador
+jest.mock('../config/database');
+jest.mock('../models', () => ({
+    Usuario: {
+        findOne: jest.fn()
+    },
+    Paciente: {
+        findOne: jest.fn()
+    },
+    Medico: {
+        findOne: jest.fn()
+    }
+}));
+
 const authController = require('../controllers/authController');
 const sequelize = require('../config/database');
-
-// Mock de la base de datos
-jest.mock('../../../config/database');
 
 const app = express();
 app.use(express.json());
@@ -30,7 +42,7 @@ describe('AuthController Tests', () => {
             const response = await request(app)
                 .post('/login')
                 .send({
-                    email: 'email-invalido',
+                    email: 'alberto.com',
                     contrasena: 'password123'
                 });
 

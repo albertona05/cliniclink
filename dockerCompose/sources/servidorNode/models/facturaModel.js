@@ -22,9 +22,6 @@ module.exports = (sequelize, DataTypes) => {
         timestamps: false
     });
 
-    Factura.associate = (models) => {
-        Factura.belongsTo(models.Paciente, { foreignKey: 'id_paciente', as: 'paciente' });
-    };
 
     return Factura;
 };

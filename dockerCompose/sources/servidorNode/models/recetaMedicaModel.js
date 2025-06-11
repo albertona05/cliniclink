@@ -12,11 +12,6 @@ module.exports = (sequelize, DataTypes) => {
         timestamps: false
     });
 
-    RecetaMedica.associate = (models) => {
-        RecetaMedica.belongsTo(models.Cita, { foreignKey: 'id_cita', as: 'cita' });
-        RecetaMedica.belongsTo(models.Medico, { foreignKey: 'id_medico', as: 'medico' });
-        RecetaMedica.belongsTo(models.Paciente, { foreignKey: 'id_paciente', as: 'paciente' });
-    };
 
     return RecetaMedica;
 };

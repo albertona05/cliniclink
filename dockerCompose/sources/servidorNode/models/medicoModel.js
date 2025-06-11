@@ -8,12 +8,6 @@ module.exports = (sequelize, DataTypes) => {
         timestamps: false
     });
 
-    Medico.associate = (models) => {
-        Medico.belongsTo(models.Usuario, { foreignKey: 'id_usuario', as: 'usuario' });
-        Medico.hasMany(models.Cita, { foreignKey: 'id_medico', as: 'citas' });
-        Medico.hasMany(models.RecetaMedica, { foreignKey: 'id_medico', as: 'recetas' });
-        Medico.hasMany(models.Prueba, { foreignKey: 'id_medicoManda', as: 'pruebas' });
-    };
 
     return Medico;
 };

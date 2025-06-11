@@ -31,12 +31,6 @@ module.exports = (sequelize, DataTypes) => {
         timestamps: false
     });
 
-    Paciente.associate = (models) => {
-        Paciente.belongsTo(models.Usuario, { foreignKey: 'id_usuario', as: 'usuario' });
-        Paciente.hasMany(models.Cita, { foreignKey: 'id_paciente', as: 'citas' });
-        Paciente.hasMany(models.RecetaMedica, { foreignKey: 'id_paciente', as: 'recetas' });
-        Paciente.hasMany(models.Factura, { foreignKey: 'id_paciente', as: 'facturas' });
-    };
 
     return Paciente;
 };

@@ -19,12 +19,6 @@ module.exports = (sequelize, DataTypes) => {
         timestamps: false
     });
 
-    Cita.associate = (models) => {
-        Cita.belongsTo(models.Paciente, { foreignKey: 'id_paciente', as: 'paciente' });
-        Cita.belongsTo(models.Medico, { foreignKey: 'id_medico', as: 'medico' });
-        Cita.hasMany(models.RecetaMedica, { foreignKey: 'id_cita', as: 'recetas' });
-        Cita.belongsTo(models.Prueba, { foreignKey: 'id_prueba', as: 'prueba' });
-    };
 
     return Cita;
 };
