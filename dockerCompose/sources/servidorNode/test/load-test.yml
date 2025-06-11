@@ -18,7 +18,7 @@ config:
 
 scenarios:
   - name: "Prueba de carga - Autenticación"
-    weight: 30
+    weight: 20
     flow:
       # Test de login exitoso
       - post:
@@ -41,33 +41,47 @@ scenarios:
           expect:
             - statusCode: [400, 401]
 
-  - name: "Prueba de carga - Gestión de Pacientes"
+  - name: "Prueba de carga - Acceso de Paciente con Token"
     weight: 40
     flow:
-      # Login para obtener token
+      # Login como paciente para obtener token
       - post:
-          url: "/auth/login"
+          url: "/login"
           json:
-            email: "medico@test.com"
-            contrasena: "password123"
+            email: "carlos@example.com"
+            contrasena: "contrasena_segura123"
           capture:
             - json: "$.token"
               as: "authToken"
+            - json: "$.usuario.id"
+              as: "userId"
+          expect:
+            - statusCode: [200]
 
-      # Obtener paciente por ID
+      # Obtener citas del paciente
       - get:
-          url: "/paciente/{{ $randomInt(1, 100) }}"
+          url: "/citas/{{ userId }}"
           headers:
             Authorization: "Bearer {{ authToken }}"
           expect:
-            - statusCode: [200, 404, 500]
+            - statusCode: [200, 404]
 
-      # Buscar pacientes
+      # Obtener historial médico del paciente
       - get:
-          url: "/pacientes"
+          url: "/historial/{{ userId }}"
           headers:
             Authorization: "Bearer {{ authToken }}"
           expect:
-            - statusCode: [200, 401, 500]
+            - statusCode: [200, 404]
+
+      # Obtener facturas del paciente
+      - get:
+          url: "/facturas/{{ userId }}"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: [200, 404]
+
+
 
   
