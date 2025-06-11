@@ -1,6 +1,6 @@
 const request = require('supertest');
 const express = require('express');
-const { Paciente } = require('../../../models');
+const { Paciente } = require('../models');
 
 // Mock del modelo Paciente
 jest.mock('../../../models', () => ({
@@ -12,7 +12,7 @@ jest.mock('../../../models', () => ({
 }));
 
 // Importar el controlador después del mock
-const pacienteController = require('../../../controllers/pacienteController');
+const pacienteController = require('../controllers/pacienteController');
 
 const app = express();
 app.use(express.json());

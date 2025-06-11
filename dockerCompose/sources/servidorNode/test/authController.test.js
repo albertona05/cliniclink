@@ -1,7 +1,7 @@
 const request = require('supertest');
 const express = require('express');
-const authController = require('../../../controllers/authController');
-const sequelize = require('../../../config/database');
+const authController = require('../controllers/authController');
+const sequelize = require('../config/database');
 
 // Mock de la base de datos
 jest.mock('../../../config/database');
