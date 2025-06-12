@@ -202,7 +202,7 @@ const registrarPaciente = async (req, res) => {
             return res.status(400).json({ mensaje: 'El DNI ya está registrado' });
         }
 
-        // Generar contraseña automática: dos primeras letras del nombre + año de nacimiento
+        // Generar contraseña automática: dos primeras letras del nombre + día + año de nacimiento
         try {
             // Dividir el nombre completo en partes
             const nombrePartes = nombre.split(' ');
@@ -226,10 +226,11 @@ const registrarPaciente = async (req, res) => {
                 }
             }
             
-            // Obtener año de nacimiento
+            // Obtener día y año de nacimiento
             const fechaNac = new Date(fechaNacimiento);
+            const diaNacimiento = fechaNac.getDate().toString().padStart(2, '0'); // Asegurar 2 dígitos
             const anioNacimiento = fechaNac.getFullYear();
-            contrasena += anioNacimiento;
+            contrasena += diaNacimiento + anioNacimiento;
             
             // Encriptar contraseña
             const salt = await bcrypt.genSalt(10);
