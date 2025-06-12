@@ -19,6 +19,7 @@ export class RegistrarPacienteComponent implements OnInit {
   submitted = false;
   mensajeError: string = '';
   mensajeExito: string = '';
+  contrasenaGenerada = '';
 
   constructor(
     private formBuilder: FormBuilder,
@@ -60,7 +61,8 @@ export class RegistrarPacienteComponent implements OnInit {
     this.mensajeError = '';
     this.pacienteService.registrarPaciente(this.registroForm.value).subscribe({
       next: (response) => {
-        this.mensajeExito = 'Paciente registrado exitosamente';
+        this.contrasenaGenerada = response.contrasenaGenerada || '';
+        this.mensajeExito = `Paciente registrado exitosamente. La contraseña generada es: ${this.contrasenaGenerada}. Por favor, anote esta contraseña ya que será necesaria para el primer acceso del paciente.`;
         this.loading = false;
         // Resetear el formulario después de un registro exitoso
         this.registroForm.reset();
