@@ -283,8 +283,10 @@ const registrarPaciente = async (req, res) => {
                 contrasenaGenerada: contrasena // Devolver la contraseña generada para que el usuario la conozca
             });
         } catch (encryptError) {
+            console.error('=== ERROR EN GENERACIÓN DE CONTRASEÑA ===');
             console.error('Error durante la generación de contraseña o creación de registros:', encryptError);
             console.error('Stack de error:', encryptError.stack);
+            console.error('Datos del paciente afectado:', { nombre, email, dni });
             throw encryptError;
         }
     } catch (error) {
@@ -292,6 +294,8 @@ const registrarPaciente = async (req, res) => {
         console.error('=== ERROR: Registro de paciente fallido ===');
         console.error('Error al registrar paciente:', error);
         console.error('Mensaje de error:', error.message);
+        console.error('Datos del paciente:', { nombre, email, dni });
+        console.error('Stack completo:', error.stack);
         console.error('Stack de error:', error.stack);
         
         if (error.name === 'SequelizeValidationError') {
