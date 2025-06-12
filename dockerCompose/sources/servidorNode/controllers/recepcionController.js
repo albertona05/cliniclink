@@ -203,10 +203,15 @@ const registrarPaciente = async (req, res) => {
         }
 
         // Generar contraseña automática: dos primeras letras del nombre + día + año de nacimiento
+        console.log('=== INICIO REGISTRO DE PACIENTE ===');
+        console.log('Iniciando registro de paciente:', { nombre, email, dni });
+        
         try {
             // Dividir el nombre completo en partes
             const nombrePartes = nombre.split(' ');
             let contrasena = '';
+            
+            console.log('Generando contraseña automática para:', nombre);
             
             // Obtener las dos primeras letras del nombre
             if (nombrePartes.length > 0) {
@@ -232,19 +237,27 @@ const registrarPaciente = async (req, res) => {
             const anioNacimiento = fechaNac.getFullYear();
             contrasena += diaNacimiento + anioNacimiento;
             
+            console.log('Contraseña generada exitosamente (longitud:', contrasena.length, 'caracteres)');
+            console.log('Patrón de contraseña: [2 letras del nombre][día][año]');
+            
             // Encriptar contraseña
+            console.log('Iniciando encriptación de contraseña...');
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(contrasena, salt);
+            console.log('Contraseña encriptada exitosamente');
             
             // Crear usuario
+            console.log('Creando usuario en la base de datos...');
             const usuario = await Usuario.create({
                 nombre,
                 email,
                 contrasena: hashedPassword,
                 rol: 'paciente'
             }, { transaction: t });
+            console.log('Usuario creado exitosamente con ID:', usuario.id);
 
             // Crear paciente
+            console.log('Creando perfil de paciente...');
             const pacienteCreado = await Paciente.create({
                 id_usuario: usuario.id,
                 dni,
@@ -252,8 +265,19 @@ const registrarPaciente = async (req, res) => {
                 fechaNacimiento,
                 direccion
             }, { transaction: t });
+            console.log('Paciente creado exitosamente con ID:', pacienteCreado.id);
 
             await t.commit();
+            console.log('Transacción confirmada exitosamente');
+            console.log('=== REGISTRO COMPLETADO EXITOSAMENTE ===');
+            console.log('Paciente registrado:', { 
+                usuarioId: usuario.id, 
+                pacienteId: pacienteCreado.id, 
+                email: email,
+                dni: dni,
+                contrasenaGenerada: true // Solo indicamos que se generó, no la mostramos por seguridad
+            });
+            
             res.status(201).json({ 
                 mensaje: 'Paciente registrado correctamente', 
                 contrasenaGenerada: contrasena // Devolver la contraseña generada para que el usuario la conozca
