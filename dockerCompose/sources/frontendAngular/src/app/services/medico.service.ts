@@ -60,6 +60,6 @@ export class MedicoService {
   }
 
   registrarMedico(medico: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/medicos/registro`, medico);
+    return this.http.post(`${this.apiUrl}/registrar-medico`, medico);
   }
 }
